@@ -7,7 +7,8 @@ import { serviceDetails, categories } from "@/lib/mock-data";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { staggerContainer, fadeUpItem } from "@/lib/animations";
+import { staggerContainerResponsive, fadeUpItem } from "@/lib/animations";
+import { trackAction } from "@/lib/pwa";
 import { cn } from "@/lib/utils";
 import { useActiveCategory, useSetActiveCategory } from "@/lib/store";
 
@@ -77,9 +78,10 @@ export default function ServicesPage() {
       {/* Service Grid */}
       {filtered.length > 0 ? (
         <motion.div
-          variants={staggerContainer(0.06)}
+          variants={staggerContainerResponsive(0.06)}
           initial="hidden"
-          animate="show"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.1 }}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
         >
           <AnimatePresence mode="popLayout">
@@ -145,7 +147,10 @@ export default function ServicesPage() {
                         <Clock size={10} /> {v.estimatedDuration}
                       </span>
                       <button
-                        onClick={() => setBookedId(v.id)}
+                        onClick={() => {
+                          setBookedId(v.id);
+                          trackAction("book_service");
+                        }}
                         disabled={!v.available || bookedId === v.id}
                         className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
                         style={

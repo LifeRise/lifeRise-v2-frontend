@@ -7,7 +7,7 @@ import { events } from "@/lib/mock-data";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { staggerContainer, fadeUpItem } from "@/lib/animations";
+import { staggerContainerResponsive, fadeUpItem } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 
 export default function EventsPage() {
@@ -26,9 +26,10 @@ export default function EventsPage() {
 
       {events.length > 0 ? (
         <motion.div
-          variants={staggerContainer(0.07)}
+          variants={staggerContainerResponsive(0.07)}
           initial="hidden"
-          animate="show"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.1 }}
           className="grid grid-cols-1 md:grid-cols-2 gap-4"
         >
           {events.map((e) => {

@@ -12,6 +12,7 @@ export default function ManagerError({ error, reset }: { error: Error & { digest
         <h2 className="font-heading text-lg font-bold text-lr-white mb-2">Something went wrong</h2>
         <p className="text-sm text-muted mb-6">{error.message || "An unexpected error occurred in the manager portal."}</p>
         <button
+          type="button"
           onClick={reset}
           className="px-4 py-2 rounded-lg bg-purple-accent/10 text-purple-accent text-sm font-medium hover:bg-purple-accent/20 transition-colors"
         >

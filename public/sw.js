@@ -3,9 +3,34 @@
   Versioned cache strategy with automatic update support.
   Bump BUILD_ID below for each production release.
 */
-const BUILD_ID = "20260521-001";
+const BUILD_ID = "20260521-002";
 const CACHE_NAME = `liferise-${BUILD_ID}`;
-const SHELL_ROUTES = ["/", "/login", "/resident", "/vendor", "/manager"];
+const SHELL_ROUTES = [
+  "/",
+  "/login",
+  "/offline",
+  "/resident",
+  "/resident/services",
+  "/resident/bookings",
+  "/resident/events",
+  "/resident/favorites",
+  "/resident/notifications",
+  "/resident/profile",
+  "/vendor",
+  "/vendor/schedule",
+  "/vendor/queue",
+  "/vendor/earnings",
+  "/vendor/services",
+  "/vendor/profile",
+  "/manager",
+  "/manager/analytics",
+  "/manager/residents",
+  "/manager/vendors",
+  "/manager/announcements",
+  "/manager/settings",
+];
+
+const OFFLINE_FALLBACK = "/offline";
 
 /* ─── Install ──────────────────────────────────────────────────── */
 self.addEventListener("install", (event) => {
@@ -55,7 +80,15 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           return response;
         })
-        .catch(() => caches.match(request))
+        .catch(() => {
+          return caches.match(request).then((cached) => {
+            if (cached) return cached;
+            // Graceful offline fallback for uncached routes
+            return caches.match(OFFLINE_FALLBACK).then((fallback) => {
+              return fallback || new Response("Offline", { status: 503, statusText: "Service Unavailable" });
+            });
+          });
+        })
     );
   } else {
     // Cache-first for static assets (images, fonts, JS, CSS)

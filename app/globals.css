@@ -48,6 +48,14 @@ html, body {
   border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
+/* Blur budget: reduce card blur on mobile to prevent scroll jank */
+@media (max-width: 639px) {
+  .glass {
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+}
+
 /* ─── Gradient Mesh Animation ────────────────────────────────── */
 @keyframes gradient-shift {
   0%   { background-position: 0% 50%; }
@@ -70,21 +78,6 @@ html, body {
 .teal-glow  { box-shadow: 0 0 32px rgba(0, 212, 170, 0.18); }
 .gold-glow  { box-shadow: 0 0 32px rgba(245, 166, 35, 0.18); }
 
-/* Soft warm-gold halo behind the LifeRise logo */
-.logo-glow {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.logo-glow::before {
-  content: "";
-  position: absolute;
-  inset: -28%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(245, 200, 80, 0.28) 0%, rgba(245, 166, 35, 0.10) 50%, transparent 72%);
-  pointer-events: none;
-}
 
 @keyframes pulse-teal {
   0%, 100% { box-shadow: 0 0 0 0   rgba(0, 212, 170, 0.45); }
@@ -117,12 +110,7 @@ html, body {
   color: #F8FAFC;
 }
 
-/* SVG dot tooltips in PropertyMap — hidden by default, shown on parent hover */
-.svg-dot-tip {
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s ease;
-}
-.svg-dot-group:hover .svg-dot-tip {
-  opacity: 1;
+/* will-change on fixed bottom nav for smoother compositing */
+nav[class*="fixed bottom-0"] {
+  will-change: transform;
 }

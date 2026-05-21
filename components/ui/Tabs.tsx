@@ -40,6 +40,7 @@ export function Tabs({
       <div className="relative flex items-center gap-1 border-b border-white/[0.07]">
         {tabs.map((tab) => (
           <button
+            type="button"
             key={tab.id}
             onClick={() => handleSelect(tab.id)}
             className={cn(

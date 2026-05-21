@@ -12,6 +12,7 @@ export default function RootError({ error, reset }: { error: Error & { digest?: 
         <h2 className="font-heading text-lg font-bold text-lr-white mb-2">Something went wrong</h2>
         <p className="text-sm text-muted mb-6">{error.message || "An unexpected error occurred."}</p>
         <button
+          type="button"
           onClick={reset}
           className="px-4 py-2 rounded-lg bg-teal/10 text-teal text-sm font-medium hover:bg-teal/20 transition-colors"
         >

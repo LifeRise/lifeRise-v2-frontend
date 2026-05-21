@@ -7,7 +7,7 @@ import { serviceDetails } from "@/lib/mock-data";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { staggerContainer, fadeUpItem } from "@/lib/animations";
+import { staggerContainerResponsive, fadeUpItem } from "@/lib/animations";
 import Link from "next/link";
 
 export default function FavoritesPage() {
@@ -34,9 +34,10 @@ export default function FavoritesPage() {
 
       {favServices.length > 0 ? (
         <motion.div
-          variants={staggerContainer(0.06)}
+          variants={staggerContainerResponsive(0.06)}
           initial="hidden"
-          animate="show"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.1 }}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
         >
           <AnimatePresence mode="popLayout">

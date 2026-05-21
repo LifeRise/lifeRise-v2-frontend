@@ -113,8 +113,8 @@ export default function ManagerDashboard() {
               const tc = trendColor[v.trend as keyof typeof trendColor];
               return (
                 <motion.div key={v.rank} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.06 }}
-                  className="grid grid-cols-12 gap-2 px-4 py-3 border-b border-white/[0.04] items-center hover:bg-white/[0.02] transition-colors">
-                  <span className="col-span-1 font-bold text-sm" style={{ color: v.rank === 1 ? "#F5A623" : v.rank === 2 ? "#94A3B8" : "#94A3B8" }}>
+                  className="grid grid-cols-12 gap-2 px-4 py-3 border-b border-white/4 items-center hover:bg-white/2 transition-colors">
+                  <span className={cn("col-span-1 font-bold text-sm", v.rank === 1 ? "text-gold" : "text-muted")}>
                     {v.rank === 1 ? "🥇" : v.rank === 2 ? "🥈" : v.rank === 3 ? "🥉" : v.rank}
                   </span>
                   <div className="col-span-4">
@@ -145,9 +145,8 @@ export default function ManagerDashboard() {
             <input value={annTitle} onChange={(e) => setAnnTitle(e.target.value)} placeholder="Quick announcement title…"
               className="w-full bg-midnight/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-lr-white placeholder-muted focus:outline-none focus:border-purple-accent/50 transition-colors mb-3" />
             <div className="flex items-center justify-between">
-              <button onClick={sendAnnouncement}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all hover:opacity-90 active:scale-95"
-                style={{ background: sent ? "rgba(0,212,170,0.2)" : "#818CF8", color: sent ? "#00D4AA" : "#fff" }}>
+              <button type="button" onClick={sendAnnouncement}
+                className={cn("flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all hover:opacity-90 active:scale-95", sent ? "bg-teal/20 text-teal" : "bg-purple-accent text-white")}>
                 <Send size={14} />{sent ? "Sent ✓" : "Send"}
               </button>
               <Link href="/manager/announcements" className="text-xs text-muted hover:text-lr-white transition-colors">
@@ -160,8 +159,7 @@ export default function ManagerDashboard() {
           <div className="space-y-2">
             {announcements.slice(0, 3).map((a) => (
               <div key={a.id} className="glass rounded-xl p-3 flex items-start gap-3">
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
-                  style={{ background: a.urgent ? "rgba(248,113,113,0.15)" : "rgba(129,140,248,0.15)" }}>
+                <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5", a.urgent ? "bg-red-400/15" : "bg-purple-accent/15")}>
                   {a.urgent ? <AlertTriangle size={13} className="text-red-400" /> : <Info size={13} className="text-purple-accent" />}
                 </div>
                 <div className="flex-1 min-w-0">

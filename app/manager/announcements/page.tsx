@@ -8,7 +8,7 @@ import type { Announcement } from "@/lib/types";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { staggerContainer, fadeUpItem } from "@/lib/animations";
+import { staggerContainerResponsive, fadeUpItem } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 
 type Audience = "all" | "residents" | "vendors";
@@ -72,21 +72,23 @@ export default function AnnouncementsPage() {
           <div className="flex flex-wrap gap-2 mb-3">
             {(["all", "residents", "vendors"] as Audience[]).map((a) => (
               <button
+                type="button"
                 key={a}
                 onClick={() => setAudience(a)}
                 className={cn(
                   "px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize",
                   audience === a
                     ? "bg-purple-accent text-white"
-                    : "bg-white/[0.06] text-muted hover:text-lr-white"
+                    : "bg-white/6 text-muted hover:text-lr-white"
                 )}
               >
                 {a === "all" ? "All" : a}
               </button>
             ))}
-            <div className="w-px h-5 bg-white/[0.1] mx-1" />
+            <div className="w-px h-5 bg-white/10 mx-1" />
             {(["normal", "urgent"] as Priority[]).map((p) => (
               <button
+                type="button"
                 key={p}
                 onClick={() => setPriority(p)}
                 className={cn(
@@ -95,7 +97,7 @@ export default function AnnouncementsPage() {
                     ? p === "urgent"
                       ? "bg-red-400/15 text-red-400 border border-red-400/20"
                       : "bg-purple-accent text-white"
-                    : "bg-white/[0.06] text-muted hover:text-lr-white"
+                    : "bg-white/6 text-muted hover:text-lr-white"
                 )}
               >
                 {p}
@@ -117,6 +119,7 @@ export default function AnnouncementsPage() {
             className="w-full bg-midnight/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-lr-white placeholder:text-muted focus:outline-none focus:border-purple-accent/50 transition-colors resize-none mb-3"
           />
           <button
+            type="button"
             onClick={sendAnnouncement}
             disabled={!title.trim()}
             className={cn(
@@ -136,13 +139,14 @@ export default function AnnouncementsPage() {
       <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1 scrollbar-none">
         {categories.map((c) => (
           <button
+            type="button"
             key={c}
             onClick={() => setCategoryFilter(c)}
             className={cn(
               "shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
               categoryFilter === c
                 ? "bg-purple-accent text-white"
-                : "bg-white/[0.06] text-muted hover:text-lr-white"
+                : "bg-white/6 text-muted hover:text-lr-white"
             )}
           >
             {c}
@@ -151,7 +155,7 @@ export default function AnnouncementsPage() {
       </div>
 
       {/* History */}
-      <motion.div variants={staggerContainer(0.04)} initial="hidden" animate="show" className="space-y-2">
+      <motion.div variants={staggerContainerResponsive(0.04)} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} className="space-y-2">
         <AnimatePresence>
           {filtered.map((a) => (
             <motion.div key={a.id} variants={fadeUpItem} layout exit={{ opacity: 0, x: 20 }}>
@@ -180,6 +184,7 @@ export default function AnnouncementsPage() {
                         <CalendarDays size={9} /> {a.category}
                       </span>
                       <button
+                        type="button"
                         onClick={() => duplicate(a)}
                         className="text-[10px] text-muted hover:text-purple-accent transition-colors flex items-center gap-1"
                       >

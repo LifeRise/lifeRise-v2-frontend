@@ -18,7 +18,7 @@ export function InstallPrompt() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="fixed inset-0 bg-midnight/60 backdrop-blur-sm z-[60] sm:hidden"
+            className="fixed inset-0 bg-midnight/60 backdrop-blur-sm z-60 sm:hidden"
             onClick={dismissInstall}
           />
 
@@ -28,11 +28,11 @@ export function InstallPrompt() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 120, scale: 0.96 }}
             transition={{ type: "spring", stiffness: 350, damping: 30 }}
-            className="fixed bottom-0 left-0 right-0 sm:bottom-6 sm:left-auto sm:right-6 sm:w-[380px] z-[70]"
+            className="fixed bottom-0 left-0 right-0 sm:bottom-6 sm:left-auto sm:right-6 sm:w-95 z-70"
           >
-            <div className="glass-dark rounded-t-3xl sm:rounded-3xl border border-white/[0.08] shadow-2xl overflow-hidden">
+            <div className="glass-dark rounded-t-3xl sm:rounded-3xl border border-white/8 shadow-2xl overflow-hidden">
               {/* Glow accent strip */}
-              <div className="h-1 w-full bg-gradient-to-r from-teal via-gold to-purple-accent" />
+              <div className="h-1 w-full bg-linear-to-r from-teal via-gold to-purple-accent" />
 
               <div className="p-5 sm:p-6">
                 {/* Header row */}
@@ -41,7 +41,7 @@ export function InstallPrompt() {
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.15, type: "spring", stiffness: 400, damping: 25 }}
-                    className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal/20 to-gold/20 flex items-center justify-center shrink-0 border border-white/[0.08]"
+                    className="w-14 h-14 rounded-2xl bg-linear-to-br from-teal/20 to-gold/20 flex items-center justify-center shrink-0 border border-white/8"
                   >
                     <Image
                       src="/liferise_logo.png"
@@ -60,8 +60,9 @@ export function InstallPrompt() {
                     </p>
                   </div>
                   <button
+                    type="button"
                     onClick={dismissInstall}
-                    className="shrink-0 w-8 h-8 rounded-full bg-white/[0.05] flex items-center justify-center text-muted hover:text-lr-white hover:bg-white/[0.1] transition-colors"
+                    className="shrink-0 w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-muted hover:text-lr-white hover:bg-white/10 transition-colors"
                     aria-label="Dismiss install prompt"
                   >
                     <X size={14} />
@@ -76,7 +77,7 @@ export function InstallPrompt() {
                       initial={{ opacity: 0, x: -8 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.2 + i * 0.06 }}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium bg-white/[0.04] border border-white/[0.06] text-lr-white/80"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium bg-white/4 border border-white/6 text-lr-white/80"
                     >
                       {i === 0 ? <Smartphone size={10} className="text-teal" /> : null}
                       {feat}
@@ -96,6 +97,7 @@ export function InstallPrompt() {
                     Install App
                   </motion.button>
                   <button
+                    type="button"
                     onClick={dismissInstall}
                     className="px-4 py-3 rounded-xl text-muted text-sm font-medium hover:text-lr-white transition-colors"
                   >

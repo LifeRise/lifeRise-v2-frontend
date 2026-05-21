@@ -7,7 +7,7 @@ import { notifications } from "@/lib/mock-data";
 import type { NotificationItem } from "@/lib/types";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { staggerContainer, listItem } from "@/lib/animations";
+import { staggerContainerResponsive, listItem } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 
 const typeConfig = {
@@ -73,9 +73,10 @@ export default function NotificationsPage() {
 
       {items.length > 0 ? (
         <motion.div
-          variants={staggerContainer(0.03)}
+          variants={staggerContainerResponsive(0.03)}
           initial="hidden"
-          animate="show"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.1 }}
           className="space-y-2"
         >
           <AnimatePresence>

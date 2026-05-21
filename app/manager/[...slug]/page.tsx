@@ -29,7 +29,7 @@ export default function ManagerSubPage() {
         </div>
         <h1 className="font-heading font-extrabold text-lr-white text-3xl mb-3">{section.label}</h1>
         <p className="text-muted text-sm leading-relaxed mb-8">{section.desc}</p>
-        <button onClick={() => router.push("/manager")}
+        <button type="button" onClick={() => router.push("/manager")}
           className="flex items-center gap-2 mx-auto px-6 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95 bg-purple-accent">
           <ArrowLeft size={15} /> Back to Overview
         </button>

@@ -15,12 +15,14 @@ import {
   Smartphone,
   Edit3,
   X,
+  Download,
 } from "lucide-react";
+import { usePWA } from "@/components/pwa/PWAProvider";
 import { residentProfile, paymentMethods } from "@/lib/mock-data";
 import type { PaymentMethod } from "@/lib/types";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { staggerContainer, fadeUpItem } from "@/lib/animations";
+import { staggerContainerResponsive, fadeUpItem } from "@/lib/animations";
 import { cn, getInitials } from "@/lib/utils";
 
 function Toggle({
@@ -111,7 +113,7 @@ export default function ProfilePage() {
     <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-2xl mx-auto pb-24 lg:pb-8">
       <SectionHeader title="Profile" />
 
-      <motion.div variants={staggerContainer(0.06)} initial="hidden" animate="show" className="space-y-5">
+      <motion.div variants={staggerContainerResponsive(0.06)} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} className="space-y-5">
         {/* Profile Header */}
         <motion.div variants={fadeUpItem}>
           <GlassCard className="p-5">
@@ -335,7 +337,34 @@ export default function ProfilePage() {
             </div>
           </GlassCard>
         </motion.div>
+
+        {/* Install App */}
+        <InstallAppRow />
       </motion.div>
     </div>
+  );
+}
+
+function InstallAppRow() {
+  const { isInstalled, triggerInstall } = usePWA();
+  if (isInstalled) return null;
+  return (
+    <motion.div variants={fadeUpItem}>
+      <GlassCard className="p-5">
+        <button
+          onClick={triggerInstall}
+          className="flex items-center justify-between w-full text-left"
+        >
+          <div className="flex items-center gap-3">
+            <Download size={16} className="text-teal" />
+            <div>
+              <p className="text-sm font-semibold text-lr-white">Install App</p>
+              <p className="text-[11px] text-muted">Add LifeRise to your home screen</p>
+            </div>
+          </div>
+          <span className="text-xs font-medium text-teal">Install</span>
+        </button>
+      </GlassCard>
+    </motion.div>
   );
 }

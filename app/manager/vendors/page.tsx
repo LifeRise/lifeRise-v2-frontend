@@ -18,7 +18,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Tabs } from "@/components/ui/Tabs";
-import { staggerContainer, fadeUpItem } from "@/lib/animations";
+import { staggerContainerResponsive, fadeUpItem } from "@/lib/animations";
 import { getInitials } from "@/lib/utils";
 
 const trendIcon = { up: TrendingUp, down: TrendingDown, stable: Minus };
@@ -62,9 +62,10 @@ export default function VendorsPage() {
           <AnimatePresence mode="wait">
             <motion.div
               key={tabId}
-              variants={staggerContainer(0.04)}
+              variants={staggerContainerResponsive(0.04)}
               initial="hidden"
-              animate="show"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.1 }}
               className="space-y-3"
             >
               {tabId === "applications" && (
@@ -86,7 +87,7 @@ export default function VendorsPage() {
                                   {app.documents.map((doc, i) => (
                                     <span
                                       key={i}
-                                      className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.06] text-muted border border-white/[0.05] flex items-center gap-1"
+                                      className="text-[10px] px-2 py-0.5 rounded-full bg-white/6 text-muted border border-white/5 flex items-center gap-1"
                                     >
                                       <FileText size={9} /> {doc}
                                     </span>
@@ -96,14 +97,16 @@ export default function VendorsPage() {
                             </div>
                             <div className="flex items-center gap-2">
                               <button
+                                type="button"
                                 onClick={() => handleApprove(app.id)}
                                 className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-teal text-midnight hover:opacity-90 transition-opacity flex items-center gap-1"
                               >
                                 <CheckCircle size={11} /> Approve
                               </button>
                               <button
+                                type="button"
                                 onClick={() => handleReject(app.id)}
-                                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/[0.06] text-muted hover:text-red-400 hover:bg-red-400/10 transition-colors flex items-center gap-1"
+                                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/6 text-muted hover:text-red-400 hover:bg-red-400/10 transition-colors flex items-center gap-1"
                               >
                                 <XCircle size={11} /> Reject
                               </button>
@@ -143,7 +146,7 @@ export default function VendorsPage() {
                             return (
                               <tr
                                 key={v.rank}
-                                className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors"
+                                className="border-b border-white/4 hover:bg-white/2 transition-colors"
                               >
                                 <td className="px-4 py-3">
                                   <div className="flex items-center gap-2">

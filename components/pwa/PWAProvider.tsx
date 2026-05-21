@@ -6,6 +6,7 @@ import {
   canInstall,
   skipWaiting,
   wasInstallPromptDismissedRecently,
+  hasEngagementForInstall,
 } from "@/lib/pwa";
 
 interface PWAContextValue {
@@ -35,15 +36,13 @@ export function usePWA() {
 
 export function PWAProvider({ children }: { children: React.ReactNode }) {
   const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(() => isStandalone());
   const [updateAvailable, setUpdateAvailable] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(() => wasInstallPromptDismissedRecently());
   const waitingWorkerRef = useRef<ServiceWorker | null>(null);
 
   /* ── Detect installed state ─────────────────────────────────── */
   useEffect(() => {
-    setIsInstalled(isStandalone());
-
     const mql = window.matchMedia("(display-mode: standalone)");
     const handler = (e: MediaQueryListEvent) => setIsInstalled(e.matches);
     mql.addEventListener("change", handler);
@@ -53,7 +52,6 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
   /* ── Capture beforeinstallprompt ────────────────────────────── */
   useEffect(() => {
     if (!canInstall()) return;
-    setDismissed(wasInstallPromptDismissedRecently());
 
     const onBeforeInstall = (e: Event) => {
       e.preventDefault();
@@ -81,8 +79,9 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
     let registration: ServiceWorkerRegistration | null = null;
 
     const onControllerChange = () => {
-      // A new service worker has taken control — reload to ensure fresh assets
-      window.location.reload();
+      // A new service worker has taken control.
+      // We NO LONGER auto-reload here — the user must explicitly tap
+      // "Update" in the UpdateToast to avoid wiping mid-workflow state.
     };
 
     const checkForUpdates = () => {
@@ -157,10 +156,17 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
   const acceptUpdate = useCallback(() => {
     setUpdateAvailable(false);
     skipWaiting();
-    // The controllerchange listener will handle the reload
+    // Reload only when the user explicitly accepts the update.
+    // This prevents data loss during mid-workflow interactions.
+    window.location.reload();
   }, []);
 
-  const canShowInstall = Boolean(deferredPrompt) && !isInstalled && !dismissed && canInstall();
+  const canShowInstall =
+    Boolean(deferredPrompt) &&
+    !isInstalled &&
+    !dismissed &&
+    canInstall() &&
+    hasEngagementForInstall();
 
   return (
     <PWAContext.Provider

@@ -8,7 +8,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { staggerContainer, fadeUpItem } from "@/lib/animations";
+import { staggerContainerResponsive, fadeUpItem } from "@/lib/animations";
 import { cn, getInitials } from "@/lib/utils";
 import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
 
@@ -59,13 +59,14 @@ export default function ResidentsPage() {
         <div className="flex items-center gap-2">
           {buildings.map((b) => (
             <button
+              type="button"
               key={b}
               onClick={() => setBuildingFilter(b)}
               className={cn(
                 "px-3 py-2 rounded-lg text-xs font-medium transition-all",
                 buildingFilter === b
                   ? "bg-purple-accent text-white"
-                  : "bg-white/[0.06] text-muted hover:text-lr-white"
+                  : "bg-white/6 text-muted hover:text-lr-white"
               )}
             >
               {b}
@@ -74,6 +75,7 @@ export default function ResidentsPage() {
         </div>
         <div className="flex items-center gap-1 bg-midnight/60 rounded-lg p-1">
           <button
+            type="button"
             onClick={() => setViewMode("grid")}
             className={cn(
               "px-3 py-1.5 rounded-md text-xs font-medium transition-all",
@@ -83,6 +85,7 @@ export default function ResidentsPage() {
             Grid
           </button>
           <button
+            type="button"
             onClick={() => setViewMode("table")}
             className={cn(
               "px-3 py-1.5 rounded-md text-xs font-medium transition-all",
@@ -96,9 +99,10 @@ export default function ResidentsPage() {
 
       {filtered.length > 0 ? (
         <motion.div
-          variants={staggerContainer(0.04)}
+          variants={staggerContainerResponsive(0.04)}
           initial="hidden"
-          animate="show"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.1 }}
         >
           {viewMode === "grid" ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -150,7 +154,7 @@ export default function ResidentsPage() {
                   {filtered.map((r) => (
                     <tr
                       key={r.id}
-                      className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors cursor-pointer"
+                      className="border-b border-white/4 hover:bg-white/2 transition-colors cursor-pointer"
                       onClick={() => setSelectedResident(r.id)}
                     >
                       <td className="px-4 py-3">
@@ -198,11 +202,11 @@ export default function ResidentsPage() {
             onClick={(e) => e.stopPropagation()}
             ref={modalRef}
             tabIndex={-1}
-            className="glass rounded-2xl p-6 max-w-md w-full border border-white/[0.1] outline-none"
+            className="glass rounded-2xl p-6 max-w-md w-full border border-white/10 outline-none"
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-heading text-lg font-bold text-lr-white">Resident Details</h3>
-              <button onClick={() => setSelectedResident(null)} className="text-muted hover:text-lr-white">
+              <button type="button" aria-label="Close" onClick={() => setSelectedResident(null)} className="text-muted hover:text-lr-white">
                 <X size={16} />
               </button>
             </div>

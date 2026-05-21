@@ -22,7 +22,7 @@ import {
 } from "@/lib/mock-data";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { staggerContainer, fadeUpItem } from "@/lib/animations";
+import { staggerContainerResponsive, fadeUpItem } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 
 type Range = "7d" | "30d" | "90d";
@@ -60,6 +60,7 @@ export default function AnalyticsPage() {
         <div className="flex items-center gap-1 bg-midnight/60 rounded-lg p-1">
           {(["7d", "30d", "90d"] as Range[]).map((r) => (
             <button
+              type="button"
               key={r}
               onClick={() => setRange(r)}
               className={cn(
@@ -75,7 +76,7 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      <motion.div variants={staggerContainer(0.06)} initial="hidden" animate="show">
+      <motion.div variants={staggerContainerResponsive(0.06)} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }}>
         {/* KPIs */}
         <motion.div variants={fadeUpItem} className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           {[

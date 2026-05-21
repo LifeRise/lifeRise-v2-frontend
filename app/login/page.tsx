@@ -25,9 +25,9 @@ export default function LoginPage() {
   return (
     <div className="relative min-h-screen gradient-mesh flex flex-col items-center justify-center px-4 py-12 overflow-hidden">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full opacity-20 blur-[100px] orb-teal" />
-        <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full opacity-15 blur-[100px] orb-gold" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full opacity-5 blur-[140px] orb-purple" />
+        <div className="absolute -top-32 -left-32 w-125 h-125 rounded-full opacity-20 blur-[100px] orb-teal" />
+        <div className="absolute -bottom-32 -right-32 w-125 h-125 rounded-full opacity-15 blur-[100px] orb-gold" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-175 h-175 rounded-full opacity-5 blur-[140px] orb-purple" />
       </div>
 
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="relative z-10 w-full max-w-md">
@@ -52,7 +52,7 @@ export default function LoginPage() {
             <div className="relative">
               <input type={showPass ? "text" : "password"} placeholder="Password" defaultValue="••••••••"
                 className="w-full bg-midnight/60 border border-white/10 rounded-xl px-4 py-3 pr-12 text-sm text-lr-white placeholder-muted focus:outline-none focus:border-teal/50 transition-colors" />
-              <button onClick={() => setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-lr-white transition-colors">
+              <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-lr-white transition-colors">
                 {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
@@ -61,9 +61,9 @@ export default function LoginPage() {
             <label className="flex items-center gap-2 text-muted cursor-pointer">
               <input type="checkbox" className="rounded" /> Remember me
             </label>
-            <button className="text-teal hover:opacity-80 transition-opacity">Forgot password?</button>
+            <button type="button" className="text-teal hover:opacity-80 transition-opacity">Forgot password?</button>
           </div>
-          <button className="w-full py-3 rounded-xl font-semibold text-sm text-midnight transition-all hover:opacity-90 active:scale-95 btn-signin">
+          <button type="button" className="w-full py-3 rounded-xl font-semibold text-sm text-midnight transition-all hover:opacity-90 active:scale-95 btn-signin">
             Sign In
           </button>
         </div>
@@ -101,7 +101,7 @@ export default function LoginPage() {
 
         <p className="text-center text-muted text-xs mt-6">
           Don&apos;t have an account?{" "}
-          <button className="text-teal hover:opacity-80 transition-opacity font-medium">Create one free</button>
+          <button type="button" className="text-teal hover:opacity-80 transition-opacity font-medium">Create one free</button>
         </p>
       </motion.div>
     </div>

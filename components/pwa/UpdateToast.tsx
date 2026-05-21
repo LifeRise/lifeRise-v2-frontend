@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { RefreshCw, Zap, X } from "lucide-react";
+import { RefreshCw, Zap } from "lucide-react";
 import { usePWA } from "./PWAProvider";
 
 export function UpdateToast() {
@@ -15,9 +15,9 @@ export function UpdateToast() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.98 }}
           transition={{ type: "spring", stiffness: 400, damping: 28 }}
-          className="fixed top-0 left-0 right-0 z-[80] flex justify-center px-4 pt-4 pointer-events-none"
+          className="fixed top-0 left-0 right-0 z-80 flex justify-center px-4 pt-4 pointer-events-none"
         >
-          <div className="pointer-events-auto glass-dark rounded-2xl border border-white/[0.08] shadow-2xl px-4 py-3 sm:px-5 sm:py-3.5 flex items-center gap-3 sm:gap-4 max-w-lg w-full">
+          <div className="pointer-events-auto glass-dark rounded-2xl border border-white/8 shadow-2xl px-4 py-3 sm:px-5 sm:py-3.5 flex items-center gap-3 sm:gap-4 max-w-lg w-full">
             {/* Icon */}
             <div className="shrink-0 w-9 h-9 rounded-xl bg-teal/10 border border-teal/20 flex items-center justify-center">
               <Zap size={16} className="text-teal" />

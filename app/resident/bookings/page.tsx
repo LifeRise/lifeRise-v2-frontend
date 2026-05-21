@@ -9,7 +9,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Tabs } from "@/components/ui/Tabs";
-import { staggerContainer, fadeUpItem } from "@/lib/animations";
+import { staggerContainerResponsive, fadeUpItem } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 
 const tabs = [
@@ -76,13 +76,14 @@ function BookingRow({
               <div className="flex items-center gap-2 mt-3">
                 {booking.status === "pending" && (
                   <button
+                    type="button"
                     onClick={() => onCancel?.(booking.id)}
-                    className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-white/[0.06] text-muted hover:text-lr-white hover:bg-white/[0.10] transition-colors flex items-center gap-1"
+                    className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-white/6 text-muted hover:text-lr-white hover:bg-white/10 transition-colors flex items-center gap-1"
                   >
                     <XCircle size={10} /> Cancel
                   </button>
                 )}
-                <button className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-white/[0.06] text-muted hover:text-lr-white hover:bg-white/[0.10] transition-colors flex items-center gap-1">
+                <button type="button" className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-white/6 text-muted hover:text-lr-white hover:bg-white/10 transition-colors flex items-center gap-1">
                   <MapPin size={10} /> Reschedule
                 </button>
               </div>
@@ -95,7 +96,7 @@ function BookingRow({
                 )}
                 <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map((s) => (
-                    <button key={s} onClick={() => setRating(s)} className="transition-transform hover:scale-110">
+                    <button type="button" key={s} aria-label={`Rate ${s} star${s === 1 ? "" : "s"}`} onClick={() => setRating(s)} className="transition-transform hover:scale-110">
                       <Star
                         size={14}
                         className={cn(
@@ -109,6 +110,7 @@ function BookingRow({
                   </span>
                 </div>
                 <button
+                  type="button"
                   onClick={() => onRebook?.(booking)}
                   className="mt-2 px-3 py-1.5 rounded-lg text-[11px] font-medium bg-teal/10 text-teal hover:bg-teal/20 transition-colors flex items-center gap-1"
                 >
@@ -118,11 +120,12 @@ function BookingRow({
             )}
 
             {tab === "cancelled" && booking.history && (
-              <div className="mt-3 pt-3 border-t border-white/[0.05]">
+              <div className="mt-3 pt-3 border-t border-white/5">
                 <p className="text-muted text-[11px]">
                   {booking.history[booking.history.length - 1]?.note}
                 </p>
                 <button
+                  type="button"
                   onClick={() => onRebook?.(booking)}
                   className="mt-2 px-3 py-1.5 rounded-lg text-[11px] font-medium bg-teal/10 text-teal hover:bg-teal/20 transition-colors flex items-center gap-1"
                 >
@@ -201,9 +204,10 @@ export default function BookingsPage() {
           <AnimatePresence mode="wait">
             <motion.div
               key={tabId}
-              variants={staggerContainer(0.04)}
+              variants={staggerContainerResponsive(0.04)}
               initial="hidden"
-              animate="show"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.1 }}
               className="space-y-3"
             >
               {currentIds.length > 0 ? (

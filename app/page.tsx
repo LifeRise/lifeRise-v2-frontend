@@ -20,11 +20,9 @@ import {
   CheckSquare,
   DollarSign,
   Clock,
-  MapPin,
   ChevronDown,
   Sparkles,
   Search,
-  UserCheck,
   Zap,
 } from "lucide-react";
 import { earningsData, vendorSchedule, vendors, categories, residentBookings, vendorLeaderboard, engagementData } from "@/lib/mock-data";
@@ -245,12 +243,12 @@ function ResidentPreview() {
 /* ─── Manager Dashboard Preview ────────────────────────────────── */
 function ManagerPreview() {
   const totalEngagement = engagementData.reduce((acc, d) => acc + d.value, 0);
-  let cumulative = 0;
-  const segments = engagementData.map((d) => {
-    const start = cumulative;
-    cumulative += d.value;
-    return { ...d, start, end: cumulative };
-  });
+  const segments = engagementData.reduce<
+    Array<(typeof engagementData)[0] & { start: number; end: number }>
+  >((acc, d) => {
+    const start = acc.length > 0 ? acc[acc.length - 1].end : 0;
+    return [...acc, { ...d, start, end: start + d.value }];
+  }, []);
 
   return (
     <div className="relative">
@@ -433,17 +431,15 @@ export default function LandingPage() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="mb-8"
           >
-            <span className="logo-glow mx-auto mb-6 block w-fit">
-              <Image
-                src="/liferise_logo.png"
-                alt="LifeRise"
-                width={80}
-                height={80}
-                className="h-20 w-auto object-contain"
-                style={{ width: "auto" }}
-                priority
-              />
-            </span>
+            <Image
+              src="/liferise_logo.png"
+              alt="LifeRise"
+              width={80}
+              height={80}
+              className="h-20 w-auto object-contain mx-auto mb-6"
+              style={{ width: "auto" }}
+              priority
+            />
             <h1 className="font-heading font-extrabold text-lr-white text-5xl sm:text-6xl lg:text-7xl leading-[1.05] tracking-tight mb-5">
               LifeRise <span className="text-teal">Solutions</span>
             </h1>
@@ -706,9 +702,7 @@ export default function LandingPage() {
       <footer className="relative z-10 border-t border-white/6 px-4 sm:px-6 lg:px-8 py-12">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <span className="logo-glow shrink-0">
-              <Image src="/liferise_logo.png" alt="LifeRise" width={32} height={32} className="h-8 w-auto object-contain" style={{ width: "auto" }} />
-            </span>
+            <Image src="/liferise_logo.png" alt="LifeRise" width={32} height={32} className="h-8 w-auto object-contain" style={{ width: "auto" }} />
             <div>
               <p className="font-heading font-bold text-lr-white text-sm">LifeRise Solutions</p>
               <p className="text-muted text-xs">Simplifying Services, Enhancing Lives</p>

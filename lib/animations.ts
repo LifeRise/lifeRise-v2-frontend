@@ -27,6 +27,12 @@ export function staggerContainer(delay = 0.07): Variants {
   };
 }
 
+/** Responsive stagger: half delay on mobile to reduce concurrent layout cost */
+export function staggerContainerResponsive(baseDelay = 0.06): Variants {
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
+  return staggerContainer(isMobile ? baseDelay / 2 : baseDelay);
+}
+
 export const fadeUpItem: Variants = {
   hidden: { opacity: 0, y: 16 },
   show: {

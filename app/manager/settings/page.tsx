@@ -5,12 +5,15 @@ import { motion } from "framer-motion";
 import { Building2, Bell, CreditCard, AlertTriangle, RotateCcw, Check } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { staggerContainer, fadeUpItem } from "@/lib/animations";
+import { staggerContainerResponsive, fadeUpItem } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 
-function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label?: string }) {
   return (
     <button
+      type="button"
+      aria-label={label ? `Toggle ${label}` : "Toggle"}
+      aria-pressed={checked ? "true" : "false"}
       onClick={() => onChange(!checked)}
       className={cn(
         "relative h-6 w-11 rounded-full transition-colors",
@@ -46,7 +49,7 @@ export default function SettingsPage() {
     <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-2xl mx-auto pb-24 lg:pb-8">
       <SectionHeader title="Settings" />
 
-      <motion.div variants={staggerContainer(0.06)} initial="hidden" animate="show" className="space-y-5">
+      <motion.div variants={staggerContainerResponsive(0.06)} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} className="space-y-5">
         {/* Complex Info */}
         <motion.div variants={fadeUpItem}>
           <GlassCard className="p-5 border-l-2 border-l-purple-accent">
@@ -57,6 +60,7 @@ export default function SettingsPage() {
               <div>
                 <p className="text-[10px] text-muted uppercase tracking-wider mb-1">Complex Name</p>
                 <input
+                  aria-label="Complex name"
                   value={complexName}
                   onChange={(e) => setComplexName(e.target.value)}
                   className="w-full bg-midnight/60 border border-white/10 rounded-lg px-3 py-2 text-sm text-lr-white focus:outline-none focus:border-purple-accent/40"
@@ -65,6 +69,7 @@ export default function SettingsPage() {
               <div>
                 <p className="text-[10px] text-muted uppercase tracking-wider mb-1">Address</p>
                 <input
+                  aria-label="Address"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   className="w-full bg-midnight/60 border border-white/10 rounded-lg px-3 py-2 text-sm text-lr-white focus:outline-none focus:border-purple-accent/40"
@@ -73,6 +78,7 @@ export default function SettingsPage() {
               <div>
                 <p className="text-[10px] text-muted uppercase tracking-wider mb-1">Manager Contact</p>
                 <input
+                  aria-label="Manager contact"
                   value={contact}
                   onChange={(e) => setContact(e.target.value)}
                   className="w-full bg-midnight/60 border border-white/10 rounded-lg px-3 py-2 text-sm text-lr-white focus:outline-none focus:border-purple-accent/40"
@@ -112,6 +118,7 @@ export default function SettingsPage() {
                     <p className="text-[11px] text-muted">{rule.desc}</p>
                   </div>
                   <Toggle
+                    label={rule.label}
                     checked={toggles[rule.key]}
                     onChange={(v) => setToggles((prev) => ({ ...prev, [rule.key]: v }))}
                   />
@@ -127,7 +134,7 @@ export default function SettingsPage() {
             <h3 className="font-heading text-sm font-semibold text-lr-white mb-4 flex items-center gap-2">
               <CreditCard size={14} className="text-purple-accent" /> Billing
             </h3>
-            <div className="p-3 rounded-xl bg-midnight/40 border border-white/[0.05] mb-3">
+            <div className="p-3 rounded-xl bg-midnight/40 border border-white/5 mb-3">
               <div className="flex items-center justify-between mb-1">
                 <p className="text-sm text-lr-white font-medium">LifeRise Manager Pro</p>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal/10 text-teal">Active</span>
@@ -135,15 +142,15 @@ export default function SettingsPage() {
               <p className="text-muted text-xs">Next invoice: June 1, 2026</p>
             </div>
             <div className="grid grid-cols-3 gap-3">
-              <div className="text-center p-2 rounded-lg bg-midnight/40 border border-white/[0.05]">
+              <div className="text-center p-2 rounded-lg bg-midnight/40 border border-white/5">
                 <p className="text-lg font-heading font-bold text-lr-white">247</p>
                 <p className="text-[10px] text-muted">Residents</p>
               </div>
-              <div className="text-center p-2 rounded-lg bg-midnight/40 border border-white/[0.05]">
+              <div className="text-center p-2 rounded-lg bg-midnight/40 border border-white/5">
                 <p className="text-lg font-heading font-bold text-lr-white">18</p>
                 <p className="text-[10px] text-muted">Vendors</p>
               </div>
-              <div className="text-center p-2 rounded-lg bg-midnight/40 border border-white/[0.05]">
+              <div className="text-center p-2 rounded-lg bg-midnight/40 border border-white/5">
                 <p className="text-lg font-heading font-bold text-lr-white">3</p>
                 <p className="text-[10px] text-muted">Buildings</p>
               </div>
@@ -158,6 +165,7 @@ export default function SettingsPage() {
               <AlertTriangle size={14} className="text-red-400" /> Danger Zone
             </h3>
             <button
+              type="button"
               onClick={handleReset}
               disabled={resetting}
               className={cn(
