@@ -31,16 +31,15 @@ const mobileNav: Record<Role, { icon: React.ElementType; label: string; href: st
   ],
 };
 
-const accentColor: Record<Role, string> = {
-  resident: "#00D4AA",
-  vendor: "#F5A623",
-  manager: "#818CF8",
+const accentTextClass: Record<Role, string> = {
+  resident: "text-teal",
+  vendor: "text-gold",
+  manager: "text-purple-accent",
 };
 
 export default function MobileNav({ role }: { role: Role }) {
   const pathname = usePathname();
   const nav = mobileNav[role];
-  const accent = accentColor[role];
 
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 glass-dark border-t border-white/[0.07] flex items-center justify-around px-2 py-2 safe-area-pb">
@@ -55,8 +54,8 @@ export default function MobileNav({ role }: { role: Role }) {
         return (
           <Link key={href} href={href}
             className={cn("flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all", active ? "opacity-100" : "opacity-50")}>
-            <Icon size={22} style={{ color: active ? accent : "#94A3B8" }} />
-            <span className="text-[10px] font-medium" style={{ color: active ? accent : "#94A3B8" }}>{label}</span>
+            <Icon size={22} className={active ? accentTextClass[role] : "text-muted"} />
+            <span className={cn("text-[10px] font-medium", active ? accentTextClass[role] : "text-muted")}>{label}</span>
           </Link>
         );
       })}

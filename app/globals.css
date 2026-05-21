@@ -70,6 +70,22 @@ html, body {
 .teal-glow  { box-shadow: 0 0 32px rgba(0, 212, 170, 0.18); }
 .gold-glow  { box-shadow: 0 0 32px rgba(245, 166, 35, 0.18); }
 
+/* Soft warm-gold halo behind the LifeRise logo */
+.logo-glow {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.logo-glow::before {
+  content: "";
+  position: absolute;
+  inset: -28%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245, 200, 80, 0.28) 0%, rgba(245, 166, 35, 0.10) 50%, transparent 72%);
+  pointer-events: none;
+}
+
 @keyframes pulse-teal {
   0%, 100% { box-shadow: 0 0 0 0   rgba(0, 212, 170, 0.45); }
   50%      { box-shadow: 0 0 0 8px rgba(0, 212, 170, 0);    }
@@ -99,4 +115,14 @@ html, body {
 .nav-item:hover {
   background: rgba(255, 255, 255, 0.05);
   color: #F8FAFC;
+}
+
+/* SVG dot tooltips in PropertyMap — hidden by default, shown on parent hover */
+.svg-dot-tip {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+.svg-dot-group:hover .svg-dot-tip {
+  opacity: 1;
 }

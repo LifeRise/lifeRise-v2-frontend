@@ -52,6 +52,12 @@ const accentColor: Record<Role, string> = {
   manager: "#818CF8",
 };
 
+const accentBgClass: Record<Role, string> = {
+  resident: "bg-teal",
+  vendor: "bg-gold",
+  manager: "bg-purple-accent",
+};
+
 const portalLinks = [
   { role: "resident" as Role, label: "Resident", href: "/resident" },
   { role: "vendor" as Role, label: "Vendor", href: "/vendor" },
@@ -107,8 +113,7 @@ export default function Sidebar({ role }: { role: Role }) {
           {portalLinks.map((p) => (
             <button type="button" key={p.role} onClick={() => router.push(p.href)}
               className={cn("flex-1 py-1.5 rounded-lg text-[11px] font-semibold transition-all",
-                role === p.role ? "text-midnight" : "text-muted hover:text-lr-white hover:bg-white/5")}
-              style={role === p.role ? { background: accentColor[p.role] } : {}}>
+                role === p.role ? `${accentBgClass[p.role]} text-midnight` : "text-muted hover:text-lr-white hover:bg-white/5")}>
               {p.label}
             </button>
           ))}
@@ -117,7 +122,7 @@ export default function Sidebar({ role }: { role: Role }) {
 
       {/* User */}
       <div className="flex items-center gap-3 px-4 py-4 border-t border-white/[0.07]">
-        <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-midnight shrink-0" style={{ background: accent }}>
+        <div className={cn("w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-midnight shrink-0", accentBgClass[role])}>
           {user.initials}
         </div>
         <div className="flex-1 min-w-0">
