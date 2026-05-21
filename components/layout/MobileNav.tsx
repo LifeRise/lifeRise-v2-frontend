@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, ShoppingBag, CalendarDays, Bell, User, DollarSign, List, BarChart3, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -43,6 +44,12 @@ export default function MobileNav({ role }: { role: Role }) {
 
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 glass-dark border-t border-white/[0.07] flex items-center justify-around px-2 py-2 safe-area-pb">
+      {/* Return to home — logo tap */}
+      <Link href="/" className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all opacity-50 hover:opacity-100" aria-label="Return to home">
+        <Image src="/liferise_logo.png" alt="Home" width={22} height={22} className="h-5.5 w-auto object-contain" />
+        <span className="text-[10px] font-medium text-muted">Home</span>
+      </Link>
+
       {nav.map(({ icon: Icon, label, href }) => {
         const active = pathname === href || (href !== `/${role}` && pathname.startsWith(href));
         return (

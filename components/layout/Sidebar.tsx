@@ -67,8 +67,8 @@ export default function Sidebar({ role }: { role: Role }) {
 
   return (
     <aside className="hidden lg:flex flex-col fixed left-0 top-0 h-full w-64 bg-slate-deep border-r border-white/[0.07] z-40">
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-6 py-5 border-b border-white/[0.07]">
+      {/* Logo — click to return to landing page */}
+      <Link href="/" className="flex items-center gap-3 px-6 py-5 border-b border-white/[0.07] hover:bg-white/5 transition-colors">
         <Image
           src="/liferise_logo.png"
           alt="LifeRise"
@@ -81,7 +81,7 @@ export default function Sidebar({ role }: { role: Role }) {
           <p className="font-heading font-bold text-lr-white text-sm leading-tight">LifeRise</p>
           <p className="text-muted text-xs">{user.complexName}</p>
         </div>
-      </div>
+      </Link>
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
@@ -105,7 +105,7 @@ export default function Sidebar({ role }: { role: Role }) {
         </p>
         <div className="flex gap-1.5">
           {portalLinks.map((p) => (
-            <button key={p.role} onClick={() => router.push(p.href)}
+            <button type="button" key={p.role} onClick={() => router.push(p.href)}
               className={cn("flex-1 py-1.5 rounded-lg text-[11px] font-semibold transition-all",
                 role === p.role ? "text-midnight" : "text-muted hover:text-lr-white hover:bg-white/5")}
               style={role === p.role ? { background: accentColor[p.role] } : {}}>
@@ -124,7 +124,7 @@ export default function Sidebar({ role }: { role: Role }) {
           <p className="text-lr-white text-sm font-semibold truncate">{user.name}</p>
           <p className="text-muted text-xs truncate">{user.email}</p>
         </div>
-        <button onClick={() => router.push("/")} className="text-muted hover:text-lr-white transition-colors" aria-label="Log out">
+        <button type="button" onClick={() => router.push("/")} className="text-muted hover:text-lr-white transition-colors" aria-label="Log out">
           <LogOut size={16} />
         </button>
       </div>

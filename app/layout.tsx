@@ -22,6 +22,14 @@ export const metadata: Metadata = {
   title: "LifeRise Solutions",
   description: "Simplifying Services, Enhancing Lives",
   manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/liferise_icon.ico", sizes: "any" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    shortcut: "/liferise_icon.ico",
+    apple: "/apple-touch-icon.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -41,8 +49,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${syne.variable} ${inter.variable} h-full`}>
       <head>
+        <link rel="icon" href="/liferise_icon.ico" sizes="any" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.webmanifest" />
-        <link rel="apple-touch-icon" href="/liferise_logo.png" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className="min-h-full bg-midnight text-lr-white antialiased">
