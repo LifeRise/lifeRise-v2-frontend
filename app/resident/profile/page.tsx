@@ -28,12 +28,17 @@ import { cn, getInitials } from "@/lib/utils";
 function Toggle({
   checked,
   onChange,
+  label,
 }: {
   checked: boolean;
   onChange: (v: boolean) => void;
+  label: string;
 }) {
   return (
     <button
+      type="button"
+      aria-label={label}
+      aria-pressed={checked ? "true" : "false"}
       onClick={() => onChange(!checked)}
       className={cn(
         "relative h-6 w-11 rounded-full transition-colors",
@@ -127,8 +132,9 @@ export default function ProfilePage() {
                 <p className="text-muted text-xs mt-0.5">Unit {profile.unit} · Riverside Commons</p>
               </div>
               <button
+                type="button"
                 onClick={() => (editing ? handleSaveProfile() : setEditing(true))}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/[0.06] text-muted hover:text-lr-white hover:bg-white/[0.10] transition-colors flex items-center gap-1"
+                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/6 text-muted hover:text-lr-white hover:bg-white/10 transition-colors flex items-center gap-1"
               >
                 {editing ? <Check size={12} /> : <Edit3 size={12} />}
                 {editing ? "Save" : "Edit"}
@@ -156,6 +162,7 @@ export default function ProfilePage() {
                     <p className="text-[10px] text-muted uppercase tracking-wider">{field.label}</p>
                     {editing ? (
                       <input
+                        aria-label={field.label}
                         value={profile[field.key as keyof typeof profile] as string}
                         onChange={(e) =>
                           setProfile((p) => ({ ...p, [field.key]: e.target.value }))
@@ -180,6 +187,7 @@ export default function ProfilePage() {
                 <CreditCard size={14} className="text-teal" /> Payment Methods
               </h3>
               <button
+                type="button"
                 onClick={() => setShowAddCard(!showAddCard)}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium bg-teal/10 text-teal hover:bg-teal/20 transition-colors flex items-center gap-1"
               >
@@ -198,12 +206,13 @@ export default function ProfilePage() {
                   <div className="bg-midnight/60 border border-white/10 rounded-xl p-4 mb-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-medium text-lr-white">Add New Card</p>
-                      <button onClick={() => setShowAddCard(false)} className="text-muted hover:text-lr-white">
+                      <button type="button" aria-label="Close" onClick={() => setShowAddCard(false)} className="text-muted hover:text-lr-white">
                         <X size={14} />
                       </button>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <select
+                        aria-label="Card type"
                         value={newCard.type}
                         onChange={(e) => setNewCard((c) => ({ ...c, type: e.target.value as typeof c.type }))}
                         className="bg-slate-deep border border-white/10 rounded-lg px-3 py-2 text-sm text-lr-white"
@@ -234,6 +243,7 @@ export default function ProfilePage() {
                       />
                     </div>
                     <button
+                      type="button"
                       onClick={handleAddCard}
                       className="w-full py-2 rounded-lg text-xs font-semibold bg-teal text-midnight"
                     >
@@ -252,7 +262,7 @@ export default function ProfilePage() {
                     initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, x: 20 }}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-midnight/40 border border-white/[0.05]"
+                    className="flex items-center gap-3 p-3 rounded-xl bg-midnight/40 border border-white/5"
                   >
                     <CardBrandIcon type={card.type} />
                     <div className="flex-1">
@@ -269,6 +279,7 @@ export default function ProfilePage() {
                       </span>
                     ) : (
                       <button
+                        type="button"
                         onClick={() => handleSetDefault(card.id)}
                         className="text-[10px] text-muted hover:text-lr-white transition-colors"
                       >
@@ -276,6 +287,8 @@ export default function ProfilePage() {
                       </button>
                     )}
                     <button
+                      type="button"
+                      aria-label="Remove card"
                       onClick={() => handleRemoveCard(card.id)}
                       className="text-muted hover:text-red-400 transition-colors"
                     >
@@ -324,6 +337,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
                   <Toggle
+                    label={pref.label}
                     checked={profile.preferences[pref.key]}
                     onChange={(v) =>
                       setProfile((p) => ({
@@ -346,12 +360,13 @@ export default function ProfilePage() {
 }
 
 function InstallAppRow() {
-  const { isInstalled, triggerInstall } = usePWA();
-  if (isInstalled) return null;
+  const { canShowInstall, triggerInstall } = usePWA();
+  if (!canShowInstall) return null;
   return (
     <motion.div variants={fadeUpItem}>
       <GlassCard className="p-5">
         <button
+          type="button"
           onClick={triggerInstall}
           className="flex items-center justify-between w-full text-left"
         >

@@ -6,7 +6,6 @@ import {
   canInstall,
   skipWaiting,
   wasInstallPromptDismissedRecently,
-  hasEngagementForInstall,
 } from "@/lib/pwa";
 
 interface PWAContextValue {
@@ -165,8 +164,7 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
     Boolean(deferredPrompt) &&
     !isInstalled &&
     !dismissed &&
-    canInstall() &&
-    hasEngagementForInstall();
+    canInstall();
 
   return (
     <PWAContext.Provider
