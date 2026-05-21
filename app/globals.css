@@ -1,26 +1,102 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ─── LifeRise Design Tokens ─────────────────────────────────── */
+@theme {
+  --color-midnight: #0A0F1E;
+  --color-slate-deep: #1A2235;
+  --color-slate-mid: #243049;
+  --color-slate-light: #2D3E5A;
+  --color-teal: #00D4AA;
+  --color-gold: #F5A623;
+  --color-purple-accent: #818CF8;
+  --color-lr-white: #F8FAFC;
+  --color-muted: #94A3B8;
+  --color-emerald: #34D399;
+  --color-rose: #F472B6;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-syne), "Syne", sans-serif;
+  --font-sans: var(--font-inter), "Inter", sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ─── Base ───────────────────────────────────────────────────── */
+:root {
+  --teal: #00D4AA;
+  --gold: #F5A623;
+  --border-subtle: rgba(255, 255, 255, 0.07);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+html, body {
+  background-color: #0A0F1E;
+  color: #F8FAFC;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Glass Panels ───────────────────────────────────────────── */
+.glass {
+  background: rgba(26, 34, 53, 0.72);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+.glass-dark {
+  background: rgba(10, 15, 30, 0.85);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* ─── Gradient Mesh Animation ────────────────────────────────── */
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.gradient-mesh {
+  background: linear-gradient(
+    -45deg,
+    #0A0F1E, #1A2235,
+    rgba(0, 212, 170, 0.18),
+    rgba(245, 166, 35, 0.12),
+    #1A2235, #0A0F1E
+  );
+  background-size: 400% 400%;
+  animation: gradient-shift 14s ease infinite;
+}
+
+/* ─── Glow / Pulse ───────────────────────────────────────────── */
+.teal-glow  { box-shadow: 0 0 32px rgba(0, 212, 170, 0.18); }
+.gold-glow  { box-shadow: 0 0 32px rgba(245, 166, 35, 0.18); }
+
+@keyframes pulse-teal {
+  0%, 100% { box-shadow: 0 0 0 0   rgba(0, 212, 170, 0.45); }
+  50%      { box-shadow: 0 0 0 8px rgba(0, 212, 170, 0);    }
+}
+.pulse-teal { animation: pulse-teal 2.2s ease-in-out infinite; }
+
+/* ─── Static gradient utilities (replaces inline styles) ───── */
+.orb-teal    { background: radial-gradient(circle, #00D4AA, transparent 70%); }
+.orb-gold    { background: radial-gradient(circle, #F5A623, transparent 70%); }
+.orb-purple  { background: radial-gradient(circle, #818CF8, transparent 70%); }
+.btn-signin  { background: linear-gradient(135deg, #00D4AA, #00B894); }
+
+/* ─── Scrollbar ───────────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 4px; }
+::-webkit-scrollbar-track  { background: #0A0F1E; }
+::-webkit-scrollbar-thumb  { background: #2D3E5A; border-radius: 2px; }
+
+/* ─── Sidebar active indicator ───────────────────────────────── */
+.nav-active {
+  background: rgba(0, 212, 170, 0.12);
+  color: #00D4AA;
+  border-left: 2px solid #00D4AA;
+}
+.nav-item {
+  transition: all 0.2s ease;
+}
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #F8FAFC;
 }

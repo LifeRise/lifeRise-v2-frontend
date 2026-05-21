@@ -1,0 +1,275 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - img "LifeRise" [ref=e6]
+        - heading "LifeRise Solutions" [level=1] [ref=e7]
+        - paragraph [ref=e8]: The unified service marketplace for modern properties. Connecting residents, vendors, and managers in one seamless ecosystem.
+      - generic [ref=e9]:
+        - link "APP DEMO" [ref=e10] [cursor=pointer]:
+          - /url: /login
+          - text: APP DEMO
+          - img [ref=e11]
+        - link "Explore Platform" [ref=e13] [cursor=pointer]:
+          - /url: "#vendor"
+      - generic [ref=e14]:
+        - generic [ref=e15]: Scroll to explore
+        - img [ref=e16]
+    - generic [ref=e20]:
+      - generic [ref=e21]:
+        - paragraph [ref=e22]: For Service Providers
+        - heading "Maximize Your Revenue, Minimize Your Admin." [level=2] [ref=e23]:
+          - text: Maximize Your Revenue,
+          - text: Minimize Your Admin.
+        - paragraph [ref=e24]: The all-in-one vendor portal designed for independent professionals. Track earnings in real-time, manage your booking queue with drag-and-drop simplicity, and build lasting client relationships.
+        - generic [ref=e25]:
+          - generic [ref=e27]:
+            - img [ref=e29]
+            - generic [ref=e32]: Real-time earnings tracking & payouts
+          - generic [ref=e34]:
+            - img [ref=e36]
+            - generic [ref=e39]: Automated booking queue & scheduling
+          - generic [ref=e41]:
+            - img [ref=e43]
+            - generic [ref=e48]: Built-in client CRM & communication
+        - link "APP DEMO" [ref=e50] [cursor=pointer]:
+          - /url: /login
+          - text: APP DEMO
+          - img [ref=e51]
+      - generic [ref=e56]:
+        - generic [ref=e57]:
+          - generic [ref=e58]:
+            - paragraph [ref=e59]: May 21, 2026
+            - paragraph [ref=e60]: Good morning, Marcus ✦
+          - generic [ref=e63]: Online
+        - generic [ref=e64]:
+          - generic [ref=e65]:
+            - generic [ref=e66]:
+              - img [ref=e67]
+              - paragraph [ref=e70]: "4"
+              - paragraph [ref=e71]: Jobs
+            - generic [ref=e72]:
+              - img [ref=e73]
+              - paragraph [ref=e75]: $1,167
+              - paragraph [ref=e76]: Week
+            - generic [ref=e77]:
+              - img [ref=e78]
+              - paragraph [ref=e80]: 4.9★
+              - paragraph [ref=e81]: Rating
+            - generic [ref=e82]:
+              - img [ref=e83]
+              - paragraph [ref=e86]: 98%
+              - paragraph [ref=e87]: Done
+          - generic [ref=e88]:
+            - paragraph [ref=e89]: Today's Schedule
+            - generic [ref=e90]:
+              - generic [ref=e91]:
+                - paragraph [ref=e92]: 10:00 AM
+                - paragraph [ref=e93]: 60 min
+              - generic [ref=e95]:
+                - paragraph [ref=e96]: Deep Tissue Massage
+                - paragraph [ref=e97]: David R.
+              - generic [ref=e98]: Active
+            - generic [ref=e99]:
+              - generic [ref=e100]:
+                - paragraph [ref=e101]: 12:00 PM
+                - paragraph [ref=e102]: 75 min
+              - generic [ref=e104]:
+                - paragraph [ref=e105]: Hot Stone Therapy
+                - paragraph [ref=e106]: Emma L.
+            - generic [ref=e107]:
+              - generic [ref=e108]:
+                - paragraph [ref=e109]: 2:00 PM
+                - paragraph [ref=e110]: 60 min
+              - generic [ref=e112]:
+                - paragraph [ref=e113]: Deep Tissue Massage
+                - paragraph [ref=e114]: Sarah M.
+          - generic [ref=e115]:
+            - generic [ref=e116]:
+              - paragraph [ref=e117]: Weekly Earnings
+              - paragraph [ref=e118]: $1,167
+            - generic [ref=e119]:
+              - generic [ref=e122]: Mon
+              - generic [ref=e125]: Tue
+              - generic [ref=e128]: Wed
+              - generic [ref=e131]: Thu
+              - generic [ref=e134]: Fri
+              - generic [ref=e137]: Sat
+              - generic [ref=e140]: Sun
+    - generic [ref=e143]:
+      - generic [ref=e147]:
+        - generic [ref=e148]:
+          - paragraph [ref=e149]: May 21, 2026
+          - paragraph [ref=e150]: Good evening, Sarah ✦
+        - generic [ref=e151]:
+          - generic [ref=e152]:
+            - generic [ref=e153]:
+              - img [ref=e154]
+              - paragraph [ref=e156]: "3"
+              - paragraph [ref=e157]: Active
+            - generic [ref=e158]:
+              - img [ref=e159]
+              - paragraph [ref=e162]: "1"
+              - paragraph [ref=e163]: Pending
+            - generic [ref=e164]:
+              - img [ref=e165]
+              - paragraph [ref=e168]: "12"
+              - paragraph [ref=e169]: Done
+            - generic [ref=e170]:
+              - img [ref=e171]
+              - paragraph [ref=e173]: $840
+              - paragraph [ref=e174]: Spent
+          - generic [ref=e175]:
+            - generic [ref=e176]: All
+            - generic [ref=e177]: Wellness
+            - generic [ref=e178]: Meal Prep
+            - generic [ref=e179]: Fitness
+            - generic [ref=e180]: Home Care
+          - generic [ref=e181]:
+            - generic [ref=e182]:
+              - generic [ref=e183]:
+                - generic [ref=e184]: MC
+                - generic [ref=e185]: Top Rated
+              - generic [ref=e186]:
+                - generic [ref=e187]:
+                  - paragraph [ref=e188]: Maya Chen
+                  - generic [ref=e189]:
+                    - img [ref=e190]
+                    - text: "4.9"
+                - paragraph [ref=e192]: Deep Tissue Massage · $85/hr
+                - generic [ref=e193]: Book Now
+            - generic [ref=e194]:
+              - generic [ref=e195]:
+                - generic [ref=e196]: CR
+                - generic [ref=e197]: Available Today
+              - generic [ref=e198]:
+                - generic [ref=e199]:
+                  - paragraph [ref=e200]: Carlos Rivera
+                  - generic [ref=e201]:
+                    - img [ref=e202]
+                    - text: "4.8"
+                - paragraph [ref=e204]: Healthy Meal Prep · $120/wk
+                - generic [ref=e205]: Book Now
+          - generic [ref=e206]:
+            - paragraph [ref=e207]: Recent Booking
+            - generic [ref=e208]:
+              - generic [ref=e209]: MC
+              - generic [ref=e210]:
+                - paragraph [ref=e211]: Deep Tissue Massage
+                - paragraph [ref=e212]: Maya Chen · May 22, 2026
+              - generic [ref=e213]: Confirmed
+      - generic [ref=e214]:
+        - paragraph [ref=e215]: For Residents
+        - heading "Luxury Services at Your Fingertips." [level=2] [ref=e216]:
+          - text: Luxury Services at
+          - text: Your Fingertips.
+        - paragraph [ref=e217]: Discover, book, and manage premium home services from verified providers. From wellness to maintenance, your concierge-ready marketplace is just a tap away.
+        - generic [ref=e218]:
+          - generic [ref=e220]:
+            - img [ref=e222]
+            - generic [ref=e225]: One-tap concierge bookings
+          - generic [ref=e227]:
+            - img [ref=e229]
+            - generic [ref=e232]: Secure payment processing
+          - generic [ref=e234]:
+            - img [ref=e236]
+            - generic [ref=e238]: Verified service provider ratings
+        - link "APP DEMO" [ref=e240] [cursor=pointer]:
+          - /url: /login
+          - text: APP DEMO
+          - img [ref=e241]
+    - generic [ref=e245]:
+      - generic [ref=e246]:
+        - paragraph [ref=e247]: For Property Managers
+        - heading "Total Oversight. Zero Friction." [level=2] [ref=e248]:
+          - text: Total Oversight.
+          - text: Zero Friction.
+        - paragraph [ref=e249]: The command center for modern property operations. Monitor vendor compliance, analyze facility performance, and keep residents informed — all from one intelligent dashboard.
+        - generic [ref=e250]:
+          - generic [ref=e252]:
+            - img [ref=e254]
+            - generic [ref=e257]: Vendor compliance monitoring
+          - generic [ref=e259]:
+            - img [ref=e261]
+            - generic [ref=e263]: Facility performance analytics
+          - generic [ref=e265]:
+            - img [ref=e267]
+            - generic [ref=e269]: Resident satisfaction tracking
+        - link "APP DEMO" [ref=e271] [cursor=pointer]:
+          - /url: /login
+          - text: APP DEMO
+          - img [ref=e272]
+      - generic [ref=e277]:
+        - generic [ref=e278]:
+          - paragraph [ref=e279]: May 21, 2026
+          - paragraph [ref=e280]: Riverside Commons ✦
+        - generic [ref=e281]:
+          - generic [ref=e282]:
+            - generic [ref=e283]:
+              - paragraph [ref=e284]: "247"
+              - paragraph [ref=e285]: Residents
+              - paragraph [ref=e286]: "+4"
+            - generic [ref=e287]:
+              - paragraph [ref=e288]: "18"
+              - paragraph [ref=e289]: Vendors
+              - paragraph [ref=e290]: "+2"
+            - generic [ref=e291]:
+              - paragraph [ref=e292]: "143"
+              - paragraph [ref=e293]: Bookings
+              - paragraph [ref=e294]: +18%
+            - generic [ref=e295]:
+              - paragraph [ref=e296]: 94%
+              - paragraph [ref=e297]: Satisfaction
+              - paragraph [ref=e298]: Top
+          - generic [ref=e299]:
+            - generic [ref=e300]:
+              - paragraph [ref=e301]: Engagement
+              - generic [ref=e305]: 100%
+              - generic [ref=e306]:
+                - generic [ref=e309]: Wellness
+                - generic [ref=e312]: Home Care
+                - generic [ref=e315]: Fitness
+            - generic [ref=e316]:
+              - paragraph [ref=e317]: Top Vendors
+              - generic [ref=e318]:
+                - generic [ref=e319]:
+                  - generic [ref=e320]: 🥇
+                  - paragraph [ref=e322]: Maya Chen
+                  - generic [ref=e323]: 4.9★
+                  - generic [ref=e324]: $3,245
+                - generic [ref=e325]:
+                  - generic [ref=e326]: 🥈
+                  - paragraph [ref=e328]: Carlos Rivera
+                  - generic [ref=e329]: 4.8★
+                  - generic [ref=e330]: $2,890
+                - generic [ref=e331]:
+                  - generic [ref=e332]: 🥉
+                  - paragraph [ref=e334]: Aria Johnson
+                  - generic [ref=e335]: 4.9★
+                  - generic [ref=e336]: $2,100
+          - generic [ref=e337]:
+            - img [ref=e339]
+            - generic [ref=e342]:
+              - paragraph [ref=e343]: "New Vendor: Healthy Bites Meal Prep"
+              - paragraph [ref=e344]: Carlos Rivera has joined LifeRise offering weekly meal prep packages.
+            - generic [ref=e345]: May 20
+    - generic [ref=e346]:
+      - generic [ref=e347]:
+        - generic [ref=e348]:
+          - img "LifeRise" [ref=e349]
+          - generic [ref=e350]:
+            - paragraph [ref=e351]: LifeRise Solutions
+            - paragraph [ref=e352]: Simplifying Services, Enhancing Lives
+        - generic [ref=e353]:
+          - link "Login" [ref=e354] [cursor=pointer]:
+            - /url: /login
+          - link "Resident Portal" [ref=e355] [cursor=pointer]:
+            - /url: /resident
+          - link "Vendor Portal" [ref=e356] [cursor=pointer]:
+            - /url: /vendor
+          - link "Manager Portal" [ref=e357] [cursor=pointer]:
+            - /url: /manager
+      - paragraph [ref=e358]: © 2026 LifeRise Solutions. All rights reserved.
+  - button "Open Next.js Dev Tools" [ref=e364] [cursor=pointer]:
+    - img [ref=e365]
+  - alert [ref=e368]

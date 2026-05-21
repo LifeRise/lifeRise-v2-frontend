@@ -1,0 +1,241 @@
+"use client";
+
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { CalendarDays, Clock, Star, RotateCcw, XCircle, MapPin } from "lucide-react";
+import { bookingHistoryMap } from "@/lib/mock-data";
+import type { ResidentBooking } from "@/lib/types";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Tabs } from "@/components/ui/Tabs";
+import { staggerContainer, fadeUpItem } from "@/lib/animations";
+import { cn } from "@/lib/utils";
+
+const tabs = [
+  { id: "active", label: "Active" },
+  { id: "past", label: "Past" },
+  { id: "cancelled", label: "Cancelled" },
+];
+
+function BookingRow({
+  booking,
+  tab,
+  onCancel,
+  onRebook,
+}: {
+  booking: ResidentBooking;
+  tab: string;
+  onCancel?: (id: string) => void;
+  onRebook?: (b: ResidentBooking) => void;
+}) {
+  const [rating, setRating] = useState(booking.rating || 0);
+  const statusColors: Record<string, string> = {
+    confirmed: "bg-teal",
+    pending: "bg-gold",
+    completed: "bg-purple-accent",
+    cancelled: "bg-red-400",
+  };
+
+  return (
+    <motion.div variants={fadeUpItem} layout exit={{ opacity: 0, x: 20, scale: 0.98 }}>
+      <GlassCard className="p-4">
+        <div className="flex items-start gap-4">
+          {/* Avatar */}
+          <div
+            className={cn(
+              "w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-midnight shrink-0",
+              statusColors[booking.status] || "bg-slate-light"
+            )}
+          >
+            {booking.avatar}
+          </div>
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className="text-lr-white text-sm font-semibold">{booking.service}</p>
+                <p className="text-muted text-xs mt-0.5">{booking.vendor}</p>
+              </div>
+              <StatusBadge status={booking.status} variant="resident" />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 mt-2 text-muted text-[11px]">
+              <span className="flex items-center gap-1">
+                <CalendarDays size={10} /> {booking.date}
+              </span>
+              <span className="flex items-center gap-1">
+                <Clock size={10} /> {booking.time}
+              </span>
+              <span className="text-lr-white font-medium">{booking.amount}</span>
+            </div>
+
+            {/* Expanded history / actions */}
+            {tab === "active" && (
+              <div className="flex items-center gap-2 mt-3">
+                {booking.status === "pending" && (
+                  <button
+                    onClick={() => onCancel?.(booking.id)}
+                    className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-white/[0.06] text-muted hover:text-lr-white hover:bg-white/[0.10] transition-colors flex items-center gap-1"
+                  >
+                    <XCircle size={10} /> Cancel
+                  </button>
+                )}
+                <button className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-white/[0.06] text-muted hover:text-lr-white hover:bg-white/[0.10] transition-colors flex items-center gap-1">
+                  <MapPin size={10} /> Reschedule
+                </button>
+              </div>
+            )}
+
+            {tab === "past" && (
+              <div className="mt-3">
+                {booking.review && (
+                  <p className="text-muted text-xs italic mb-2">&ldquo;{booking.review}&rdquo;</p>
+                )}
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <button key={s} onClick={() => setRating(s)} className="transition-transform hover:scale-110">
+                      <Star
+                        size={14}
+                        className={cn(
+                          s <= rating ? "text-gold fill-gold" : "text-slate-light"
+                        )}
+                      />
+                    </button>
+                  ))}
+                  <span className="text-muted text-[10px] ml-2">
+                    {rating > 0 ? "Thanks for rating!" : "Rate this service"}
+                  </span>
+                </div>
+                <button
+                  onClick={() => onRebook?.(booking)}
+                  className="mt-2 px-3 py-1.5 rounded-lg text-[11px] font-medium bg-teal/10 text-teal hover:bg-teal/20 transition-colors flex items-center gap-1"
+                >
+                  <RotateCcw size={10} /> Rebook
+                </button>
+              </div>
+            )}
+
+            {tab === "cancelled" && booking.history && (
+              <div className="mt-3 pt-3 border-t border-white/[0.05]">
+                <p className="text-muted text-[11px]">
+                  {booking.history[booking.history.length - 1]?.note}
+                </p>
+                <button
+                  onClick={() => onRebook?.(booking)}
+                  className="mt-2 px-3 py-1.5 rounded-lg text-[11px] font-medium bg-teal/10 text-teal hover:bg-teal/20 transition-colors flex items-center gap-1"
+                >
+                  <RotateCcw size={10} /> Book Again
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </GlassCard>
+    </motion.div>
+  );
+}
+
+export default function BookingsPage() {
+  const [activeTab, setActiveTab] = useState("active");
+  const [bookings, setBookings] = useState<Record<string, ResidentBooking>>(bookingHistoryMap);
+
+  const activeIds = Object.values(bookings)
+    .filter((b) => b.status === "confirmed" || b.status === "pending")
+    .map((b) => b.id);
+
+  const pastIds = Object.values(bookings)
+    .filter((b) => b.status === "completed")
+    .map((b) => b.id);
+
+  const cancelledIds = Object.values(bookings)
+    .filter((b) => b.status === "cancelled")
+    .map((b) => b.id);
+
+  const tabMap: Record<string, string[]> = {
+    active: activeIds,
+    past: pastIds,
+    cancelled: cancelledIds,
+  };
+
+  const handleCancel = (id: string) => {
+    setBookings((prev) => ({
+      ...prev,
+      [id]: {
+        ...prev[id],
+        status: "cancelled",
+        history: [
+          ...(prev[id].history || []),
+          { status: "Cancelled", timestamp: new Date().toLocaleString(), note: "Cancelled by resident." },
+        ],
+      },
+    }));
+  };
+
+  const handleRebook = (b: ResidentBooking) => {
+    const newId = `rb${Date.now()}`;
+    setBookings((prev) => ({
+      ...prev,
+      [newId]: {
+        ...b,
+        id: newId,
+        status: "pending",
+        date: "TBD",
+        time: "TBD",
+        history: [{ status: "Rebooked", timestamp: new Date().toLocaleString(), note: "Rebooked from previous appointment." }],
+        rating: undefined,
+        review: undefined,
+      },
+    }));
+  };
+
+  const currentIds = tabMap[activeTab] || [];
+
+  return (
+    <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-3xl mx-auto pb-24 lg:pb-8">
+      <h1 className="font-heading text-2xl font-bold text-lr-white mb-6">My Bookings</h1>
+
+      <Tabs tabs={tabs} defaultTab="active" onChange={setActiveTab}>
+        {(tabId) => (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={tabId}
+              variants={staggerContainer(0.04)}
+              initial="hidden"
+              animate="show"
+              className="space-y-3"
+            >
+              {currentIds.length > 0 ? (
+                currentIds.map((id) => (
+                  <BookingRow
+                    key={id}
+                    booking={bookings[id]}
+                    tab={tabId}
+                    onCancel={handleCancel}
+                    onRebook={handleRebook}
+                  />
+                ))
+              ) : (
+                <EmptyState
+                  title={
+                    tabId === "active"
+                      ? "No active bookings"
+                      : tabId === "past"
+                        ? "No past bookings"
+                        : "No cancelled bookings"
+                  }
+                  description={
+                    tabId === "active"
+                      ? "You don't have any upcoming appointments. Explore services and book one!"
+                      : "Your booking history will appear here."
+                  }
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        )}
+      </Tabs>
+    </div>
+  );
+}
