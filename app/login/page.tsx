@@ -1,26 +1,78 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import Image from "next/image";
-import { ArrowRight, Building2, Wrench, Users, Eye, EyeOff, Zap } from "lucide-react";
-
-const roles = [
-  { key: "resident", label: "Resident", subtitle: "Browse & book services for your home", icon: Building2, href: "/resident", accent: "#00D4AA", bg: "rgba(0,212,170,0.08)", border: "rgba(0,212,170,0.25)", tag: "Resident Portal" },
-  { key: "vendor", label: "Service Provider", subtitle: "Manage bookings & track earnings", icon: Wrench, href: "/vendor", accent: "#F5A623", bg: "rgba(245,166,35,0.08)", border: "rgba(245,166,35,0.25)", tag: "Vendor Portal" },
-  { key: "manager", label: "Property Manager", subtitle: "Oversee complex operations", icon: Users, href: "/manager", accent: "#818CF8", bg: "rgba(129,140,248,0.08)", border: "rgba(129,140,248,0.25)", tag: "Manager Portal" },
-];
+import Link from "next/link";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  Building2,
+  Wrench,
+} from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { GoogleButton } from "@/components/auth/GoogleButton";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [userType, setUserType] = useState<"resident" | "vendor">("resident");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
-  const [loading, setLoading] = useState<string | null>(null);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  function enter(href: string, key: string) {
-    setLoading(key);
-    setTimeout(() => router.push(href), 400);
-  }
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (!email || !password) {
+      setError("Please enter both email and password");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    setIsLoading(true);
+    const supabase = createClient();
+
+    try {
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        setError(signInError.message || "Invalid email or password");
+        setIsLoading(false);
+        return;
+      }
+
+      if (data?.user) {
+        // Store remember me preference
+        if (rememberMe) {
+          localStorage.setItem("liferise_remember_email", email);
+        } else {
+          localStorage.removeItem("liferise_remember_email");
+        }
+        // Force reload to let AuthProvider pick up the session and redirect
+        window.location.href = "/";
+      }
+    } catch (err: any) {
+      setError(err?.message || "Login failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="relative min-h-screen gradient-mesh flex flex-col items-center justify-center px-4 py-12 overflow-hidden">
@@ -30,8 +82,13 @@ export default function LoginPage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-175 h-175 rounded-full opacity-5 blur-[140px] orb-purple" />
       </div>
 
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="relative z-10 w-full max-w-md">
-        <div className="text-center mb-10">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="relative z-10 w-full max-w-md"
+      >
+        <div className="text-center mb-8">
           <Image
             src="/liferise_logo.png"
             alt="LifeRise"
@@ -40,69 +97,138 @@ export default function LoginPage() {
             className="h-16 w-auto object-contain mx-auto mb-4"
             priority
           />
-          <h1 className="font-heading font-extrabold text-lr-white text-4xl leading-tight mb-2">LifeRise</h1>
+          <h1 className="font-heading font-extrabold text-lr-white text-4xl leading-tight mb-2">
+            LifeRise
+          </h1>
           <p className="text-muted text-sm">Simplifying Services, Enhancing Lives</p>
         </div>
 
-        <div className="glass rounded-2xl p-6 mb-6 space-y-4">
-          <h2 className="font-heading font-bold text-lr-white text-lg mb-1">Welcome back</h2>
-          <div className="space-y-3">
-            <input type="email" placeholder="Email address" defaultValue="sarah.m@riverside.com"
-              className="w-full bg-midnight/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-lr-white placeholder-muted focus:outline-none focus:border-teal/50 transition-colors" />
+        <div className="glass rounded-2xl p-6 mb-6 space-y-5">
+          <h2 className="font-heading font-bold text-lr-white text-lg">Welcome back</h2>
+
+          {/* User Type Toggle */}
+          <div className="flex bg-midnight/60 rounded-xl p-1 border border-white/10">
+            <button
+              type="button"
+              onClick={() => setUserType("resident")}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                userType === "resident"
+                  ? "bg-teal text-midnight"
+                  : "text-muted hover:text-lr-white"
+              }`}
+            >
+              <Building2 size={16} />
+              Residents
+            </button>
+            <button
+              type="button"
+              onClick={() => setUserType("vendor")}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                userType === "vendor"
+                  ? "bg-gold text-midnight"
+                  : "text-muted hover:text-lr-white"
+              }`}
+            >
+              <Wrench size={16} />
+              Service Provider
+            </button>
+          </div>
+
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+              <p className="text-red-400 text-sm text-center">{error}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} className="space-y-4">
             <div className="relative">
-              <input type={showPass ? "text" : "password"} placeholder="Password" defaultValue="••••••••"
-                className="w-full bg-midnight/60 border border-white/10 rounded-xl px-4 py-3 pr-12 text-sm text-lr-white placeholder-muted focus:outline-none focus:border-teal/50 transition-colors" />
-              <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-lr-white transition-colors">
+              <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+              <input
+                type="email"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-midnight/60 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm text-lr-white placeholder-muted focus:outline-none focus:border-teal/50 transition-colors"
+              />
+            </div>
+
+            <div className="relative">
+              <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+              <input
+                type={showPass ? "text" : "password"}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-midnight/60 border border-white/10 rounded-xl pl-11 pr-12 py-3 text-sm text-lr-white placeholder-muted focus:outline-none focus:border-teal/50 transition-colors"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPass(!showPass)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-lr-white transition-colors"
+              >
                 {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
+
+            <div className="flex items-center justify-between text-xs">
+              <label className="flex items-center gap-2 text-muted cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="rounded border-white/20 bg-midnight/60 text-teal focus:ring-teal"
+                />
+                Remember me
+              </label>
+              <Link
+                href="/forgot-password"
+                className="text-teal hover:opacity-80 transition-opacity"
+              >
+                Forgot password?
+              </Link>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-3 rounded-xl font-semibold text-sm text-midnight transition-all hover:opacity-90 active:scale-95 btn-signin flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {isLoading ? (
+                <div className="w-5 h-5 rounded-full border-2 border-midnight/30 border-t-midnight animate-spin" />
+              ) : (
+                <>
+                  Sign In <ArrowRight size={16} />
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-white/10" />
+            <span className="text-muted text-xs">or</span>
+            <div className="flex-1 h-px bg-white/10" />
           </div>
-          <div className="flex items-center justify-between text-xs">
-            <label className="flex items-center gap-2 text-muted cursor-pointer">
-              <input type="checkbox" className="rounded" /> Remember me
-            </label>
-            <button type="button" className="text-teal hover:opacity-80 transition-opacity">Forgot password?</button>
-          </div>
-          <button type="button" className="w-full py-3 rounded-xl font-semibold text-sm text-midnight transition-all hover:opacity-90 active:scale-95 btn-signin">
-            Sign In
-          </button>
+
+          <GoogleButton label={`Sign in with Google`} />
         </div>
 
-        <div className="flex items-center gap-3 mb-4">
-          <div className="flex-1 h-px bg-white/10" />
-          <span className="text-muted text-xs flex items-center gap-1.5"><Zap size={10} className="text-gold" /> Quick Demo Access</span>
-          <div className="flex-1 h-px bg-white/10" />
-        </div>
-
-        <div className="grid grid-cols-1 gap-3">
-          {roles.map((r, i) => (
-            <motion.button key={r.key} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 + i * 0.1, duration: 0.4 }}
-              whileHover={{ scale: 1.01, y: -1 }} whileTap={{ scale: 0.99 }}
-              onClick={() => enter(r.href, r.key)} disabled={loading === r.key}
-              className="relative flex items-center gap-4 p-4 rounded-2xl border text-left transition-all group cursor-pointer"
-              style={{ background: r.bg, borderColor: r.border }}>
-              <div className="flex items-center justify-center w-11 h-11 rounded-xl shrink-0" style={{ background: `${r.accent}20`, border: `1px solid ${r.accent}30` }}>
-                <r.icon size={20} style={{ color: r.accent }} />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-lr-white text-sm">{r.label}</p>
-                <p className="text-muted text-xs mt-0.5">{r.subtitle}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="hidden sm:block text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: `${r.accent}20`, color: r.accent }}>{r.tag}</span>
-                {loading === r.key
-                  ? <div className="w-5 h-5 rounded-full border-2 animate-spin" style={{ borderColor: `${r.accent}40`, borderTopColor: r.accent }} />
-                  : <ArrowRight size={16} className="text-muted group-hover:text-lr-white transition-colors" />}
-              </div>
-            </motion.button>
-          ))}
-        </div>
-
-        <p className="text-center text-muted text-xs mt-6">
+        <p className="text-center text-muted text-xs">
           Don&apos;t have an account?{" "}
-          <button type="button" className="text-teal hover:opacity-80 transition-opacity font-medium">Create one free</button>
+          <Link href="/signup" className="text-teal hover:opacity-80 transition-opacity font-medium">
+            Create one free
+          </Link>
         </p>
+
+        {/* Demo credentials hint */}
+        <div className="mt-6 glass rounded-xl p-4 border border-white/5">
+          <p className="text-[10px] text-muted uppercase tracking-wider font-semibold mb-2">Demo Accounts</p>
+          <div className="space-y-1 text-xs text-muted">
+            <p><span className="text-teal">Resident:</span> resident@liferise.demo / Resident123!</p>
+            <p><span className="text-gold">Vendor:</span> vendor@liferise.demo / Vendor123!</p>
+            <p><span className="text-purple-accent">Manager:</span> manager@liferise.demo / Manager123!</p>
+            <p><span className="text-rose">Pending:</span> pending@liferise.demo / Pending123!</p>
+          </div>
+        </div>
       </motion.div>
     </div>
   );

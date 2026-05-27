@@ -14,20 +14,18 @@ import {
   Megaphone,
   Users,
   ArrowLeftRight,
+  LogOut,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth/hooks";
+import { useAppStore } from "@/lib/store";
 
 type Role = "resident" | "vendor" | "manager";
 
-/*
-  Mobile nav configurations:
-  - Resident: 4 tabs (Services, Bookings center, Home, Account drawer)
-  - Vendor: 4 tabs (Dashboard, Queue, Schedule, Earnings)
-  - Manager: 5 tabs including Directory
-*/
 const mobileNav: Record<
   Role,
   { icon: React.ElementType; label: string; href: string; badge?: number; isDrawer?: boolean }[]
@@ -48,7 +46,7 @@ const mobileNav: Record<
     { icon: LayoutDashboard, label: "Overview", href: "/manager" },
     { icon: BarChart3, label: "Analytics", href: "/manager/analytics" },
     { icon: Users, label: "Directory", href: "/manager/residents" },
-    { icon: Megaphone, label: "Announce", href: "/manager/announcements" },
+    { icon: ShieldCheck, label: "Approvals", href: "/admin/approvals" },
     { icon: User, label: "Profile", href: "/manager/profile" },
   ],
 };
@@ -70,6 +68,14 @@ export default function MobileNav({ role }: { role: Role }) {
   const router = useRouter();
   const nav = mobileNav[role];
   const [showAccountDrawer, setShowAccountDrawer] = useState(false);
+  const { profile, signOut } = useAuth();
+  const setRole = useAppStore((s) => s.setRole);
+
+  const handleSignOut = async () => {
+    await signOut();
+    setRole(null);
+    router.push("/login");
+  };
 
   return (
     <>
@@ -155,6 +161,18 @@ export default function MobileNav({ role }: { role: Role }) {
                 />
               </div>
               <div className="p-5 space-y-1">
+                {/* User info */}
+                {profile && (
+                  <div className="flex items-center gap-3 px-3 py-2 mb-2">
+                    <div className="w-10 h-10 rounded-full bg-teal flex items-center justify-center text-midnight text-sm font-bold">
+                      {`${profile.first_name.charAt(0)}${profile.last_name.charAt(0)}`.toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-lr-white text-sm font-semibold">{profile.first_name} {profile.last_name}</p>
+                      <p className="text-muted text-xs">{profile.email}</p>
+                    </div>
+                  </div>
+                )}
                 <p className="text-xs font-bold uppercase tracking-wider text-muted px-3 mb-2">
                   Account
                 </p>
@@ -184,12 +202,12 @@ export default function MobileNav({ role }: { role: Role }) {
                   type="button"
                   onClick={() => {
                     setShowAccountDrawer(false);
-                    router.push("/");
+                    handleSignOut();
                   }}
                   className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-muted hover:text-lr-white hover:bg-white/5 transition-colors w-full"
                 >
-                  <ArrowLeftRight size={18} />
-                  Switch Portal
+                  <LogOut size={18} />
+                  Sign Out
                 </button>
               </div>
               <div className="safe-area-pb" />

@@ -7,8 +7,11 @@ import {
   LayoutDashboard, ShoppingBag, CalendarDays, Star, Heart,
   Bell, User, Briefcase, List, DollarSign, BarChart3,
   Users, Megaphone, Settings, LogOut, ArrowLeftRight,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth/hooks";
+import { useAppStore } from "@/lib/store";
 
 type Role = "resident" | "vendor" | "manager";
 
@@ -35,15 +38,10 @@ const navConfig: Record<Role, { icon: React.ElementType; label: string; href: st
     { icon: BarChart3, label: "Analytics", href: "/manager/analytics" },
     { icon: Users, label: "Residents", href: "/manager/residents" },
     { icon: Briefcase, label: "Vendors", href: "/manager/vendors" },
+    { icon: ShieldCheck, label: "Approvals", href: "/admin/approvals" },
     { icon: Megaphone, label: "Announcements", href: "/manager/announcements" },
     { icon: Settings, label: "Settings", href: "/manager/settings" },
   ],
-};
-
-const userConfig: Record<Role, { name: string; email: string; initials: string; complexName: string }> = {
-  resident: { name: "Sarah Mitchell", email: "sarah.m@riverside.com", initials: "SM", complexName: "Riverside Commons" },
-  vendor: { name: "Marcus Johnson", email: "marcus.j@liferise.com", initials: "MJ", complexName: "LifeRise Vendor" },
-  manager: { name: "Jennifer Torres", email: "j.torres@propmgmt.com", initials: "JT", complexName: "Riverside Commons" },
 };
 
 const accentColor: Record<Role, string> = {
@@ -58,22 +56,30 @@ const accentBgClass: Record<Role, string> = {
   manager: "bg-purple-accent",
 };
 
-const portalLinks = [
-  { role: "resident" as Role, label: "Resident", href: "/resident" },
-  { role: "vendor" as Role, label: "Vendor", href: "/vendor" },
-  { role: "manager" as Role, label: "Manager", href: "/manager" },
-];
-
 export default function Sidebar({ role }: { role: Role }) {
   const pathname = usePathname();
   const router = useRouter();
   const nav = navConfig[role];
-  const user = userConfig[role];
   const accent = accentColor[role];
+  const { profile, signOut } = useAuth();
+  const setRole = useAppStore((s) => s.setRole);
+
+  const userName = profile ? `${profile.first_name} ${profile.last_name}` : "Guest";
+  const userEmail = profile?.email ?? "";
+  const initials = profile
+    ? `${profile.first_name.charAt(0)}${profile.last_name.charAt(0)}`.toUpperCase()
+    : "??";
+  const complexName = role === "vendor" ? "LifeRise Vendor" : "Riverside Commons";
+
+  const handleSignOut = async () => {
+    await signOut();
+    setRole(null);
+    router.push("/login");
+  };
 
   return (
     <aside className="hidden lg:flex flex-col fixed left-0 top-0 h-full w-64 bg-slate-deep border-r border-white/[0.07] z-40">
-      {/* Logo — click to return to landing page */}
+      {/* Logo */}
       <Link href="/" className="flex items-center gap-3 px-6 py-5 border-b border-white/[0.07] hover:bg-white/5 transition-colors">
         <Image
           src="/liferise_logo.png"
@@ -85,7 +91,7 @@ export default function Sidebar({ role }: { role: Role }) {
         />
         <div>
           <p className="font-heading font-bold text-lr-white text-sm leading-tight">LifeRise</p>
-          <p className="text-muted text-xs">{user.complexName}</p>
+          <p className="text-muted text-xs">{complexName}</p>
         </div>
       </Link>
 
@@ -104,32 +110,16 @@ export default function Sidebar({ role }: { role: Role }) {
         })}
       </nav>
 
-      {/* Portal switcher */}
-      <div className="px-3 py-3 border-t border-white/[0.07]">
-        <p className="text-muted text-[10px] uppercase tracking-widest px-3 mb-2 flex items-center gap-1.5">
-          <ArrowLeftRight size={10} /> Demo Portals
-        </p>
-        <div className="flex gap-1.5">
-          {portalLinks.map((p) => (
-            <button type="button" key={p.role} onClick={() => router.push(p.href)}
-              className={cn("flex-1 py-1.5 rounded-lg text-[11px] font-semibold transition-all",
-                role === p.role ? `${accentBgClass[p.role]} text-midnight` : "text-muted hover:text-lr-white hover:bg-white/5")}>
-              {p.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* User */}
       <div className="flex items-center gap-3 px-4 py-4 border-t border-white/[0.07]">
         <div className={cn("w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-midnight shrink-0", accentBgClass[role])}>
-          {user.initials}
+          {initials}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-lr-white text-sm font-semibold truncate">{user.name}</p>
-          <p className="text-muted text-xs truncate">{user.email}</p>
+          <p className="text-lr-white text-sm font-semibold truncate">{userName}</p>
+          <p className="text-muted text-xs truncate">{userEmail}</p>
         </div>
-        <button type="button" onClick={() => router.push("/")} className="text-muted hover:text-lr-white transition-colors" aria-label="Log out">
+        <button type="button" onClick={handleSignOut} className="text-muted hover:text-lr-white transition-colors" aria-label="Log out">
           <LogOut size={16} />
         </button>
       </div>

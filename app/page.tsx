@@ -24,9 +24,12 @@ import {
   Sparkles,
   Search,
   Zap,
+  LogIn,
+  UserPlus,
 } from "lucide-react";
 import { earningsData, vendorSchedule, vendors, categories, residentBookings, vendorLeaderboard, engagementData } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth/hooks";
 
 /* ─── Animation Variants ───────────────────────────────────────── */
 const sectionVariants = {
@@ -389,6 +392,50 @@ function Section({
   );
 }
 
+/* ─── Auth Buttons ─────────────────────────────────────────────── */
+function AuthButtons() {
+  const { user, profile } = useAuth();
+
+  if (user && profile) {
+    const dest = profile.role === "manager" ? "/manager" : profile.role === "vendor" ? "/vendor" : "/resident";
+    const label = profile.role === "manager" ? "Manager Portal" : profile.role === "vendor" ? "Vendor Portal" : "Resident Portal";
+    const accent = profile.role === "manager" ? "bg-purple-accent" : profile.role === "vendor" ? "bg-gold" : "bg-teal";
+    return (
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+        <Link
+          href={dest}
+          className={`inline-flex items-center gap-2 px-8 py-3.5 rounded-xl ${accent} text-midnight font-bold text-sm tracking-wide hover:opacity-90 transition-all`}
+        >
+          Go to {label} <ArrowRight size={16} />
+        </Link>
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl glass text-lr-white font-semibold text-sm hover:bg-white/8 transition-all border border-white/8"
+        >
+          Switch Account
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+      <Link
+        href="/login"
+        className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-teal text-midnight font-bold text-sm tracking-wide hover:opacity-90 transition-all teal-glow"
+      >
+        <LogIn size={16} /> Sign In
+      </Link>
+      <Link
+        href="/signup"
+        className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl glass text-lr-white font-semibold text-sm hover:bg-white/8 transition-all border border-white/8"
+      >
+        <UserPlus size={16} /> Get Started
+      </Link>
+    </div>
+  );
+}
+
 /* ─── Main Landing Page ────────────────────────────────────────── */
 export default function LandingPage() {
   const [vendorModalOpen, setVendorModalOpen] = useState(false);
@@ -452,20 +499,8 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
           >
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-teal text-midnight font-bold text-sm tracking-wide hover:opacity-90 transition-all teal-glow"
-            >
-              APP DEMO <ArrowRight size={16} />
-            </Link>
-            <a
-              href="#vendor"
-              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl glass text-lr-white font-semibold text-sm hover:bg-white/8 transition-all border border-white/8"
-            >
-              Explore Platform
-            </a>
+            <AuthButtons />
           </motion.div>
 
           {/* Scroll Indicator */}
@@ -513,7 +548,7 @@ export default function LandingPage() {
                   href="/login"
                   className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-gold text-midnight font-bold text-sm tracking-wide hover:opacity-90 transition-all gold-glow"
                 >
-                  APP DEMO <ArrowRight size={16} />
+                  Sign In <ArrowRight size={16} />
                 </Link>
                 <button
                   type="button"
@@ -569,7 +604,7 @@ export default function LandingPage() {
                   href="/login"
                   className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-teal text-midnight font-bold text-sm tracking-wide hover:opacity-90 transition-all teal-glow"
                 >
-                  APP DEMO <ArrowRight size={16} />
+                  Sign In <ArrowRight size={16} />
                 </Link>
                 <button
                   type="button"
@@ -617,7 +652,7 @@ export default function LandingPage() {
                   href="/login"
                   className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-purple-accent text-white font-bold text-sm tracking-wide hover:opacity-90 transition-all shadow-[0_0_32px_rgba(129,140,248,0.18)]"
                 >
-                  APP DEMO <ArrowRight size={16} />
+                  Sign In <ArrowRight size={16} />
                 </Link>
                 <button
                   type="button"
@@ -710,6 +745,7 @@ export default function LandingPage() {
           </div>
           <div className="flex items-center gap-6 text-xs text-muted">
             <Link href="/login" className="hover:text-lr-white transition-colors">Login</Link>
+            <Link href="/signup" className="hover:text-lr-white transition-colors">Sign Up</Link>
             <Link href="/resident" className="hover:text-lr-white transition-colors">Resident Portal</Link>
             <Link href="/vendor" className="hover:text-lr-white transition-colors">Vendor Portal</Link>
             <Link href="/manager" className="hover:text-lr-white transition-colors">Manager Portal</Link>

@@ -4,6 +4,7 @@ import "./globals.css";
 import { PWAProvider } from "@/components/pwa/PWAProvider";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { UpdateToast } from "@/components/pwa/UpdateToast";
+import { AuthProvider } from "@/components/auth/AuthProvider";
 
 const syne = Syne({
   variable: "--font-syne",
@@ -55,11 +56,13 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className="min-h-full bg-midnight text-lr-white antialiased">
-        <PWAProvider>
-          {children}
-          <InstallPrompt />
-          <UpdateToast />
-        </PWAProvider>
+        <AuthProvider>
+          <PWAProvider>
+            {children}
+            <InstallPrompt />
+            <UpdateToast />
+          </PWAProvider>
+        </AuthProvider>
       </body>
     </html>
   );
