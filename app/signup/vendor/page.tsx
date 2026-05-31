@@ -17,8 +17,7 @@ import {
   ChevronLeft,
   FileText,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
-import { GoogleButton } from "@/components/auth/GoogleButton";
+import { signup as apiSignup } from "@/lib/api/auth";
 
 export default function VendorSignupPage() {
   const router = useRouter();
@@ -88,33 +87,20 @@ export default function VendorSignupPage() {
     if (!validate()) return;
 
     setIsLoading(true);
-    const supabase = createClient();
 
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
+      // NOTE: Backend vendor registration requires a separate endpoint.
+      // For now, we create a customer account. True vendor signup will
+      // be implemented via the vendor-api /api/signup endpoint.
+      await apiSignup({
+        first_name: firstName,
+        last_name: lastName,
         email,
+        phone,
         password,
-        options: {
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-            phone,
-            role: "vendor",
-            ein_tax_id: einTaxId,
-            description,
-          },
-        },
       });
 
-      if (signUpError) {
-        setError(signUpError.message || "Signup failed. Please try again.");
-        setIsLoading(false);
-        return;
-      }
-
-      if (data?.user) {
-        router.push("/verify-email?email=" + encodeURIComponent(email));
-      }
+      router.push("/login?registered=" + encodeURIComponent(email));
     } catch (err: any) {
       setError(err?.message || "Signup failed. Please try again.");
     } finally {
@@ -284,7 +270,10 @@ export default function VendorSignupPage() {
             <div className="flex-1 h-px bg-white/10" />
           </div>
 
-          <GoogleButton label="Sign up with Google" />
+          {/* Google OAuth disabled until Supabase auth bridge is implemented */}
+          <p className="text-center text-muted text-xs">
+            Google sign-up requires Supabase auth integration.
+          </p>
         </div>
 
         <div className="flex items-center justify-center gap-2">

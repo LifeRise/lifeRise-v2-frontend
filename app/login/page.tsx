@@ -14,8 +14,8 @@ import {
   Building2,
   Wrench,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
-import { GoogleButton } from "@/components/auth/GoogleButton";
+import { doLogin } from "@/lib/auth/hooks";
+import type { Role } from "@/lib/store";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -43,32 +43,21 @@ export default function LoginPage() {
     }
 
     setIsLoading(true);
-    const supabase = createClient();
 
     try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const roleHint: Role = userType === "vendor" ? "vendor" : "resident";
+      const { profile } = await doLogin({ email, password }, roleHint);
 
-      if (signInError) {
-        setError(signInError.message || "Invalid email or password");
-        setIsLoading(false);
-        return;
+      if (rememberMe) {
+        localStorage.setItem("liferise_remember_email", email);
+      } else {
+        localStorage.removeItem("liferise_remember_email");
       }
 
-      if (data?.user) {
-        // Store remember me preference
-        if (rememberMe) {
-          localStorage.setItem("liferise_remember_email", email);
-        } else {
-          localStorage.removeItem("liferise_remember_email");
-        }
-        // Force reload to let AuthProvider pick up the session and redirect
-        window.location.href = "/";
-      }
+      const dest = profile.role === "manager" ? "/manager" : profile.role === "vendor" ? "/vendor" : "/resident";
+      router.push(dest);
     } catch (err: any) {
-      setError(err?.message || "Login failed. Please try again.");
+      setError(err?.message || "Invalid email or password");
     } finally {
       setIsLoading(false);
     }
@@ -209,7 +198,10 @@ export default function LoginPage() {
             <div className="flex-1 h-px bg-white/10" />
           </div>
 
-          <GoogleButton label={`Sign in with Google`} />
+          {/* Google OAuth is disabled until Supabase auth bridge is implemented */}
+          <p className="text-center text-muted text-xs">
+            Google sign-in requires Supabase auth integration.
+          </p>
         </div>
 
         <p className="text-center text-muted text-xs">

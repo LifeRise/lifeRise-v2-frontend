@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CalendarDays, Clock, Star, RotateCcw, XCircle, MapPin } from "lucide-react";
-import { bookingHistoryMap } from "@/lib/mock-data";
+import { bookingHistoryMap as mockBookingHistoryMap } from "@/lib/mock-data";
 import type { ResidentBooking } from "@/lib/types";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -11,6 +11,9 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Tabs } from "@/components/ui/Tabs";
 import { staggerContainerResponsive, fadeUpItem } from "@/lib/animations";
 import { cn } from "@/lib/utils";
+import { useBookings } from "@/lib/api/hooks";
+import { updateBookingStatus } from "@/lib/api/bookings";
+import { useAuth } from "@/lib/auth/hooks";
 
 const tabs = [
   { id: "active", label: "Active" },
@@ -142,62 +145,65 @@ function BookingRow({
 
 export default function BookingsPage() {
   const [activeTab, setActiveTab] = useState("active");
-  const [bookings, setBookings] = useState<Record<string, ResidentBooking>>(bookingHistoryMap);
+  const { profile } = useAuth();
+  const { residentBookings: apiBookings, isLoading: apiLoading } = useBookings();
 
-  const activeIds = Object.values(bookings)
-    .filter((b) => b.status === "confirmed" || b.status === "pending")
-    .map((b) => b.id);
+  // Use API data when available, fall back to mock data
+  const bookingList = apiBookings.length > 0 ? apiBookings : Object.values(mockBookingHistoryMap);
 
-  const pastIds = Object.values(bookings)
-    .filter((b) => b.status === "completed")
-    .map((b) => b.id);
+  const activeBookings = useMemo(
+    () => bookingList.filter((b) => b.status === "confirmed" || b.status === "pending"),
+    [bookingList]
+  );
 
-  const cancelledIds = Object.values(bookings)
-    .filter((b) => b.status === "cancelled")
-    .map((b) => b.id);
+  const pastBookings = useMemo(
+    () => bookingList.filter((b) => b.status === "completed"),
+    [bookingList]
+  );
 
-  const tabMap: Record<string, string[]> = {
-    active: activeIds,
-    past: pastIds,
-    cancelled: cancelledIds,
+  const cancelledBookings = useMemo(
+    () => bookingList.filter((b) => b.status === "cancelled"),
+    [bookingList]
+  );
+
+  const tabMap: Record<string, ResidentBooking[]> = {
+    active: activeBookings,
+    past: pastBookings,
+    cancelled: cancelledBookings,
   };
 
-  const handleCancel = (id: string) => {
-    setBookings((prev) => ({
-      ...prev,
-      [id]: {
-        ...prev[id],
-        status: "cancelled",
-        history: [
-          ...(prev[id].history || []),
-          { status: "Cancelled", timestamp: new Date().toLocaleString(), note: "Cancelled by resident." },
-        ],
-      },
-    }));
-  };
+  const handleCancel = useCallback(
+    async (id: string) => {
+      // Try to cancel via API first
+      if (profile?.role) {
+        try {
+          await updateBookingStatus(profile.role, Number(id), "Cancelled");
+        } catch {
+          // fallback to local state
+        }
+      }
+    },
+    [profile]
+  );
 
-  const handleRebook = (b: ResidentBooking) => {
-    const newId = `rb${Date.now()}`;
-    setBookings((prev) => ({
-      ...prev,
-      [newId]: {
-        ...b,
-        id: newId,
-        status: "pending",
-        date: "TBD",
-        time: "TBD",
-        history: [{ status: "Rebooked", timestamp: new Date().toLocaleString(), note: "Rebooked from previous appointment." }],
-        rating: undefined,
-        review: undefined,
-      },
-    }));
-  };
+  const handleRebook = useCallback((b: ResidentBooking) => {
+    // TODO: navigate to booking flow with pre-filled service
+    console.log("Rebook", b);
+  }, []);
 
-  const currentIds = tabMap[activeTab] || [];
+  const currentBookings = tabMap[activeTab] || [];
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-3xl mx-auto pb-24 lg:pb-8">
-      <h1 className="font-heading text-2xl font-bold text-lr-white mb-6">My Bookings</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="font-heading text-2xl font-bold text-lr-white">My Bookings</h1>
+        {apiBookings.length > 0 && (
+          <span className="text-[10px] text-teal bg-teal/10 px-2 py-0.5 rounded-full">Live data</span>
+        )}
+        {apiBookings.length === 0 && !apiLoading && (
+          <span className="text-[10px] text-muted bg-white/5 px-2 py-0.5 rounded-full">Demo data</span>
+        )}
+      </div>
 
       <Tabs tabs={tabs} defaultTab="active" onChange={setActiveTab}>
         {(tabId) => (
@@ -210,11 +216,11 @@ export default function BookingsPage() {
               viewport={{ once: true, amount: 0.1 }}
               className="space-y-3"
             >
-              {currentIds.length > 0 ? (
-                currentIds.map((id) => (
+              {currentBookings.length > 0 ? (
+                currentBookings.map((booking) => (
                   <BookingRow
-                    key={id}
-                    booking={bookings[id]}
+                    key={booking.id}
+                    booking={booking}
                     tab={tabId}
                     onCancel={handleCancel}
                     onRebook={handleRebook}

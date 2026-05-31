@@ -1,148 +1,139 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
-import {
-  getMockProfile,
-  updateMockProfile,
-  getAllMockProfiles,
-  type MockProfile,
-} from "@/lib/auth/mock-auth";
-import type { User } from "@supabase/supabase-js";
+import { getAccessToken, clearTokens } from "@/lib/api/client";
+import { decodeJwtPayload, isTokenExpired } from "@/lib/api/jwt";
+import { fetchProfile, login as apiLogin, logout as apiLogout } from "@/lib/api/auth";
+import type { BackendProfile, LoginCredentials } from "@/lib/api/types";
 
-export interface Profile {
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  phone: string;
-  role: "resident" | "vendor" | "manager";
-  approval_status: "pending" | "approved" | "rejected";
-  onboarding_completed: boolean;
-  ein_tax_id?: string;
-  description?: string;
-  avatar_url?: string;
-  created_at: string;
-  updated_at: string;
+// Re-export Profile type for backward compatibility
+export type Profile = BackendProfile;
+
+export interface AuthUser {
+  id: number;
+  email?: string;
+  userType: "customer" | "user";
+  roles: string[];
 }
 
-function mapMockProfile(mock: MockProfile): Profile {
+function buildUserFromToken(token: string): AuthUser | null {
+  const payload = decodeJwtPayload(token);
+  if (!payload?.sub) return null;
   return {
-    id: mock.id,
-    email: mock.email,
-    first_name: mock.first_name,
-    last_name: mock.last_name,
-    phone: mock.phone,
-    role: mock.role,
-    approval_status: mock.approval_status,
-    onboarding_completed: mock.onboarding_completed,
-    ein_tax_id: mock.ein_tax_id,
-    description: mock.description,
-    avatar_url: mock.avatar_url,
-    created_at: mock.created_at,
-    updated_at: mock.updated_at,
+    id: payload.sub,
+    email: typeof payload.email === "string" ? payload.email : undefined,
+    userType: payload.type ?? "customer",
+    roles: Array.isArray(payload.roles) ? payload.roles : [],
   };
 }
 
 export function useAuth() {
-  const supabase = createClient();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const refreshProfile = useCallback(
-    async (userId: string) => {
-      const mock = getMockProfile(userId);
-      if (mock) {
-        setProfile(mapMockProfile(mock));
-        return;
-      }
-
-      // Real Supabase path
-      if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
-        const { data } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", userId)
-          .single();
-        if (data) setProfile(data as Profile);
-      }
-    },
-    [supabase]
-  );
+  const refreshProfile = useCallback(async (role: Profile["role"]) => {
+    try {
+      const p = await fetchProfile(role);
+      setProfile(p);
+      return p;
+    } catch {
+      setProfile(null);
+      return null;
+    }
+  }, []);
 
   useEffect(() => {
     let mounted = true;
 
     const init = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!mounted) return;
-
-      if (session?.user) {
-        setUser(session.user);
-        await refreshProfile(session.user.id);
+      const token = getAccessToken();
+      if (!token || isTokenExpired(token)) {
+        clearTokens();
+        if (mounted) setIsLoading(false);
+        return;
       }
-      setIsLoading(false);
+
+      const u = buildUserFromToken(token);
+      if (!u) {
+        clearTokens();
+        if (mounted) setIsLoading(false);
+        return;
+      }
+
+      if (mounted) setUser(u);
+
+      // Try to refresh profile using the token's role hint
+      const roleHint: Profile["role"] = u.roles.includes("service_provider")
+        ? "vendor"
+        : u.roles.includes("complex_manager") || u.roles.includes("admin")
+        ? "manager"
+        : "resident";
+
+      await refreshProfile(roleHint);
+      if (mounted) setIsLoading(false);
     };
 
     init();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (!mounted) return;
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await refreshProfile(session.user.id);
-      } else {
-        setProfile(null);
-      }
-    });
-
     return () => {
       mounted = false;
-      subscription.unsubscribe();
     };
-  }, [supabase, refreshProfile]);
+  }, [refreshProfile]);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setProfile(null);
+    const role = profile?.role ?? "resident";
+    try {
+      await apiLogout(role);
+    } catch {
+      // ignore
+    } finally {
+      clearTokens();
+      setUser(null);
+      setProfile(null);
+    }
   };
 
   return { user, profile, isLoading, signOut, refreshProfile };
 }
 
+/**
+ * Login helper that can be called from pages.
+ */
+export async function doLogin(
+  creds: LoginCredentials,
+  roleHint?: Profile["role"]
+): Promise<{ user: AuthUser; profile: Profile }> {
+  const { tokenPair, profile } = await apiLogin(creds, roleHint);
+
+  const user = buildUserFromToken(tokenPair.access_token);
+  if (!user) {
+    clearTokens();
+    throw new Error("Invalid token received");
+  }
+
+  return { user, profile };
+}
+
+/**
+ * Hook for manager/vendor approval pages.
+ * Kept for backward compatibility with mock auth fallback.
+ */
 export function useAllProfiles() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Mock path
-    const mockProfiles = getAllMockProfiles().map(mapMockProfile);
-    setProfiles(mockProfiles);
+    setProfiles([]);
     setIsLoading(false);
   }, []);
 
-  const approveVendor = (userId: string) => {
-    const updated = updateMockProfile(userId, { approval_status: "approved" });
-    if (updated) {
-      setProfiles((prev) =>
-        prev.map((p) => (p.id === userId ? mapMockProfile(updated) : p))
-      );
-    }
+  const approveVendor = (_userId: string) => {
+    // TODO: wire to admin API
   };
 
-  const rejectVendor = (userId: string) => {
-    const updated = updateMockProfile(userId, { approval_status: "rejected" });
-    if (updated) {
-      setProfiles((prev) =>
-        prev.map((p) => (p.id === userId ? mapMockProfile(updated) : p))
-      );
-    }
+  const rejectVendor = (_userId: string) => {
+    // TODO: wire to admin API
   };
 
   return { profiles, isLoading, approveVendor, rejectVendor };

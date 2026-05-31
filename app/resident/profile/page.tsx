@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   User,
@@ -18,12 +18,13 @@ import {
   Download,
 } from "lucide-react";
 import { usePWA } from "@/components/pwa/PWAProvider";
-import { residentProfile, paymentMethods } from "@/lib/mock-data";
+import { residentProfile as mockResidentProfile, paymentMethods } from "@/lib/mock-data";
 import type { PaymentMethod } from "@/lib/types";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { staggerContainerResponsive, fadeUpItem } from "@/lib/animations";
 import { cn, getInitials } from "@/lib/utils";
+import { useAuth } from "@/lib/auth/hooks";
 
 function Toggle({
   checked,
@@ -73,7 +74,28 @@ function CardBrandIcon({ type }: { type: string }) {
 }
 
 export default function ProfilePage() {
-  const [profile, setProfile] = useState(residentProfile);
+  const { profile: apiProfile } = useAuth();
+
+  // Merge API profile with mock data for fields backend doesn't have yet
+  const [profile, setProfile] = useState(() => ({
+    ...mockResidentProfile,
+    name: apiProfile ? `${apiProfile.first_name} ${apiProfile.last_name}` : mockResidentProfile.name,
+    email: apiProfile?.email ?? mockResidentProfile.email,
+    phone: apiProfile?.phone ?? mockResidentProfile.phone,
+  }));
+
+  // Sync when API profile loads
+  useEffect(() => {
+    if (apiProfile) {
+      setProfile((prev) => ({
+        ...prev,
+        name: `${apiProfile.first_name} ${apiProfile.last_name}`,
+        email: apiProfile.email,
+        phone: apiProfile.phone,
+      }));
+    }
+  }, [apiProfile]);
+
   const [cards, setCards] = useState<PaymentMethod[]>(paymentMethods);
   const [editing, setEditing] = useState(false);
   const [showAddCard, setShowAddCard] = useState(false);
@@ -114,9 +136,19 @@ export default function ProfilePage() {
     setCards((prev) => prev.map((c) => ({ ...c, isDefault: c.id === id })));
   };
 
+  const isLive = !!apiProfile;
+
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-2xl mx-auto pb-24 lg:pb-8">
-      <SectionHeader title="Profile" />
+      <div className="flex items-center justify-between mb-6">
+        <SectionHeader title="Profile" />
+        {isLive && (
+          <span className="text-[10px] text-teal bg-teal/10 px-2 py-0.5 rounded-full">Live data</span>
+        )}
+        {!isLive && (
+          <span className="text-[10px] text-muted bg-white/5 px-2 py-0.5 rounded-full">Demo data</span>
+        )}
+      </div>
 
       <motion.div variants={staggerContainerResponsive(0.06)} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} className="space-y-5">
         {/* Profile Header */}

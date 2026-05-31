@@ -1,8 +1,9 @@
-import { type NextRequest } from "next/server";
-import { updateSession } from "@/lib/supabase/middleware";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request);
+  // Lightweight middleware — auth guards are handled client-side by AuthProvider.
+  // This middleware can be extended for server-side redirects if needed.
+  return NextResponse.next();
 }
 
 export const config = {

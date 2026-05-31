@@ -4,9 +4,10 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { Star, Clock, MapPin, Calendar, CheckCircle, TrendingUp, Activity, Sparkles, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { vendors, categories, events, residentBookings } from "@/lib/mock-data";
+import { vendors as mockVendors, categories, events, residentBookings as mockResidentBookings } from "@/lib/mock-data";
 import { cn, getGreeting, formatDate, kpiColorClasses } from "@/lib/utils";
 import { useActiveCategory, useSetActiveCategory } from "@/lib/store";
+import { useServices, useBookings } from "@/lib/api/hooks";
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.07 } } };
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
@@ -22,7 +23,23 @@ export default function ResidentDashboard() {
   const setActiveCategory = useSetActiveCategory();
   const [bookedId, setBookedId] = useState<string | null>(null);
 
+  const { vendors: apiVendors, isLoading: servicesLoading } = useServices();
+  const { residentBookings: apiBookings, isLoading: bookingsLoading } = useBookings();
+
+  // Use API data when available, fall back to mock data
+  const vendors = apiVendors.length > 0 ? apiVendors : mockVendors;
+  const residentBookings = apiBookings.length > 0 ? apiBookings : mockResidentBookings;
+
   const filteredVendors = activeCategory === "All" ? vendors : vendors.filter((v) => v.category === activeCategory);
+
+  // Derive KPIs from real booking data when available
+  const activeBookingsCount = apiBookings.filter((b) => b.status === "confirmed").length;
+  const pendingCount = apiBookings.filter((b) => b.status === "pending").length;
+  const completedCount = apiBookings.filter((b) => b.status === "completed").length;
+  const totalSpent = apiBookings.reduce((sum, b) => {
+    const val = parseFloat(b.amount.replace(/[^0-9.]/g, "")) || 0;
+    return sum + val;
+  }, 0);
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
@@ -42,10 +59,10 @@ export default function ResidentDashboard() {
       {/* KPI Strip */}
       <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
         {[
-          { label: "Active Bookings", value: "3", icon: Activity, color: "teal" },
-          { label: "Pending", value: "1", icon: Clock, color: "gold" },
-          { label: "Completed", value: "12", icon: CheckCircle, color: "purple" },
-          { label: "Total Spent", value: "$840", icon: TrendingUp, color: "rose" },
+          { label: "Active Bookings", value: apiBookings.length > 0 ? String(activeBookingsCount) : "3", icon: Activity, color: "teal" },
+          { label: "Pending", value: apiBookings.length > 0 ? String(pendingCount) : "1", icon: Clock, color: "gold" },
+          { label: "Completed", value: apiBookings.length > 0 ? String(completedCount) : "12", icon: CheckCircle, color: "purple" },
+          { label: "Total Spent", value: apiBookings.length > 0 ? `$${totalSpent.toFixed(0)}` : "$840", icon: TrendingUp, color: "rose" },
         ].map((stat) => {
           const c = kpiColorClasses[stat.color];
           return (

@@ -32,15 +32,15 @@ export default function AdminApprovalsPage() {
   }, [profile, authLoading, router]);
 
   const pendingVendors = profiles.filter(
-    (p) => p.role === "vendor" && p.approval_status === "pending"
+    (p) => p.role === "vendor" && (p.approval_status || p.status) === "pending"
   );
 
   const approvedVendors = profiles.filter(
-    (p) => p.role === "vendor" && p.approval_status === "approved"
+    (p) => p.role === "vendor" && (p.approval_status || p.status) === "approved"
   );
 
   const rejectedVendors = profiles.filter(
-    (p) => p.role === "vendor" && p.approval_status === "rejected"
+    (p) => p.role === "vendor" && (p.approval_status || p.status) === "rejected"
   );
 
   if (authLoading || isLoading) {
@@ -157,13 +157,13 @@ export default function AdminApprovalsPage() {
 
                     <div className="flex items-center gap-2 sm:flex-col sm:items-end">
                       <button
-                        onClick={() => approveVendor(vendor.id)}
+                        onClick={() => approveVendor(String(vendor.id))}
                         className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-teal/10 text-teal text-xs font-semibold hover:bg-teal/20 transition-colors"
                       >
                         <CheckCircle size={14} /> Approve
                       </button>
                       <button
-                        onClick={() => rejectVendor(vendor.id)}
+                        onClick={() => rejectVendor(String(vendor.id))}
                         className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-rose/10 text-rose text-xs font-semibold hover:bg-rose/20 transition-colors"
                       >
                         <XCircle size={14} /> Reject

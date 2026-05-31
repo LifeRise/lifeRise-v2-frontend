@@ -39,7 +39,7 @@ export default function VendorProfilePage() {
               </div>
               <div>
                 <p className="text-muted text-xs">Status</p>
-                <p className="text-lr-white text-sm capitalize">{profile.approval_status}</p>
+                <p className="text-lr-white text-sm capitalize">{profile.approval_status || profile.status}</p>
               </div>
             </div>
             {profile.description && (

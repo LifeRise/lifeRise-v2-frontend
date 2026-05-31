@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Star, Clock, ArrowRight } from "lucide-react";
-import { serviceDetails, categories } from "@/lib/mock-data";
+import { serviceDetails as mockServiceDetails, categories } from "@/lib/mock-data";
+import { useServices } from "@/lib/api/hooks";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SectionHeader } from "@/components/ui/SectionHeader";
@@ -17,9 +18,13 @@ export default function ServicesPage() {
   const setActiveCategory = useSetActiveCategory();
   const [searchQuery, setSearchQuery] = useState("");
   const [bookedId, setBookedId] = useState<string | null>(null);
+  const { details: apiServices, isLoading: apiLoading } = useServices();
+
+  // Use API data when available, fall back to mock data
+  const serviceData = apiServices.length > 0 ? apiServices : mockServiceDetails;
 
   const filtered = useMemo(() => {
-    return serviceDetails.filter((s) => {
+    return serviceData.filter((s) => {
       const matchesCategory = activeCategory === "All" || s.category === activeCategory;
       const q = searchQuery.toLowerCase();
       const matchesSearch =
@@ -29,7 +34,7 @@ export default function ServicesPage() {
         s.tags.some((t) => t.toLowerCase().includes(q));
       return matchesCategory && matchesSearch;
     });
-  }, [activeCategory, searchQuery]);
+  }, [activeCategory, searchQuery, serviceData]);
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto pb-24 lg:pb-8">
@@ -70,10 +75,22 @@ export default function ServicesPage() {
         ))}
       </div>
 
-      {/* Results Count */}
-      <p className="text-muted text-xs mb-4">
-        {filtered.length} {filtered.length === 1 ? "service" : "services"} available
-      </p>
+      {/* Results Count + API Status */}
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-muted text-xs">
+          {filtered.length} {filtered.length === 1 ? "service" : "services"} available
+        </p>
+        {apiServices.length > 0 && (
+          <span className="text-[10px] text-teal bg-teal/10 px-2 py-0.5 rounded-full">
+            Live data
+          </span>
+        )}
+        {apiServices.length === 0 && !apiLoading && (
+          <span className="text-[10px] text-muted bg-white/5 px-2 py-0.5 rounded-full">
+            Demo data
+          </span>
+        )}
+      </div>
 
       {/* Service Grid */}
       {filtered.length > 0 ? (

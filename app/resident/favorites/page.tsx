@@ -1,36 +1,74 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Star, ArrowRight, ShoppingBag } from "lucide-react";
-import { serviceDetails } from "@/lib/mock-data";
+import { serviceDetails as mockServiceDetails } from "@/lib/mock-data";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { staggerContainerResponsive, fadeUpItem } from "@/lib/animations";
 import Link from "next/link";
+import { useServices, useFavorites } from "@/lib/api/hooks";
+import { toggleFavorite } from "@/lib/api/favorites";
 
 export default function FavoritesPage() {
-  const [favorites, setFavorites] = useState<Set<string>>(new Set(["v1", "v4"]));
   const [bookedId, setBookedId] = useState<string | null>(null);
+  const { details: apiServices, isLoading: servicesLoading } = useServices();
+  const { favorites: apiFavorites, isLoading: favsLoading, refresh: refreshFavs } = useFavorites();
 
-  const toggleFavorite = (id: string) => {
-    setFavorites((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
+  // Build a set of favorited service IDs from API
+  const favServiceIds = useMemo(() => {
+    if (apiFavorites.length === 0) return new Set<string>();
+    return new Set(
+      apiFavorites
+        .map((f: any) => f.service_id ?? f.serviceId ?? f.ServiceID)
+        .filter(Boolean)
+        .map(String)
+    );
+  }, [apiFavorites]);
 
-  const favServices = serviceDetails.filter((s) => favorites.has(s.id));
+  // Use API services when available, fall back to mock
+  const allServices = apiServices.length > 0 ? apiServices : mockServiceDetails;
+
+  // Filter to favorited services
+  const favServices = useMemo(() => {
+    if (apiFavorites.length > 0) {
+      return allServices.filter((s) => favServiceIds.has(s.id));
+    }
+    // Fallback: use mock favorites (v1, v4)
+    return allServices.filter((s) => s.id === "v1" || s.id === "v4");
+  }, [allServices, favServiceIds, apiFavorites]);
+
+  const isLoading = servicesLoading || favsLoading;
+  const isLive = apiFavorites.length > 0 && apiServices.length > 0;
+
+  const handleToggleFavorite = useCallback(
+    async (id: string) => {
+      if (apiFavorites.length > 0) {
+        // Real API mode
+        try {
+          await toggleFavorite(Number(id));
+          refreshFavs();
+        } catch {
+          // ignore
+        }
+      }
+    },
+    [apiFavorites, refreshFavs]
+  );
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto pb-24 lg:pb-8">
-      <SectionHeader
-        title="Favorites"
-        subtitle="Your saved vendors and services"
-      />
+      <div className="flex items-center justify-between mb-6">
+        <SectionHeader title="Favorites" subtitle="Your saved vendors and services" />
+        {isLive && (
+          <span className="text-[10px] text-teal bg-teal/10 px-2 py-0.5 rounded-full shrink-0">Live data</span>
+        )}
+        {!isLive && !isLoading && (
+          <span className="text-[10px] text-muted bg-white/5 px-2 py-0.5 rounded-full shrink-0">Demo data</span>
+        )}
+      </div>
 
       {favServices.length > 0 ? (
         <motion.div
@@ -57,7 +95,7 @@ export default function FavoritesPage() {
                       </span>
                     </div>
                     <button
-                      onClick={() => toggleFavorite(v.id)}
+                      onClick={() => handleToggleFavorite(v.id)}
                       className="absolute top-3 right-3 w-8 h-8 rounded-full bg-midnight/60 flex items-center justify-center border border-white/10 hover:bg-midnight/80 transition-colors"
                     >
                       <Heart size={14} className="text-red-400 fill-red-400" />
@@ -78,7 +116,7 @@ export default function FavoritesPage() {
 
                     <div className="flex items-center justify-between pt-3 border-t border-white/[0.05]">
                       <button
-                        onClick={() => toggleFavorite(v.id)}
+                        onClick={() => handleToggleFavorite(v.id)}
                         className="text-[11px] text-muted hover:text-red-400 transition-colors flex items-center gap-1"
                       >
                         <Heart size={10} className="fill-red-400 text-red-400" /> Remove

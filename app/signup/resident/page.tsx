@@ -15,8 +15,7 @@ import {
   ArrowRight,
   ChevronLeft,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
-import { GoogleButton } from "@/components/auth/GoogleButton";
+import { signup as apiSignup } from "@/lib/api/auth";
 
 export default function ResidentSignupPage() {
   const router = useRouter();
@@ -74,31 +73,18 @@ export default function ResidentSignupPage() {
     if (!validate()) return;
 
     setIsLoading(true);
-    const supabase = createClient();
 
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
+      await apiSignup({
+        first_name: firstName,
+        last_name: lastName,
         email,
+        phone,
         password,
-        options: {
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-            phone,
-            role: isManager ? "manager" : "resident",
-          },
-        },
       });
 
-      if (signUpError) {
-        setError(signUpError.message || "Signup failed. Please try again.");
-        setIsLoading(false);
-        return;
-      }
-
-      if (data?.user) {
-        router.push("/verify-email?email=" + encodeURIComponent(email));
-      }
+      // After successful signup, redirect to login
+      router.push("/login?registered=" + encodeURIComponent(email));
     } catch (err: any) {
       setError(err?.message || "Signup failed. Please try again.");
     } finally {
@@ -245,7 +231,10 @@ export default function ResidentSignupPage() {
             <div className="flex-1 h-px bg-white/10" />
           </div>
 
-          <GoogleButton label="Sign up with Google" />
+          {/* Google OAuth disabled until Supabase auth bridge is implemented */}
+          <p className="text-center text-muted text-xs">
+            Google sign-up requires Supabase auth integration.
+          </p>
         </div>
 
         <div className="flex items-center justify-center gap-2">

@@ -12,17 +12,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { user, profile, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const setUser = useAppStore((s) => s.setUser);
   const setProfile = useAppStore((s) => s.setProfile);
   const setAuthLoading = useAppStore((s) => s.setAuthLoading);
   const setRole = useAppStore((s) => s.setRole);
 
   useEffect(() => {
-    setUser(user);
     setProfile(profile);
     setAuthLoading(isLoading);
     if (profile?.role) setRole(profile.role);
-  }, [user, profile, isLoading, setUser, setProfile, setAuthLoading, setRole]);
+  }, [profile, isLoading, setProfile, setAuthLoading, setRole]);
 
   useEffect(() => {
     if (isLoading) return;
@@ -38,7 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (user && profile) {
       // Vendor pending approval
-      if (profile.role === "vendor" && profile.approval_status === "pending" && pathname !== "/pending-approval") {
+      if (profile.role === "vendor" && profile.status !== "active" && pathname !== "/pending-approval") {
         router.push("/pending-approval");
         return;
       }
