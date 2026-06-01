@@ -6,7 +6,7 @@
  */
 
 export interface JwtPayload {
-  sub?: number; // UserID
+  sub?: string | number; // UserID
   type?: "customer" | "user";
   roles?: string[];
   exp?: number;

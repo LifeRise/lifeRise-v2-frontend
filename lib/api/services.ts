@@ -33,6 +33,18 @@ export interface AvailableSlot {
   is_available: boolean;
 }
 
+/** Data shape for creating/updating a service (matches backend CreateServiceRequest). */
+export interface ServiceInput {
+  name: string;
+  description?: string;
+  price: number;
+  currency?: string;
+  duration: number;
+  category_id?: number;
+  max_participants?: number;
+  location_type?: string;
+}
+
 export function listServices(role: FrontendRole = "resident") {
   const baseUrl = getApiBaseUrl(role);
   return apiGet<{ services: Service[] }>(baseUrl, "/api/services");
@@ -48,12 +60,12 @@ export function getServiceSlots(role: FrontendRole, id: number) {
   return apiGet<{ slots: AvailableSlot[] }>(baseUrl, `/api/services/${id}/slots`);
 }
 
-export function createService(role: FrontendRole, data: Partial<Service>) {
+export function createService(role: FrontendRole, data: ServiceInput) {
   const baseUrl = getApiBaseUrl(role);
   return apiPost<{ service: Service }>(baseUrl, "/api/services", data);
 }
 
-export function updateService(role: FrontendRole, id: number, data: Partial<Service>) {
+export function updateService(role: FrontendRole, id: number, data: Partial<ServiceInput>) {
   const baseUrl = getApiBaseUrl(role);
   return apiPatch<{ service: Service }>(baseUrl, `/api/services/${id}`, data);
 }

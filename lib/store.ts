@@ -3,16 +3,25 @@ import type { BackendProfile } from "@/lib/api/types";
 
 export type Role = "resident" | "vendor" | "manager" | null;
 
+export interface AuthUser {
+  id: string | number;
+  email?: string;
+  userType: "customer" | "user";
+  roles: string[];
+}
+
 interface AppStore {
   role: Role;
   isOnline: boolean;
   activeCategory: string;
   profile: BackendProfile | null;
+  authUser: AuthUser | null;
   isAuthLoading: boolean;
   setRole: (role: Role) => void;
   setIsOnline: (v: boolean) => void;
   setActiveCategory: (cat: string) => void;
   setProfile: (profile: BackendProfile | null) => void;
+  setAuthUser: (user: AuthUser | null) => void;
   setAuthLoading: (loading: boolean) => void;
   signOut: () => Promise<void>;
 }
@@ -22,16 +31,18 @@ export const useAppStore = create<AppStore>()((set) => ({
   isOnline: true,
   activeCategory: "All",
   profile: null,
+  authUser: null,
   isAuthLoading: true,
   setRole: (role) => set({ role }),
   setIsOnline: (isOnline) => set({ isOnline }),
   setActiveCategory: (activeCategory) => set({ activeCategory }),
   setProfile: (profile) => set({ profile }),
+  setAuthUser: (authUser) => set({ authUser }),
   setAuthLoading: (isAuthLoading) => set({ isAuthLoading }),
   signOut: async () => {
     const { clearTokens } = await import("@/lib/api/client");
     clearTokens();
-    set({ profile: null, role: null });
+    set({ profile: null, authUser: null, role: null });
   },
 }));
 

@@ -107,6 +107,9 @@ export async function apiRequest<T>(
     const token = getAccessToken();
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
+      console.log("[apiRequest] Sending with token:", token.substring(0, 20) + "...");
+    } else {
+      console.warn("[apiRequest] No access token found in localStorage");
     }
   }
 

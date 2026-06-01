@@ -75,6 +75,12 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
 
+    // Skip service worker in development to avoid cache issues and slow loads
+    const isDev =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1";
+    if (isDev) return;
+
     let registration: ServiceWorkerRegistration | null = null;
 
     const onControllerChange = () => {

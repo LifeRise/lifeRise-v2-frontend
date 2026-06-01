@@ -15,7 +15,8 @@ import {
   ArrowRight,
   ChevronLeft,
 } from "lucide-react";
-import { signup as apiSignup } from "@/lib/api/auth";
+import { authService } from "@/lib/auth/auth-service";
+import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
 
 export default function ResidentSignupPage() {
   const router = useRouter();
@@ -33,6 +34,7 @@ export default function ResidentSignupPage() {
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const formatPhone = (value: string) => {
     let cleaned = value.replace(/[^\d+]/g, "");
@@ -75,19 +77,27 @@ export default function ResidentSignupPage() {
     setIsLoading(true);
 
     try {
-      await apiSignup({
+      const { user, session } = await authService.signUp({
         first_name: firstName,
         last_name: lastName,
         email,
         phone,
         password,
+        role: isManager ? "manager" : "resident",
       });
 
-      // After successful signup, redirect to login
-      router.push("/login?registered=" + encodeURIComponent(email));
+      if (authService.isSupabaseConfigured() && !session) {
+        // Email confirmation required
+        router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+        return;
+      }
+
+      setSuccess("Account created successfully! Redirecting…");
+      setTimeout(() => {
+        router.push("/login");
+      }, 1500);
     } catch (err: any) {
       setError(err?.message || "Signup failed. Please try again.");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -126,6 +136,19 @@ export default function ResidentSignupPage() {
               <p className="text-red-400 text-sm text-center">{error}</p>
             </div>
           )}
+          {success && (
+            <div className="bg-teal/10 border border-teal/20 rounded-xl px-4 py-3">
+              <p className="text-teal text-sm text-center">{success}</p>
+            </div>
+          )}
+
+          <SocialAuthButtons />
+
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-white/10" />
+            <span className="text-muted text-xs">or sign up with email</span>
+            <div className="flex-1 h-px bg-white/10" />
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
@@ -224,17 +247,6 @@ export default function ResidentSignupPage() {
               )}
             </button>
           </form>
-
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-white/10" />
-            <span className="text-muted text-xs">or</span>
-            <div className="flex-1 h-px bg-white/10" />
-          </div>
-
-          {/* Google OAuth disabled until Supabase auth bridge is implemented */}
-          <p className="text-center text-muted text-xs">
-            Google sign-up requires Supabase auth integration.
-          </p>
         </div>
 
         <div className="flex items-center justify-center gap-2">

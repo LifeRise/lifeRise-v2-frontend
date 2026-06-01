@@ -1,16 +1,19 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { getAccessToken, clearTokens } from "@/lib/api/client";
 import { decodeJwtPayload, isTokenExpired } from "@/lib/api/jwt";
 import { fetchProfile, login as apiLogin, logout as apiLogout } from "@/lib/api/auth";
+import { createClient } from "@/lib/supabase/client";
+import { useAppStore } from "@/lib/store";
 import type { BackendProfile, LoginCredentials } from "@/lib/api/types";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 // Re-export Profile type for backward compatibility
 export type Profile = BackendProfile;
 
 export interface AuthUser {
-  id: number;
+  id: string | number;
   email?: string;
   userType: "customer" | "user";
   roles: string[];
@@ -27,92 +30,228 @@ function buildUserFromToken(token: string): AuthUser | null {
   };
 }
 
-export function useAuth() {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+function buildUserFromSupabaseUser(supabaseUser: SupabaseUser): AuthUser {
+  return {
+    id: supabaseUser.id,
+    email: supabaseUser.email ?? undefined,
+    userType: "customer",
+    roles: Array.isArray(supabaseUser.user_metadata?.roles)
+      ? supabaseUser.user_metadata.roles
+      : ["customer"],
+  };
+}
 
-  const refreshProfile = useCallback(async (role: Profile["role"]) => {
+function buildProfileFromSupabaseUser(supabaseUser: SupabaseUser): Profile {
+  const fullName = (supabaseUser.user_metadata?.full_name as string) ?? "";
+  const nameParts = fullName.split(" ");
+  const firstName =
+    (supabaseUser.user_metadata?.first_name as string) ?? nameParts[0] ?? "";
+  const lastName =
+    (supabaseUser.user_metadata?.last_name as string) ??
+    nameParts.slice(1).join(" ") ??
+    "";
+  const avatar =
+    (supabaseUser.user_metadata?.avatar_url as string) ??
+    (supabaseUser.user_metadata?.picture as string);
+
+  return {
+    id: 0,
+    email: supabaseUser.email ?? "",
+    first_name: firstName,
+    last_name: lastName,
+    phone: (supabaseUser.user_metadata?.phone as string) ?? "",
+    avatar,
+    timezone: "UTC",
+    status: "active",
+    role: (supabaseUser.user_metadata?.role as Profile["role"]) ?? "resident",
+    user_type: "customer",
+    roles: ["customer"],
+    created_at: supabaseUser.created_at,
+  };
+}
+
+/** Global flag so init() only runs once across all component instances */
+let globalInitStarted = false;
+
+export function useAuth() {
+  const user = useAppStore((s) => s.authUser);
+  const profile = useAppStore((s) => s.profile);
+  const isLoading = useAppStore((s) => s.isAuthLoading);
+  const setUser = useAppStore((s) => s.setAuthUser);
+  const setProfile = useAppStore((s) => s.setProfile);
+  const setIsLoading = useAppStore((s) => s.setAuthLoading);
+  const setRole = useAppStore((s) => s.setRole);
+
+  const refreshProfile = useCallback(async () => {
     try {
-      const p = await fetchProfile(role);
+      const p = await fetchProfile(profile?.role ?? null);
       setProfile(p);
+      if (p?.role) setRole(p.role);
       return p;
     } catch {
       setProfile(null);
       return null;
     }
-  }, []);
+  }, [setProfile, setRole, profile?.role]);
 
   useEffect(() => {
     let mounted = true;
+    let supabaseSubscription: { unsubscribe: () => void } | null = null;
 
     const init = async () => {
+      if (globalInitStarted) return;
+      globalInitStarted = true;
+
+      // 1. Prefer Go backend JWT if present
       const token = getAccessToken();
-      if (!token || isTokenExpired(token)) {
-        clearTokens();
-        if (mounted) setIsLoading(false);
-        return;
+      if (token && !isTokenExpired(token)) {
+        const u = buildUserFromToken(token);
+        if (u) {
+          if (mounted) setUser(u);
+          await refreshProfile();
+          if (mounted) setIsLoading(false);
+          return;
+        }
       }
 
-      const u = buildUserFromToken(token);
-      if (!u) {
-        clearTokens();
+      // 2. Fall back to Supabase session
+      if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+        const supabase = createClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user && mounted) {
+          setUser(buildUserFromSupabaseUser(session.user));
+          setProfile(buildProfileFromSupabaseUser(session.user));
+          if (session.user.user_metadata?.role) {
+            setRole(session.user.user_metadata.role as any);
+          }
+          setIsLoading(false);
+        } else if (mounted) {
+          setIsLoading(false);
+        }
+
+        // Listen for Supabase auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          (_event, newSession) => {
+            if (newSession?.user) {
+              setUser(buildUserFromSupabaseUser(newSession.user));
+              setProfile(buildProfileFromSupabaseUser(newSession.user));
+              if (newSession.user.user_metadata?.role) {
+                setRole(newSession.user.user_metadata.role as any);
+              }
+            } else if (!getAccessToken()) {
+              setUser(null);
+              setProfile(null);
+              setRole(null);
+            }
+            setIsLoading(false);
+          }
+        );
+        supabaseSubscription = subscription;
+      } else {
         if (mounted) setIsLoading(false);
-        return;
       }
-
-      if (mounted) setUser(u);
-
-      // Try to refresh profile using the token's role hint
-      const roleHint: Profile["role"] = u.roles.includes("service_provider")
-        ? "vendor"
-        : u.roles.includes("complex_manager") || u.roles.includes("admin")
-        ? "manager"
-        : "resident";
-
-      await refreshProfile(roleHint);
-      if (mounted) setIsLoading(false);
     };
 
     init();
 
     return () => {
       mounted = false;
+      supabaseSubscription?.unsubscribe();
     };
-  }, [refreshProfile]);
+  }, [refreshProfile, setIsLoading, setProfile, setRole, setUser]);
 
-  const signOut = async () => {
-    const role = profile?.role ?? "resident";
+  const signIn = useCallback(async (creds: LoginCredentials) => {
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      // authService.signInWithPassword handles both Supabase login
+      // AND the Go backend bridge (stores backend JWT in localStorage).
+      // If Supabase fails, it falls back to backend-only login.
+      const { authService } = await import("./auth-service");
+      const { user: sbUser, profile: backendProfile } = await authService.signInWithPassword(creds);
+
+      if (sbUser) {
+        // Supabase login succeeded
+        const u = buildUserFromSupabaseUser(sbUser);
+        const p = backendProfile ?? buildProfileFromSupabaseUser(sbUser);
+        setUser(u);
+        setProfile(p);
+        if (p.role) setRole(p.role);
+        setIsLoading(false);
+        return { user: u, profile: p, tokenPair: null as any };
+      }
+
+      // No Supabase user — check if backend-only login succeeded
+      if (backendProfile) {
+        const token = getAccessToken();
+        if (!token) throw new Error("Backend login succeeded but no token stored");
+        const u = buildUserFromToken(token);
+        if (!u) {
+          clearTokens();
+          throw new Error("Invalid backend token");
+        }
+        setUser(u);
+        setProfile(backendProfile);
+        if (backendProfile.role) setRole(backendProfile.role);
+        setIsLoading(false);
+        return { user: u, profile: backendProfile, tokenPair: null as any };
+      }
+
+      throw new Error("Login failed");
+    }
+
+    // Real backend login (no Supabase configured)
+    const { tokenPair, profile: backendProfile } = await apiLogin(creds);
+    const u = buildUserFromToken(tokenPair.access_token);
+    if (!u) {
+      clearTokens();
+      throw new Error("Invalid token received from backend");
+    }
+    setUser(u);
+    setProfile(backendProfile);
+    if (backendProfile.role) setRole(backendProfile.role);
+    setIsLoading(false);
+    return { user: u, profile: backendProfile, tokenPair };
+  }, [setUser, setProfile, setRole, setIsLoading]);
+
+  const signOut = useCallback(async () => {
     try {
-      await apiLogout(role);
+      await apiLogout(profile?.role ?? null);
     } catch {
       // ignore
-    } finally {
-      clearTokens();
-      setUser(null);
-      setProfile(null);
     }
-  };
 
-  return { user, profile, isLoading, signOut, refreshProfile };
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      try {
+        const supabase = createClient();
+        await supabase.auth.signOut();
+      } catch {
+        // ignore
+      }
+    }
+
+    clearTokens();
+    setUser(null);
+    setProfile(null);
+    setRole(null);
+    globalInitStarted = false;
+  }, [setUser, setProfile, setRole, profile?.role]);
+
+  return { user, profile, isLoading, signIn, signOut, refreshProfile };
 }
 
 /**
  * Login helper that can be called from pages.
+ * Prefer useAuth().signIn() when inside a component so React state updates immediately.
  */
 export async function doLogin(
-  creds: LoginCredentials,
-  roleHint?: Profile["role"]
+  creds: LoginCredentials
 ): Promise<{ user: AuthUser; profile: Profile }> {
-  const { tokenPair, profile } = await apiLogin(creds, roleHint);
-
+  const { tokenPair, profile: backendProfile } = await apiLogin(creds);
   const user = buildUserFromToken(tokenPair.access_token);
   if (!user) {
     clearTokens();
-    throw new Error("Invalid token received");
+    throw new Error("Invalid token received from backend");
   }
-
-  return { user, profile };
+  return { user, profile: backendProfile };
 }
 
 /**
@@ -138,3 +277,5 @@ export function useAllProfiles() {
 
   return { profiles, isLoading, approveVendor, rejectVendor };
 }
+
+

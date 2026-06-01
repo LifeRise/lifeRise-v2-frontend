@@ -8,9 +8,19 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (!error && data.session) {
+      // Determine redirect based on user role metadata if available
+      const role = data.session.user.user_metadata?.role as string | undefined;
+      const dest =
+        role === "manager"
+          ? "/manager"
+          : role === "vendor"
+          ? "/vendor"
+          : "/resident";
+
+      return NextResponse.redirect(`${origin}${dest}`);
     }
   }
 

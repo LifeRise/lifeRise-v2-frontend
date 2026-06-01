@@ -7,7 +7,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useAuth } from "@/lib/auth/hooks";
 import { useServices } from "@/lib/api/hooks";
-import { createService, updateService, deleteService } from "@/lib/api/services";
+import { createService, updateService, deleteService, type ServiceInput } from "@/lib/api/services";
 import { cn } from "@/lib/utils";
 
 interface ServiceForm {
@@ -100,13 +100,20 @@ export default function VendorServicesPage() {
 
     setSubmitting(true);
     try {
+      const priceNum = parseFloat(form.price);
+      if (isNaN(priceNum) || priceNum < 0) {
+        console.error("Invalid price");
+        setSubmitting(false);
+        return;
+      }
+
       const data = {
         name: form.name,
-        description: form.description,
-        price: form.price,
-        duration: parseInt(form.duration),
+        description: form.description || undefined,
+        price: priceNum,
+        duration: parseInt(form.duration) || 60,
         currency: "USD",
-        status: "active",
+        location_type: "on_site",
       };
 
       if (editingId) {

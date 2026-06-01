@@ -17,7 +17,8 @@ import {
   ChevronLeft,
   FileText,
 } from "lucide-react";
-import { signup as apiSignup } from "@/lib/api/auth";
+import { signupVendor } from "@/lib/api/auth";
+import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
 
 export default function VendorSignupPage() {
   const router = useRouter();
@@ -33,6 +34,7 @@ export default function VendorSignupPage() {
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const formatEIN = (value: string) => {
     const digits = value.replace(/\D/g, "").slice(0, 9);
@@ -89,21 +91,23 @@ export default function VendorSignupPage() {
     setIsLoading(true);
 
     try {
-      // NOTE: Backend vendor registration requires a separate endpoint.
-      // For now, we create a customer account. True vendor signup will
-      // be implemented via the vendor-api /api/signup endpoint.
-      await apiSignup({
+      await signupVendor({
         first_name: firstName,
         last_name: lastName,
         email,
         phone,
         password,
+        timezone: "UTC",
+        ein_tax_id: einTaxId,
+        description,
       });
 
-      router.push("/login?registered=" + encodeURIComponent(email));
+      setSuccess("Account created successfully! Redirecting…");
+      setTimeout(() => {
+        router.push("/login");
+      }, 1500);
     } catch (err: any) {
       setError(err?.message || "Signup failed. Please try again.");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -142,6 +146,19 @@ export default function VendorSignupPage() {
               <p className="text-red-400 text-sm text-center">{error}</p>
             </div>
           )}
+          {success && (
+            <div className="bg-teal/10 border border-teal/20 rounded-xl px-4 py-3">
+              <p className="text-teal text-sm text-center">{success}</p>
+            </div>
+          )}
+
+          <SocialAuthButtons />
+
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-white/10" />
+            <span className="text-muted text-xs">or sign up with email</span>
+            <div className="flex-1 h-px bg-white/10" />
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
@@ -263,17 +280,6 @@ export default function VendorSignupPage() {
               )}
             </button>
           </form>
-
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-white/10" />
-            <span className="text-muted text-xs">or</span>
-            <div className="flex-1 h-px bg-white/10" />
-          </div>
-
-          {/* Google OAuth disabled until Supabase auth bridge is implemented */}
-          <p className="text-center text-muted text-xs">
-            Google sign-up requires Supabase auth integration.
-          </p>
         </div>
 
         <div className="flex items-center justify-center gap-2">

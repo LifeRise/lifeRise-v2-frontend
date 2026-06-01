@@ -3,7 +3,7 @@
   Versioned cache strategy with automatic update support.
   Bump BUILD_ID below for each production release.
 */
-const BUILD_ID = "20260521-002";
+const BUILD_ID = "20260529-001";
 const CACHE_NAME = `liferise-${BUILD_ID}`;
 const SHELL_ROUTES = [
   "/",
@@ -68,6 +68,16 @@ self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
   const { request } = event;
+  const url = new URL(request.url);
+
+  // Skip non-HTTP schemes (chrome-extension, blob, data, etc.)
+  if (url.protocol !== "http:" && url.protocol !== "https:") return;
+
+  // Skip API calls to the backend — never cache those
+  if (url.hostname === "localhost" && url.port === "8080") return;
+  if (url.hostname === "localhost" && url.port === "8081") return;
+  if (url.hostname === "localhost" && url.port === "8082") return;
+
   const isNavigation = request.mode === "navigate";
 
   if (isNavigation) {

@@ -3,7 +3,7 @@
 /**
  * Mock Supabase Auth implementation for offline/demo use.
  * Stores users and sessions in localStorage.
- * Swapping to real Supabase only requires filling in .env.local.
+ * Supports: email/password, OAuth, magic link, OTP, email confirmation.
  */
 
 import type {
@@ -17,6 +17,9 @@ import type {
 const MOCK_USERS_KEY = "liferise_mock_users";
 const MOCK_SESSION_KEY = "liferise_mock_session";
 const MOCK_PROFILES_KEY = "liferise_mock_profiles";
+const MOCK_PENDING_CONFIRMATIONS_KEY = "liferise_mock_pending_confirmations";
+const MOCK_MAGIC_LINKS_KEY = "liferise_mock_magic_links";
+const MOCK_OTP_CODES_KEY = "liferise_mock_otp_codes";
 
 export interface MockProfile {
   id: string;
@@ -38,46 +41,40 @@ function generateId(): string {
   return "mock-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
-function getUsers(): Record<string, { password: string; user: User }> {
+function getItem<T>(key: string, fallback: T): T {
   try {
-    return JSON.parse(localStorage.getItem(MOCK_USERS_KEY) ?? "{}");
+    return JSON.parse(localStorage.getItem(key) ?? JSON.stringify(fallback));
   } catch {
-    return {};
+    return fallback;
   }
 }
 
-function setUsers(users: Record<string, { password: string; user: User }>) {
-  localStorage.setItem(MOCK_USERS_KEY, JSON.stringify(users));
+function setItem<T>(key: string, value: T) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function getUsers(): Record<string, { password: string; user: User; confirmed: boolean }> {
+  return getItem(MOCK_USERS_KEY, {});
+}
+
+function setUsers(users: Record<string, { password: string; user: User; confirmed: boolean }>) {
+  setItem(MOCK_USERS_KEY, users);
 }
 
 function getProfiles(): Record<string, MockProfile> {
-  try {
-    return JSON.parse(localStorage.getItem(MOCK_PROFILES_KEY) ?? "{}");
-  } catch {
-    return {};
-  }
+  return getItem(MOCK_PROFILES_KEY, {});
 }
 
 function setProfiles(profiles: Record<string, MockProfile>) {
-  localStorage.setItem(MOCK_PROFILES_KEY, JSON.stringify(profiles));
+  setItem(MOCK_PROFILES_KEY, profiles);
 }
 
 function getSession(): Session | null {
-  try {
-    const raw = localStorage.getItem(MOCK_SESSION_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
+  return getItem(MOCK_SESSION_KEY, null);
 }
 
 function setSession(session: Session | null) {
-  if (session) {
-    localStorage.setItem(MOCK_SESSION_KEY, JSON.stringify(session));
-  } else {
-    localStorage.removeItem(MOCK_SESSION_KEY);
-  }
+  setItem(MOCK_SESSION_KEY, session);
 }
 
 function createMockUser(email: string, metadata: Record<string, unknown>): User {
@@ -91,7 +88,7 @@ function createMockUser(email: string, metadata: Record<string, unknown>): User 
     created_at: new Date().toISOString(),
     confirmation_sent_at: new Date().toISOString(),
     email_confirmed_at: new Date().toISOString(),
-    phone: "",
+    phone: (metadata.phone as string) ?? "",
     confirmed_at: new Date().toISOString(),
     last_sign_in_at: new Date().toISOString(),
     role: "authenticated",
@@ -136,7 +133,7 @@ export const mockAuth = {
       throw { message: "User already registered" };
     }
     const user = createMockUser(email, options?.data ?? {});
-    users[email] = { password, user };
+    users[email] = { password, user, confirmed: false };
     setUsers(users);
 
     // Create profile
@@ -159,6 +156,13 @@ export const mockAuth = {
     };
     setProfiles(profiles);
 
+    // Store pending confirmation
+    const pending = getItem<string[]>(MOCK_PENDING_CONFIRMATIONS_KEY, []);
+    if (!pending.includes(email)) {
+      pending.push(email);
+      setItem(MOCK_PENDING_CONFIRMATIONS_KEY, pending);
+    }
+
     return { data: { user, session: null }, error: null };
   },
 
@@ -175,6 +179,9 @@ export const mockAuth = {
     if (!record || record.password !== password) {
       throw { message: "Invalid login credentials" };
     }
+    if (!record.confirmed) {
+      throw { message: "Email not confirmed" };
+    }
     const session = createMockSession(record.user);
     setSession(session);
     notify("SIGNED_IN", session);
@@ -186,11 +193,10 @@ export const mockAuth = {
     options,
   }: {
     provider: Provider;
-    options?: { redirectTo?: string };
+    options?: { redirectTo?: string; scopes?: string };
   }) => {
     await new Promise((r) => setTimeout(r, 800));
-    // Simulate Google OAuth by creating a mock Google user
-    const email = "google-user-" + generateId() + "@example.com";
+    const email = `${provider}-user-` + generateId() + "@example.com";
     const users = getUsers();
     let user: User;
     let existing = Object.values(users).find((u) => u.user.email === email);
@@ -199,24 +205,24 @@ export const mockAuth = {
       user = existing.user;
     } else {
       user = createMockUser(email, {
-        full_name: "Google User",
-        avatar_url: "https://ui-avatars.com/api/?name=Google+User",
+        full_name: `${provider} User`,
+        avatar_url: `https://ui-avatars.com/api/?name=${provider}+User`,
         provider,
       });
-      users[email] = { password: "oauth-no-password", user };
+      users[email] = { password: "oauth-no-password", user, confirmed: true };
       setUsers(users);
 
       const profiles = getProfiles();
       profiles[user.id] = {
         id: user.id,
         email,
-        first_name: "Google",
+        first_name: provider,
         last_name: "User",
         phone: "",
         role: "resident",
         approval_status: "approved",
         onboarding_completed: false,
-        avatar_url: "https://ui-avatars.com/api/?name=Google+User",
+        avatar_url: `https://ui-avatars.com/api/?name=${provider}+User`,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -227,12 +233,158 @@ export const mockAuth = {
     setSession(session);
     notify("SIGNED_IN", session);
 
-    // In real OAuth, redirect happens. Here we simulate it by returning a URL
-    // that the caller can use. For mock, we'll just let the caller handle redirect.
     return {
       data: { url: options?.redirectTo ?? "/resident" },
       error: null,
     };
+  },
+
+  signInWithOtp: async ({
+    email,
+    phone,
+    options,
+  }: {
+    email?: string;
+    phone?: string;
+    options?: { emailRedirectTo?: string; shouldCreateUser?: boolean };
+  }) => {
+    await new Promise((r) => setTimeout(r, 600));
+
+    if (email) {
+      // Magic link simulation
+      const magicLinks = getItem<Record<string, string>>(MOCK_MAGIC_LINKS_KEY, {});
+      const code = Math.random().toString(36).slice(2, 8).toUpperCase();
+      magicLinks[email] = code;
+      setItem(MOCK_MAGIC_LINKS_KEY, magicLinks);
+      console.log(`[MOCK] Magic link sent to ${email}. Code: ${code}`);
+      return { data: {}, error: null };
+    }
+
+    if (phone) {
+      // SMS OTP simulation
+      const otpCodes = getItem<Record<string, string>>(MOCK_OTP_CODES_KEY, {});
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      otpCodes[phone] = code;
+      setItem(MOCK_OTP_CODES_KEY, otpCodes);
+      console.log(`[MOCK] OTP sent to ${phone}. Code: ${code}`);
+      return { data: {}, error: null };
+    }
+
+    throw { message: "Email or phone required" };
+  },
+
+  verifyOtp: async ({
+    email,
+    phone,
+    token,
+    type,
+  }: {
+    email?: string;
+    phone?: string;
+    token: string;
+    type: "email" | "sms" | "signup";
+  }) => {
+    await new Promise((r) => setTimeout(r, 400));
+
+    if (email) {
+      const magicLinks = getItem<Record<string, string>>(MOCK_MAGIC_LINKS_KEY, {});
+      if (magicLinks[email] !== token) {
+        throw { message: "Invalid token" };
+      }
+      delete magicLinks[email];
+      setItem(MOCK_MAGIC_LINKS_KEY, magicLinks);
+
+      const users = getUsers();
+      let record = users[email];
+      if (!record) {
+        // Create user if not exists (magic link creates user)
+        const user = createMockUser(email, {});
+        users[email] = { password: "magic-link-no-password", user, confirmed: true };
+        setUsers(users);
+        record = users[email];
+
+        const profiles = getProfiles();
+        profiles[user.id] = {
+          id: user.id,
+          email,
+          first_name: "",
+          last_name: "",
+          phone: "",
+          role: "resident",
+          approval_status: "approved",
+          onboarding_completed: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        setProfiles(profiles);
+      }
+
+      const session = createMockSession(record.user);
+      setSession(session);
+      notify("SIGNED_IN", session);
+      return { data: { user: record.user, session }, error: null };
+    }
+
+    if (phone) {
+      const otpCodes = getItem<Record<string, string>>(MOCK_OTP_CODES_KEY, {});
+      if (otpCodes[phone] !== token) {
+        throw { message: "Invalid OTP code" };
+      }
+      delete otpCodes[phone];
+      setItem(MOCK_OTP_CODES_KEY, otpCodes);
+
+      const users = getUsers();
+      let record = Object.values(users).find((u) => u.user.phone === phone);
+      if (!record) {
+        const email = `phone-${phone.replace(/\D/g, "")}@example.com`;
+        const user = createMockUser(email, { phone });
+        users[email] = { password: "otp-no-password", user, confirmed: true };
+        setUsers(users);
+        record = users[email];
+
+        const profiles = getProfiles();
+        profiles[user.id] = {
+          id: user.id,
+          email,
+          first_name: "",
+          last_name: "",
+          phone,
+          role: "resident",
+          approval_status: "approved",
+          onboarding_completed: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        setProfiles(profiles);
+      }
+
+      const session = createMockSession(record.user);
+      setSession(session);
+      notify("SIGNED_IN", session);
+      return { data: { user: record.user, session }, error: null };
+    }
+
+    throw { message: "Email or phone required" };
+  },
+
+  resend: async ({
+    type,
+    email,
+  }: {
+    type: "signup" | "email_change" | "phone_change" | "recovery" | "email";
+    email?: string;
+    phone?: string;
+  }) => {
+    await new Promise((r) => setTimeout(r, 300));
+    if (type === "signup" && email) {
+      const pending = getItem<string[]>(MOCK_PENDING_CONFIRMATIONS_KEY, []);
+      if (!pending.includes(email)) {
+        throw { message: "User not found or already confirmed" };
+      }
+      console.log(`[MOCK] Confirmation email resent to ${email}`);
+      return { data: {}, error: null };
+    }
+    throw { message: "Unsupported resend type" };
   },
 
   signOut: async () => {
@@ -254,13 +406,14 @@ export const mockAuth = {
     return { data: { user: session?.user ?? null }, error: null };
   },
 
-  resetPasswordForEmail: async (email: string) => {
+  resetPasswordForEmail: async (email: string, options?: { redirectTo?: string }) => {
     await new Promise((r) => setTimeout(r, 600));
     const users = getUsers();
     if (!users[email]) {
       // Don't leak whether email exists
       return { data: {}, error: null };
     }
+    console.log(`[MOCK] Password reset link sent to ${email}. Redirect: ${options?.redirectTo}`);
     return { data: {}, error: null };
   },
 
@@ -299,6 +452,21 @@ export const mockAuth = {
       },
     };
   },
+
+  // Helper for mock mode: simulate email confirmation
+  confirmEmail: async (email: string) => {
+    const users = getUsers();
+    if (users[email]) {
+      users[email].confirmed = true;
+      setUsers(users);
+      // Remove from pending
+      const pending = getItem<string[]>(MOCK_PENDING_CONFIRMATIONS_KEY, []);
+      setItem(
+        MOCK_PENDING_CONFIRMATIONS_KEY,
+        pending.filter((e) => e !== email)
+      );
+    }
+  },
 };
 
 export function getMockProfile(userId: string): MockProfile | null {
@@ -321,7 +489,6 @@ export function getAllMockProfiles(): MockProfile[] {
 }
 
 export function seedMockData() {
-  // Seed a demo manager, approved vendor, and resident for quick testing
   const users = getUsers();
   const profiles = getProfiles();
 
@@ -332,7 +499,7 @@ export function seedMockData() {
     last_name: "Manager",
     role: "manager",
   });
-  users["manager@liferise.demo"] = { password: "Manager123!", user: managerUser };
+  users["manager@liferise.demo"] = { password: "Manager123!", user: managerUser, confirmed: true };
   profiles[managerUser.id] = {
     id: managerUser.id,
     email: "manager@liferise.demo",
@@ -352,7 +519,7 @@ export function seedMockData() {
     last_name: "Rivers",
     role: "vendor",
   });
-  users["vendor@liferise.demo"] = { password: "Vendor123!", user: vendorUser };
+  users["vendor@liferise.demo"] = { password: "Vendor123!", user: vendorUser, confirmed: true };
   profiles[vendorUser.id] = {
     id: vendorUser.id,
     email: "vendor@liferise.demo",
@@ -374,7 +541,7 @@ export function seedMockData() {
     last_name: "Pending",
     role: "vendor",
   });
-  users["pending@liferise.demo"] = { password: "Pending123!", user: pendingVendor };
+  users["pending@liferise.demo"] = { password: "Pending123!", user: pendingVendor, confirmed: true };
   profiles[pendingVendor.id] = {
     id: pendingVendor.id,
     email: "pending@liferise.demo",
@@ -396,7 +563,7 @@ export function seedMockData() {
     last_name: "Mitchell",
     role: "resident",
   });
-  users["resident@liferise.demo"] = { password: "Resident123!", user: residentUser };
+  users["resident@liferise.demo"] = { password: "Resident123!", user: residentUser, confirmed: true };
   profiles[residentUser.id] = {
     id: residentUser.id,
     email: "resident@liferise.demo",
