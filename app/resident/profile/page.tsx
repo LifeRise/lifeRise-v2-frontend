@@ -39,7 +39,7 @@ function Toggle({
     <button
       type="button"
       aria-label={label}
-      aria-pressed={checked ? "true" : "false"}
+      aria-pressed={checked}
       onClick={() => onChange(!checked)}
       className={cn(
         "relative h-6 w-11 rounded-full transition-colors",
@@ -87,6 +87,7 @@ export default function ProfilePage() {
   // Sync when API profile loads
   useEffect(() => {
     if (apiProfile) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setProfile((prev) => ({
         ...prev,
         name: `${apiProfile.first_name} ${apiProfile.last_name}`,

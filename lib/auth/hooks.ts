@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback } from "react";
 import { getAccessToken, clearTokens } from "@/lib/api/client";
 import { decodeJwtPayload, isTokenExpired } from "@/lib/api/jwt";
 import { fetchProfile, login as apiLogin, logout as apiLogout } from "@/lib/api/auth";
@@ -92,7 +92,7 @@ export function useAuth() {
       setProfile(null);
       return null;
     }
-  }, [setProfile, setRole, profile?.role]);
+  }, [setProfile, setRole, profile]);
 
   useEffect(() => {
     let mounted = true;
@@ -122,7 +122,7 @@ export function useAuth() {
           setUser(buildUserFromSupabaseUser(session.user));
           setProfile(buildProfileFromSupabaseUser(session.user));
           if (session.user.user_metadata?.role) {
-            setRole(session.user.user_metadata.role as any);
+            setRole(session.user.user_metadata.role as BackendProfile["role"]);
           }
           setIsLoading(false);
         } else if (mounted) {
@@ -136,7 +136,7 @@ export function useAuth() {
               setUser(buildUserFromSupabaseUser(newSession.user));
               setProfile(buildProfileFromSupabaseUser(newSession.user));
               if (newSession.user.user_metadata?.role) {
-                setRole(newSession.user.user_metadata.role as any);
+                setRole(newSession.user.user_metadata.role as BackendProfile["role"]);
               }
             } else if (!getAccessToken()) {
               setUser(null);
@@ -176,7 +176,7 @@ export function useAuth() {
         setProfile(p);
         if (p.role) setRole(p.role);
         setIsLoading(false);
-        return { user: u, profile: p, tokenPair: null as any };
+        return { user: u, profile: p, tokenPair: null };
       }
 
       // No Supabase user — check if backend-only login succeeded
@@ -192,13 +192,32 @@ export function useAuth() {
         setProfile(backendProfile);
         if (backendProfile.role) setRole(backendProfile.role);
         setIsLoading(false);
-        return { user: u, profile: backendProfile, tokenPair: null as any };
+        return { user: u, profile: backendProfile, tokenPair: null };
       }
 
       throw new Error("Login failed");
     }
 
-    // Real backend login (no Supabase configured)
+    // No Supabase configured. If no explicit API URL is set either, we are in
+    // demo/offline mode — use the mock auth client so the app works on Vercel
+    // without a running backend (avoids "Failed to fetch" against localhost).
+    if (!process.env.NEXT_PUBLIC_API_URL) {
+      const supabase = createClient(); // returns mock client when no Supabase URL
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: creds.email,
+        password: creds.password,
+      });
+      if (error) throw new Error(error.message || "Invalid login credentials");
+      const u = buildUserFromSupabaseUser(data.user!);
+      const p = buildProfileFromSupabaseUser(data.user!);
+      setUser(u);
+      setProfile(p);
+      if (p.role) setRole(p.role);
+      setIsLoading(false);
+      return { user: u, profile: p, tokenPair: null };
+    }
+
+    // Real backend login (no Supabase, but NEXT_PUBLIC_API_URL is configured)
     const { tokenPair, profile: backendProfile } = await apiLogin(creds);
     const u = buildUserFromToken(tokenPair.access_token);
     if (!u) {
@@ -233,7 +252,7 @@ export function useAuth() {
     setProfile(null);
     setRole(null);
     globalInitStarted = false;
-  }, [setUser, setProfile, setRole, profile?.role]);
+  }, [setUser, setProfile, setRole, profile]);
 
   return { user, profile, isLoading, signIn, signOut, refreshProfile };
 }
@@ -259,13 +278,9 @@ export async function doLogin(
  * Kept for backward compatibility with mock auth fallback.
  */
 export function useAllProfiles() {
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    setProfiles([]);
-    setIsLoading(false);
-  }, []);
+  // Stub: not yet wired to the admin API. Returns empty list immediately.
+  const profiles: Profile[] = [];
+  const isLoading = false;
 
   const approveVendor = (_userId: string) => {
     // TODO: wire to admin API

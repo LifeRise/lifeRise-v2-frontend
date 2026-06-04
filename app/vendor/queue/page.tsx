@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import type { Booking } from "@/lib/api/bookings";
 import { motion, AnimatePresence } from "framer-motion";
 import { List, CheckCircle, XCircle, Clock, CalendarDays, User } from "lucide-react";
-import { GlassCard } from "@/components/ui/GlassCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useAuth } from "@/lib/auth/hooks";
 import { useBookings } from "@/lib/api/hooks";
@@ -21,7 +21,7 @@ function QueueCard({
   onAccept,
   onDecline,
 }: {
-  booking: any;
+  booking: Booking;
   onAccept?: (id: number) => void;
   onDecline?: (id: number) => void;
 }) {
@@ -74,12 +74,14 @@ function QueueCard({
       {booking.status === "Pending" && (
         <div className="flex items-center gap-2 pt-1">
           <button
+            type="button"
             onClick={() => onAccept?.(booking.id)}
             className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-[10px] font-semibold bg-teal/10 text-teal hover:bg-teal/20 transition-colors"
           >
             <CheckCircle size={10} /> Accept
           </button>
           <button
+            type="button"
             onClick={() => onDecline?.(booking.id)}
             className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-[10px] font-semibold bg-rose/10 text-rose hover:bg-rose/20 transition-colors"
           >
@@ -99,8 +101,8 @@ export default function VendorQueuePage() {
   const isLive = apiBookings.length > 0;
 
   const grouped = useMemo(() => {
-    const result: Record<string, any[]> = { pending: [], confirmed: [], completed: [] };
-    apiBookings.forEach((b: any) => {
+    const result: Record<string, Booking[]> = { pending: [], confirmed: [], completed: [] };
+    apiBookings.forEach((b) => {
       const key =
         b.status === "Pending"
           ? "pending"
@@ -120,8 +122,8 @@ export default function VendorQueuePage() {
     try {
       await updateBookingStatus(profile.role, id, "Confirmed");
       refresh();
-    } catch (err: any) {
-      console.error("Accept failed:", err.message);
+    } catch (err: unknown) {
+      console.error("Accept failed:", err instanceof Error ? err.message : String(err));
     } finally {
       setActingId(null);
     }
@@ -133,8 +135,8 @@ export default function VendorQueuePage() {
     try {
       await updateBookingStatus(profile.role, id, "Cancelled");
       refresh();
-    } catch (err: any) {
-      console.error("Decline failed:", err.message);
+    } catch (err: unknown) {
+      console.error("Decline failed:", err instanceof Error ? err.message : String(err));
     } finally {
       setActingId(null);
     }
@@ -176,7 +178,7 @@ export default function VendorQueuePage() {
 
               <div className="space-y-2">
                 <AnimatePresence mode="popLayout">
-                  {grouped[col.id]?.map((b: any) => (
+                  {grouped[col.id]?.map((b) => (
                     <QueueCard
                       key={b.id}
                       booking={b}

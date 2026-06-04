@@ -11,9 +11,7 @@ import {
   DollarSign,
   List,
   BarChart3,
-  Megaphone,
   Users,
-  ArrowLeftRight,
   LogOut,
   ShieldCheck,
 } from "lucide-react";

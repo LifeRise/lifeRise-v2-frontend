@@ -106,7 +106,7 @@ export default function VendorSignupPage() {
       setTimeout(() => {
         router.push("/login");
       }, 1500);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err?.message || "Signup failed. Please try again.");
       setIsLoading(false);
     }

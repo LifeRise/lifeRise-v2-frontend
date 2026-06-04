@@ -15,7 +15,7 @@ import type { Service } from "./services";
 import type { Booking } from "./bookings";
 import type { Favorite } from "./favorites";
 import { adaptServiceToVendor, adaptServiceToDetail, adaptBookingToResidentBooking } from "./adapters";
-import type { Vendor, ServiceDetail, ResidentBooking } from "@/lib/types";
+
 
 // --- Services ---
 
@@ -30,7 +30,7 @@ export function useServices() {
     setIsLoading(true);
     servicesApi
       .listServices(profile.role)
-      .then((res: any) => {
+      .then((res) => {
         const list = Array.isArray(res) ? res : res.data ?? res.services ?? [];
         setServices(list);
       })
@@ -39,6 +39,7 @@ export function useServices() {
   }, [profile]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
   }, [refresh]);
 
@@ -61,7 +62,7 @@ export function useBookings() {
     setIsLoading(true);
     bookingsApi
       .listBookings(profile.role)
-      .then((res: any) => {
+      .then((res) => {
         const list = Array.isArray(res) ? res : res.data ?? res.bookings ?? [];
         setBookings(list);
       })
@@ -70,6 +71,7 @@ export function useBookings() {
   }, [profile]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
   }, [refresh]);
 
@@ -92,7 +94,7 @@ export function useFavorites() {
     setIsLoading(true);
     favoritesApi
       .listFavorites()
-      .then((res: any) => {
+      .then((res) => {
         // Backend list endpoints return { data: [...], links: {}, meta: {} }
         const list = Array.isArray(res) ? res : res.data ?? res.favorites ?? [];
         setFavorites(list);
@@ -102,6 +104,7 @@ export function useFavorites() {
   }, [profile]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
   }, [refresh]);
 
@@ -110,8 +113,8 @@ export function useFavorites() {
       try {
         await favoritesApi.toggleFavorite(serviceId);
         refresh();
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to toggle favorite");
       }
     },
     [refresh]

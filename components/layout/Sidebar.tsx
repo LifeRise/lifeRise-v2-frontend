@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, ShoppingBag, CalendarDays, Star, Heart,
   Bell, User, Briefcase, List, DollarSign, BarChart3,
-  Users, Megaphone, Settings, LogOut, ArrowLeftRight,
+  Users, Megaphone, Settings, LogOut,
   ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";

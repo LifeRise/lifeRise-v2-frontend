@@ -52,7 +52,7 @@ export default function ResetPasswordPage() {
       setTimeout(() => {
         router.push("/login");
       }, 2000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err?.message || "Failed to update password");
     } finally {
       setIsLoading(false);

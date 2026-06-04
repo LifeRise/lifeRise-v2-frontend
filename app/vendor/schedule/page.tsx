@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
+import type { Booking } from "@/lib/api/bookings";
 import { motion } from "framer-motion";
-import { CalendarDays, Clock, User, MapPin } from "lucide-react";
+import { CalendarDays, User, MapPin } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useAuth } from "@/lib/auth/hooks";
@@ -17,14 +18,14 @@ const statusConfig: Record<string, { label: string; color: string; bg: string }>
 };
 
 export default function VendorSchedulePage() {
-  const { profile } = useAuth();
+  useAuth();
   const { bookings: apiBookings, isLoading } = useBookings();
   const isLive = apiBookings.length > 0;
 
   // Group bookings by date
   const grouped = useMemo(() => {
-    const map = new Map<string, any[]>();
-    apiBookings.forEach((b: any) => {
+    const map = new Map<string, Booking[]>();
+    apiBookings.forEach((b) => {
       const date = b.booking_date?.split("T")[0] ?? "Unknown";
       if (!map.has(date)) map.set(date, []);
       map.get(date)!.push(b);
@@ -75,7 +76,7 @@ export default function VendorSchedulePage() {
                   {isToday && <span className="text-teal ml-2">●</span>}
                 </h2>
                 <div className="space-y-2">
-                  {dayBookings.map((b: any, i: number) => {
+                  {dayBookings.map((b, i) => {
                     const cfg = statusConfig[b.status] ?? statusConfig.Pending;
                     return (
                       <motion.div

@@ -9,7 +9,6 @@
 import type {
   AuthChangeEvent,
   Session,
-  SupabaseClient,
   User,
   Provider,
 } from "@supabase/supabase-js";
@@ -199,7 +198,7 @@ export const mockAuth = {
     const email = `${provider}-user-` + generateId() + "@example.com";
     const users = getUsers();
     let user: User;
-    let existing = Object.values(users).find((u) => u.user.email === email);
+    const existing = Object.values(users).find((u) => u.user.email === email);
 
     if (existing) {
       user = existing.user;
@@ -242,7 +241,7 @@ export const mockAuth = {
   signInWithOtp: async ({
     email,
     phone,
-    options,
+    options: _options,
   }: {
     email?: string;
     phone?: string;
@@ -277,7 +276,7 @@ export const mockAuth = {
     email,
     phone,
     token,
-    type,
+    type: _type,
   }: {
     email?: string;
     phone?: string;

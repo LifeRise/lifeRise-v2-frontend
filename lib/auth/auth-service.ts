@@ -47,10 +47,10 @@ export const authService = {
       // Bridge: also create the user in the Go backend so backend login works later
       try {
         await apiSignup(data);
-      } catch (backendErr: any) {
+      } catch (backendErr: unknown) {
         // User might already exist in backend, or backend might be down.
         // Supabase auth is the source of truth — don't block on backend failure.
-        console.warn("[auth-service] Backend signup bridge failed:", backendErr.message);
+        console.warn("[auth-service] Backend signup bridge failed:", backendErr instanceof Error ? backendErr.message : String(backendErr));
       }
 
       return { user: result.user, session: result.session };
@@ -78,8 +78,8 @@ export const authService = {
           const { tokenPair, profile } = await apiLogin(creds);
           setTokens(tokenPair.access_token, tokenPair.refresh_token);
           return { user: data.user, session: data.session, profile };
-        } catch (backendErr: any) {
-          console.warn("[auth-service] Backend login bridge failed:", backendErr.message);
+        } catch (backendErr: unknown) {
+          console.warn("[auth-service] Backend login bridge failed:", backendErr instanceof Error ? backendErr.message : String(backendErr));
           // Still return Supabase session even if backend bridge fails
           return { user: data.user, session: data.session };
         }

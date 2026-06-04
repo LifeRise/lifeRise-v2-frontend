@@ -8,17 +8,33 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Project Overview
 
-LifeRise Solutions is a **demo/prototype** Next.js web application for a property-management service marketplace. It simulates three user portals from a single frontend codebase:
+LifeRise Solutions is a **production-grade** Next.js web application for a property-management service marketplace. It is a real, fully wired frontend connected to a **Go REST backend** and **Supabase** (auth + DB). Three user portals are served from a single frontend codebase:
 
-- **Resident Portal** (`/resident/*`) — browse and book home services, manage appointments, view community events.
-- **Vendor Portal** (`/vendor/*`) — manage booking queue, track earnings, schedule appointments, toggle online/offline status.
+- **Resident Portal** (`/resident/*`) — browse and book home services, manage appointments, view community events, manage favorites.
+- **Vendor Portal** (`/vendor/*`) — manage booking queue (Kanban), track earnings, schedule appointments, toggle online/offline status, manage offered services.
 - **Manager Portal** (`/manager/*`) — analytics dashboard, resident directory, vendor applications/leaderboard, announcements, property map.
+
+### Backend Services
+
+The frontend connects to a **Go backend** that exposes a REST API. Three binary modes are supported:
+
+| Binary | Default Port | Serves |
+|--------|-------------|--------|
+| `api` (customer) | `8080` | Residents — bookings, services, favorites, login, signup |
+| `vendor-api` | `8081` | Vendors — queue, earnings, offered services |
+| `admin-api` | `8082` | Managers — analytics, user management, approvals |
+
+In local development, a single binary on `8080` handles all roles.
 
 ### Authentication
 
-The app uses a **mock Supabase auth system** for offline demos. When real Supabase credentials are provided in `.env.local`, it connects to live Supabase. Without credentials, all auth works via `localStorage` with seeded demo accounts.
+The app uses a **three-tier authentication chain** (evaluated in priority order):
 
-**Demo accounts:**
+1. **Go backend JWT** — checked first. If a valid, non-expired JWT exists in `localStorage`, the user is authenticated against the backend.
+2. **Supabase session** — checked second. If `NEXT_PUBLIC_SUPABASE_URL` is set and a Supabase session exists, it is used and bridged to the backend for a JWT.
+3. **Mock localStorage auth** — offline fallback only. When no credentials are configured, a `localStorage`-based mock system seeds demo accounts.
+
+**Demo accounts (mock mode only):**
 - Resident: `resident@liferise.demo` / `Resident123!`
 - Vendor: `vendor@liferise.demo` / `Vendor123!`
 - Manager: `manager@liferise.demo` / `Manager123!`
@@ -36,10 +52,12 @@ The app uses a **mock Supabase auth system** for offline demos. When real Supaba
 | Animation | Framer Motion | ~12.39 |
 | Animation (legacy) | GSAP | ~3.15 |
 | State | Zustand | ~5.0 |
-| Auth | Supabase (mock or real) | `@supabase/supabase-js` + `@supabase/ssr` |
+| Auth / DB | Supabase | `@supabase/supabase-js` + `@supabase/ssr` |
 | Charts | Recharts | ~3.8 |
 | UI Primitives | Radix UI (avatar, dialog, dropdown, progress, scroll-area, select, separator, switch, tabs, tooltip) | latest |
 | Icons | lucide-react | ~1.16 |
+| Date Utilities | date-fns | ~4.2 |
+| Class Utilities | clsx + tailwind-merge (via `cn()`) | latest |
 | Fonts | Google Fonts via `next/font` — Syne (headings) + Inter (body) |
 
 ## Build & Development Commands
@@ -63,136 +81,197 @@ npm run lint
 
 There are **no test scripts** configured. The project currently has no testing framework.
 
+## Environment Variables
+
+Create `.env.local` at the project root. All variables are optional — the app degrades gracefully to mock mode if omitted.
+
+```bash
+# Go backend (defaults to localhost:8080 if omitted)
+NEXT_PUBLIC_API_URL=http://localhost:8080
+NEXT_PUBLIC_VENDOR_API_URL=http://localhost:8081   # optional; falls back to API_URL
+NEXT_PUBLIC_ADMIN_API_URL=http://localhost:8082    # optional; falls back to API_URL
+
+# Supabase (optional — enables real auth + DB)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key    # server-side only
+```
+
 ## Project Structure
 
 ```
 app/
-  page.tsx                 # Landing page (auth-aware CTAs)
-  layout.tsx               # Root layout with AuthProvider
-  globals.css              # Tailwind v4 imports + custom design tokens + utilities
-  login/page.tsx           # Unified login (resident/vendor toggle)
-  signup/page.tsx          # Role selection
-  signup/resident/page.tsx # Resident signup
-  signup/vendor/page.tsx   # Vendor signup (with EIN, description)
-  forgot-password/page.tsx # Password reset request
-  verify-email/page.tsx    # Email verification landing
-  pending-approval/page.tsx# Vendor pending approval screen
-  auth/callback/route.ts   # OAuth callback handler
-  admin/approvals/page.tsx # Manager-only vendor approval dashboard
+  page.tsx                    # Landing page (auth-aware CTAs)
+  layout.tsx                  # Root layout with AuthProvider + PWAProvider
+  globals.css                 # Tailwind v4 imports + custom design tokens + utilities
+  error.tsx                   # Root error boundary
+  loading.tsx                 # Root loading state
+  login/page.tsx              # Unified login page
+  signup/page.tsx             # Role selection
+  signup/resident/page.tsx    # Resident signup
+  signup/vendor/page.tsx      # Vendor signup (with EIN, description)
+  forgot-password/page.tsx    # Password reset request
+  reset-password/page.tsx     # Password update (after email link)
+  verify-email/page.tsx       # Email verification landing
+  pending-approval/page.tsx   # Vendor pending approval screen
+  trust-safety/page.tsx       # Trust & safety info page
+  offline/page.tsx            # Offline fallback page (PWA)
+  auth/callback/route.ts      # OAuth callback handler
+  admin/approvals/page.tsx    # Manager-only vendor approval dashboard
   resident/
-    layout.tsx             # Sidebar + MobileNav wrapper for resident pages
-    page.tsx               # Resident dashboard
+    layout.tsx                # Sidebar + MobileNav wrapper
+    page.tsx                  # Resident dashboard
     services/page.tsx
     bookings/page.tsx
     events/page.tsx
     favorites/page.tsx
     notifications/page.tsx
     profile/page.tsx
-    [...slug]/page.tsx
+    error.tsx
+    loading.tsx
+    [...slug]/page.tsx        # 404 catch-all
   vendor/
     layout.tsx
-    page.tsx               # Vendor dashboard
+    page.tsx                  # Vendor dashboard
     schedule/page.tsx
     queue/page.tsx
     earnings/page.tsx
     services/page.tsx
     profile/page.tsx
-    [...slug]/page.tsx
   manager/
     layout.tsx
-    page.tsx               # Manager dashboard
+    page.tsx                  # Manager dashboard
     analytics/page.tsx
     residents/page.tsx
     vendors/page.tsx
     announcements/page.tsx
     settings/page.tsx
-    [...slug]/page.tsx
+    error.tsx
+    loading.tsx
+    [...slug]/page.tsx        # 404 catch-all
 
 components/
   layout/
-    Sidebar.tsx            # Auth-aware desktop sidebar
-    MobileNav.tsx          # Auth-aware bottom nav for mobile
+    Sidebar.tsx               # Auth-aware desktop sidebar
+    MobileNav.tsx             # Auth-aware bottom nav for mobile
   auth/
-    AuthProvider.tsx       # Global auth state + route guards
-    GoogleButton.tsx       # Google OAuth button
+    AuthProvider.tsx          # Route guards and auth state watcher
+    GoogleButton.tsx          # Google OAuth button
+    FacebookButton.tsx        # Facebook OAuth button
+    SocialAuthButtons.tsx     # Combined social auth button group
   ui/
-    GlassCard.tsx          # Reusable glassmorphism card wrapper
+    GlassCard.tsx             # Reusable glassmorphism card wrapper
     EmptyState.tsx
     SectionHeader.tsx
     StatusBadge.tsx
     Tabs.tsx
-  vendor/
-    KanbanBoard.tsx
-    EarningsChart.tsx
+    ResponsiveModal.tsx       # Sheet on mobile, Dialog on desktop
+  modals/
+    ResidentModal.tsx         # Resident-specific modal flows
+    VendorModal.tsx           # Vendor-specific modal flows
+    ManagerModal.tsx          # Manager-specific modal flows
   manager/
     EngagementChart.tsx
     PropertyMap.tsx
+  pwa/
+    PWAProvider.tsx           # Service worker registration + update detection
+    InstallPrompt.tsx         # "Add to home screen" banner
+    UpdateToast.tsx           # SW update notification toast
+    PageTracker.tsx           # Tracks last-visited page for offline resume
+    index.ts                  # Barrel export
 
 lib/
+  api/
+    client.ts                 # HTTP client — Bearer token injection, auto token refresh on 401
+    config.ts                 # API base URL resolution per role (resident/vendor/manager)
+    auth.ts                   # Go backend auth endpoints (login, signup, logout, fetchProfile)
+    bookings.ts               # Bookings CRUD endpoints
+    services.ts               # Services CRUD endpoints + availability slots
+    favorites.ts              # Favorites list / toggle / delete endpoints
+    hooks.ts                  # React hooks wrapping API calls (useServices, useBookings, useFavorites)
+    adapters.ts               # Transforms backend shapes → frontend UI types
+    types.ts                  # Backend response types (BackendProfile, TokenPair, ApiError, etc.)
+    jwt.ts                    # Client-side JWT payload decoder + expiry checker
   supabase/
-    client.ts              # Browser Supabase client (mock or real)
-    server.ts              # Server-side Supabase client
-    middleware.ts          # Session refresh helper
+    client.ts                 # Browser Supabase client (real or mock)
+    server.ts                 # Server-side Supabase client
+    middleware.ts             # Session refresh helper
   auth/
-    mock-auth.ts           # Mock Supabase auth (localStorage-based)
-    hooks.ts               # useAuth, useAllProfiles hooks
-  types.ts                 # TypeScript domain types
-  mock-data.ts             # Static mock data
-  store.ts                 # Zustand global store (auth + app state)
-  utils.ts                 # cn(), getInitials(), getGreeting(), formatDate()
-  animations.ts            # Shared Framer Motion variants
+    auth-service.ts           # Unified auth service (Supabase + Go backend bridge)
+    mock-auth.ts              # Mock localStorage auth (offline fallback)
+    hooks.ts                  # useAuth(), useAllProfiles(), doLogin()
+  hooks/
+    useFocusTrap.ts           # Accessibility focus trap hook
+    useMediaQuery.ts          # Responsive breakpoint hook
+  types.ts                    # Frontend domain types (Vendor, ResidentBooking, etc.)
+  mock-data.ts                # Static mock data for dashboards
+  store.ts                    # Zustand global store
+  utils.ts                    # cn(), getInitials(), getGreeting(), formatDate()
+  animations.ts               # Shared Framer Motion variants
+  pwa.ts                      # PWA utility helpers
 
-middleware.ts              # Next.js middleware (session refresh)
+middleware.ts                 # Next.js middleware (Supabase session refresh)
 ```
 
 ## Authentication Architecture
 
-### Mock Auth (Default — no env vars needed)
+### Priority Chain
 
-When `NEXT_PUBLIC_SUPABASE_URL` is empty, the app uses a mock auth system:
-- `lib/auth/mock-auth.ts` implements `signUp`, `signInWithPassword`, `signInWithOAuth`, `signOut`, `getSession`, `resetPasswordForEmail`, `onAuthStateChange`
-- Users and profiles are stored in `localStorage`
-- Demo accounts are auto-seeded on first load
-- Vendor signups default to `approval_status: "pending"`
+`useAuth()` (in `lib/auth/hooks.ts`) initialises once per session and resolves auth state in this exact order:
 
-### Real Supabase (Optional)
+1. **Go backend JWT** — reads `liferise_access_token` from `localStorage`. If present and not expired (decoded via `lib/api/jwt.ts`), builds `AuthUser` from the token payload and fetches `BackendProfile` from `/api/profile`.
+2. **Supabase session** — if `NEXT_PUBLIC_SUPABASE_URL` is set, calls `supabase.auth.getSession()`. On success, bridges to backend by calling `authService.signInWithPassword()` to obtain a JWT. Listens to `onAuthStateChange` for subsequent changes.
+3. **Mock auth** — if neither of the above yields a session, the client is unauthenticated. The mock Supabase client (`lib/supabase/client.ts`) handles `signInWithPassword` for seeded demo accounts stored in `localStorage`.
 
-Fill in `.env.local` with real Supabase credentials:
-```bash
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+### Sign-in Flow
+
+Calling `useAuth().signIn(creds)`:
+1. If Supabase is configured → `authService.signInWithPassword()`:
+   - Tries Supabase login first.
+   - On success, bridges to Go backend (`/api/login`) to get a JWT and stores it in `localStorage`.
+   - On Supabase failure, tries backend-only login as fallback.
+2. If Supabase is not configured → calls `apiLogin()` directly against the Go backend.
+
+### Sign-out Flow
+
+`useAuth().signOut()`:
+- Calls Go backend `/api/logout`
+- Signs out of Supabase (if configured)
+- Clears `localStorage` tokens
+- Resets all Zustand store state
+- Resets the `globalInitStarted` flag so the next login re-initialises cleanly
+
+### Supabase Database Setup (if using real Supabase)
+
+```sql
+create table profiles (
+  id uuid references auth.users on delete cascade primary key,
+  email text not null,
+  first_name text,
+  last_name text,
+  phone text,
+  role text not null check (role in ('resident', 'vendor', 'manager')),
+  approval_status text not null default 'pending' check (approval_status in ('pending', 'approved', 'rejected')),
+  onboarding_completed boolean default false,
+  ein_tax_id text,
+  description text,
+  avatar_url text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
 ```
 
-Required Supabase setup:
-1. **Database**: Create a `profiles` table extending `auth.users`:
-   ```sql
-   create table profiles (
-     id uuid references auth.users on delete cascade primary key,
-     email text not null,
-     first_name text,
-     last_name text,
-     phone text,
-     role text not null check (role in ('resident', 'vendor', 'manager')),
-     approval_status text not null default 'pending',
-     onboarding_completed boolean default false,
-     ein_tax_id text,
-     description text,
-     avatar_url text,
-     created_at timestamptz default now(),
-     updated_at timestamptz default now()
-   );
-   ```
-2. **Auth**: Enable Email provider and Google OAuth in Authentication settings
-3. **Trigger**: Create a trigger on `auth.users` insert to auto-create profile rows
+Also enable Email provider and Google OAuth in Supabase Authentication settings, and create a trigger on `auth.users` insert to auto-create profile rows.
 
 ### Route Protection
 
-`AuthProvider` (in `app/layout.tsx`) handles all route guards client-side:
-- Unauthenticated users on protected routes → redirected to `/login`
-- Vendors with `approval_status === "pending"` → redirected to `/pending-approval`
-- Authenticated users on auth pages (`/login`, `/signup`) → redirected to their portal
-- Role-based guards: residents can't access `/manager/*` or `/vendor/*`
+`AuthProvider` (`components/auth/AuthProvider.tsx`) handles all route guards client-side:
+- Unauthenticated users on protected routes → `/login`
+- Vendors whose `profile.status !== "active"` → `/pending-approval`
+- Authenticated users visiting `/login` or `/signup` → their role portal
+- Role-based guards: non-managers on `/manager/*` or `/admin/*` → `/resident`; non-vendors on `/vendor/*` → `/resident`
+
+Public routes (no auth required): `/`, `/login`, `/signup`, `/signup/*`, `/forgot-password`, `/reset-password`, `/verify-email`, `/trust-safety`, `/offline`, `/auth/*`
 
 ### Auth Hooks
 
@@ -200,11 +279,57 @@ Required Supabase setup:
 import { useAuth } from "@/lib/auth/hooks";
 
 function MyComponent() {
-  const { user, profile, isLoading, signOut } = useAuth();
+  const { user, profile, isLoading, signIn, signOut, refreshProfile } = useAuth();
+  // user: AuthUser | null  — { id, email, userType, roles }
+  // profile: BackendProfile | null  — { id, email, first_name, last_name, role, status, ... }
   // profile.role: "resident" | "vendor" | "manager"
-  // profile.approval_status: "pending" | "approved" | "rejected"
+  // profile.status: "active" | "inactive" | ...  (vendor pending = status !== "active")
 }
 ```
+
+**Important:** `Profile` (exported from `lib/auth/hooks.ts`) is an alias for `BackendProfile` from `lib/api/types.ts`. It is **not** a Supabase-based type.
+
+## Backend API Layer (`lib/api/`)
+
+This is the primary data layer. All API modules share a common HTTP client in `lib/api/client.ts`.
+
+### HTTP Client (`lib/api/client.ts`)
+
+- Injects `Authorization: Bearer <token>` from `localStorage` on every request
+- Automatically retries on `401` with a refreshed token
+- Stores tokens as `liferise_access_token` and `liferise_refresh_token` in `localStorage`
+
+### API Modules
+
+| Module | Endpoints |
+|--------|-----------|
+| `lib/api/auth.ts` | `POST /api/login`, `POST /api/signup`, `POST /api/vendor/signup`, `GET /api/profile`, `POST /api/logout` |
+| `lib/api/bookings.ts` | `GET /api/bookings`, `GET /api/bookings/:id`, `POST /api/bookings`, `PATCH /api/bookings/:id/status`, `POST /api/bookings/:id/reschedule` |
+| `lib/api/services.ts` | `GET /api/services`, `GET /api/services/:id`, `GET /api/services/:id/slots`, `POST /api/services`, `PATCH /api/services/:id`, `DELETE /api/services/:id` |
+| `lib/api/favorites.ts` | `GET /api/favorites`, `POST /api/favorites/toggle`, `DELETE /api/favorites/:id` |
+
+### React Hooks (`lib/api/hooks.ts`)
+
+Wraps all API modules into React hooks with loading/error state and graceful fallback:
+
+```tsx
+import { useServices, useBookings, useFavorites } from "@/lib/api/hooks";
+
+function MyComponent() {
+  const { services, vendors, details, isLoading, error, refresh } = useServices();
+  const { bookings, residentBookings, isLoading, error, refresh } = useBookings();
+  const { favorites, isLoading, error, refresh, toggle } = useFavorites();
+}
+```
+
+### Adapters (`lib/api/adapters.ts`)
+
+Transforms raw backend shapes into the frontend `Vendor`, `ServiceDetail`, and `ResidentBooking` types defined in `lib/types.ts`. This decouples UI components from the backend schema.
+
+### JWT Utilities (`lib/api/jwt.ts`)
+
+- `decodeJwtPayload(token)` — decodes a JWT payload client-side (no signature verification)
+- `isTokenExpired(token, bufferSeconds?)` — checks if a token is expired (default 60s buffer)
 
 ## Routing & Layout Architecture
 
@@ -213,7 +338,8 @@ The app uses **Next.js App Router** with three parallel route trees under `app/`
 1. A dedicated `layout.tsx` that renders `<Sidebar role="..." />`, `<MobileNav role="..." />`, and a `<main>` content area with left padding on desktop (`lg:pl-64`).
 2. A `page.tsx` for the dashboard/home view.
 3. Sub-pages for specific features.
-4. A `[...slug]/page.tsx` catch-all to gracefully handle unknown paths.
+4. `error.tsx` and `loading.tsx` for error and loading boundaries.
+5. A `[...slug]/page.tsx` catch-all (resident and manager portals) to gracefully handle unknown paths.
 
 The root `app/page.tsx` is auth-aware — shows "Sign In / Get Started" for guests, or "Go to Portal" for logged-in users.
 
@@ -264,31 +390,39 @@ The project uses **Tailwind CSS v4** with the new `@import "tailwindcss"` and `@
 ### Component Patterns
 
 - Cards should prefer `<GlassCard>` from `components/ui/GlassCard.tsx`.
+- Modals should use `<ResponsiveModal>` from `components/ui/ResponsiveModal.tsx` — it renders a bottom sheet on mobile and a dialog on desktop.
 - Animations should reuse variants from `lib/animations.ts` rather than inlining.
 - Icons are imported individually from `lucide-react`.
 - Inline role accent colors are passed via `style={{ color: accent, background: `${accent}18` }}` rather than Tailwind arbitrary values.
 
 ## Data & State
 
+### Live Data (Primary)
+
+All data is fetched from the Go backend through `lib/api/`. The `lib/api/hooks.ts` hooks are the preferred way to consume data in components — they handle loading state, errors, and expose a `refresh()` callback.
+
 ### Mock Data (`lib/mock-data.ts`)
 
-Application data for dashboards lives in a single file. It exports typed arrays and objects for vendors, bookings, events, analytics, etc.
-
-**When adding new features that need data, extend `lib/mock-data.ts` and `lib/types.ts`.**
+Static fallback data used by dashboard pages when the backend is unreachable or not yet wired. When new UI features are added before a backend endpoint exists, extend `lib/mock-data.ts` and `lib/types.ts`. Progressively replace with real API hooks once the backend endpoint is ready.
 
 ### Global State (`lib/store.ts`)
 
-Zustand store tracks:
-- `role`: `"resident" | "vendor" | "manager" | null`
-- `isOnline`: boolean (vendor online toggle)
-- `activeCategory`: string (resident services filter)
-- `user`: Supabase User | null
-- `profile`: Profile | null
-- `isAuthLoading`: boolean
+Zustand store (`useAppStore`) tracks:
+
+| Field | Type | Purpose |
+|-------|------|---------|
+| `role` | `"resident" \| "vendor" \| "manager" \| null` | Current user role |
+| `isOnline` | `boolean` | Vendor online/offline toggle |
+| `activeCategory` | `string` | Resident services filter |
+| `profile` | `BackendProfile \| null` | Full user profile from Go backend |
+| `authUser` | `AuthUser \| null` | Lightweight user object (id, email, roles) |
+| `isAuthLoading` | `boolean` | Auth initialisation in progress |
+
+Granular selector hooks are exported for reduced re-renders: `useRole`, `useIsOnline`, `useSetIsOnline`, `useActiveCategory`, `useSetActiveCategory`, `useProfile`, `useAuthLoading`.
 
 ### Auth State
 
-Prefer `useAuth()` from `lib/auth/hooks.ts` for reading auth state. The hook syncs with Zustand automatically via `AuthProvider`.
+Prefer `useAuth()` from `lib/auth/hooks.ts` for reading and mutating auth state. It reads directly from Zustand but also handles the async init and sign-in/out logic.
 
 ## Animation Conventions
 
@@ -303,7 +437,14 @@ Prefer `useAuth()` from `lib/auth/hooks.ts` for reading auth state. The hook syn
 
 ## PWA / Offline Support
 
-The app registers a basic service worker (`public/sw.js`) that caches the shell routes (`/`, `/resident`, `/vendor`, `/manager`) and serves them offline. `manifest.webmanifest` makes it installable. The service worker is **not a Workbox-generated** SW; it is a hand-written simple cache-first script.
+The app ships a full PWA setup:
+- `public/sw.js` — hand-written service worker (not Workbox). Caches shell routes and serves them offline.
+- `public/manifest.webmanifest` — makes the app installable.
+- `components/pwa/PWAProvider.tsx` — handles SW registration and detects updates.
+- `components/pwa/InstallPrompt.tsx` — "Add to home screen" banner.
+- `components/pwa/UpdateToast.tsx` — prompts user to reload when a new SW version is available.
+- `components/pwa/PageTracker.tsx` — stores last-visited page so the app resumes where it left off.
+- `app/offline/page.tsx` — shown when the user is offline and the page is not cached.
 
 ## Testing Strategy
 
@@ -311,24 +452,35 @@ The app registers a basic service worker (`public/sw.js`) that caches the shell 
 
 ## Security Considerations
 
-- **Mock mode**: No real authentication. Demo accounts are hard-coded. Suitable for demos and prototyping only.
-- **Real Supabase mode**: Uses Supabase Auth with RLS policies. Stripe secrets and service role keys must never be exposed to the client.
-- The service worker caches GET requests without origin restrictions. This is acceptable for a static demo but should be hardened if a real backend is introduced.
+- **JWT tokens** are stored in `localStorage` — accessible to JavaScript. Ensure no XSS vectors exist.
+- **Service role key** (`SUPABASE_SERVICE_ROLE_KEY`) must never appear in client-side code or be exposed via `NEXT_PUBLIC_` prefix.
+- **Mock mode** uses no real authentication. Suitable for offline demos only — never deploy to production without real credentials.
+- **Real Supabase mode**: Use RLS policies on all tables. The service role key bypasses RLS and must only be used server-side.
+- The service worker caches GET requests without origin restrictions. Harden if sensitive API responses are added.
+- Route guards in `AuthProvider` are **client-side only**. If server-side protection is needed, enforce it in `middleware.ts`.
 
 ## Key Files for Agents
 
 | File | Why it matters |
 |------|---------------|
-| `lib/auth/mock-auth.ts` | Mock auth implementation — update when adding auth features |
-| `lib/auth/hooks.ts` | `useAuth()` and `useAllProfiles()` hooks |
-| `lib/supabase/client.ts` | Supabase browser client (switches mock ↔ real) |
-| `components/auth/AuthProvider.tsx` | Route guards and auth state sync |
-| `lib/types.ts` | Domain model — add new types here |
-| `lib/mock-data.ts` | Dashboard mock data |
-| `lib/store.ts` | Global state — auth + app state |
+| `lib/api/client.ts` | HTTP client — JWT injection, token refresh logic |
+| `lib/api/config.ts` | API URL resolution per role — update when adding new backend ports |
+| `lib/api/auth.ts` | Go backend auth endpoints — login, signup, profile |
+| `lib/api/hooks.ts` | React data hooks — primary way to consume backend data in UI |
+| `lib/api/adapters.ts` | Backend → frontend type transforms |
+| `lib/api/types.ts` | Backend response types (BackendProfile, TokenPair, etc.) |
+| `lib/auth/auth-service.ts` | Unified auth service — Supabase + Go backend bridge |
+| `lib/auth/hooks.ts` | `useAuth()`, `useAllProfiles()`, `doLogin()` |
+| `lib/auth/mock-auth.ts` | Mock auth fallback (offline/demo mode) |
+| `lib/supabase/client.ts` | Supabase browser client (switches mock ↔ real based on env vars) |
+| `components/auth/AuthProvider.tsx` | Route guards — update when adding new protected routes |
+| `lib/types.ts` | Frontend domain types — add new UI-facing types here |
+| `lib/mock-data.ts` | Static dashboard mock data |
+| `lib/store.ts` | Zustand global store — all auth + app state |
 | `lib/animations.ts` | Reusable Framer Motion presets |
-| `lib/utils.ts` | `cn()` and formatting helpers |
+| `lib/utils.ts` | `cn()`, `getInitials()`, `getGreeting()`, `formatDate()` |
 | `components/ui/GlassCard.tsx` | Standard card primitive |
+| `components/ui/ResponsiveModal.tsx` | Sheet (mobile) / Dialog (desktop) modal primitive |
 | `components/layout/Sidebar.tsx` | Navigation config per role |
 | `app/globals.css` | Tailwind v4 theme tokens + custom utilities |
 | `next.config.ts` | Next.js config |
@@ -338,6 +490,11 @@ The app registers a basic service worker (`public/sw.js`) that caches the shell 
 
 1. **Do not assume a traditional Next.js 14 structure.** This is Next.js 16 with React 19.
 2. **No `tailwind.config.ts`.** Custom theme values are in `globals.css` via `@theme`.
-3. **Most pages are `"use client"`.** If you need server components, be explicit.
+3. **Most pages are `"use client"`.** If you need server components, be explicit and be aware of auth limitations.
 4. **Role accent colors are inline styles**, not Tailwind classes, because they vary by role at runtime.
-5. **The mock auth stores data in localStorage.** Clearing browser data will reset demo accounts.
+5. **Auth priority matters.** The Go backend JWT is checked before Supabase. If you only set Supabase credentials without a running backend, API calls will fail even though auth appears to work.
+6. **`profile.status` not `profile.approval_status`** controls the vendor pending redirect. `AuthProvider` checks `profile.status !== "active"`.
+7. **`Profile` is `BackendProfile`**, not a Supabase-based type. Do not add Supabase-specific fields to it.
+8. **`useAllProfiles()` is a stub.** The vendor approval functionality in `lib/auth/hooks.ts` is not yet wired to the admin API. `approveVendor()` and `rejectVendor()` are no-ops with TODO comments.
+9. **The mock auth stores data in localStorage.** Clearing browser data will reset demo accounts.
+10. **`globalInitStarted` flag** in `lib/auth/hooks.ts` prevents double-init. It is reset on sign-out. Do not call `init()` directly.

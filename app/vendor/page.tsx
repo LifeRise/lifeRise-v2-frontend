@@ -7,7 +7,6 @@ import {
   TrendingUp,
   Star,
   DollarSign,
-  Clock,
   CalendarDays,
   List,
 } from "lucide-react";
@@ -22,7 +21,7 @@ export default function VendorDashboard() {
   const isOnline = useAppStore((s) => s.isOnline);
   const setIsOnline = useAppStore((s) => s.setIsOnline);
   const { profile } = useAuth();
-  const { bookings: apiBookings, residentBookings, isLoading: bookingsLoading } = useBookings();
+  const { bookings: apiBookings, isLoading: bookingsLoading } = useBookings();
   const { services: apiServices, isLoading: servicesLoading } = useServices();
 
   const firstName = profile?.first_name ?? "Vendor";
@@ -40,10 +39,10 @@ export default function VendorDashboard() {
     }
 
     const totalEarnings = apiBookings
-      .filter((b: any) => b.status === "Completed" || b.status === "Confirmed")
-      .reduce((sum: number, b: any) => sum + parseFloat(b.final_price ?? b.price ?? "0"), 0);
+      .filter((b) => b.status === "Completed" || b.status === "Confirmed")
+      .reduce((sum, b) => sum + parseFloat(b.final_price ?? b.price ?? "0"), 0);
 
-    const completedCount = apiBookings.filter((b: any) => b.status === "Completed").length;
+    const completedCount = apiBookings.filter((b) => b.status === "Completed").length;
     const totalCount = apiBookings.length;
     const completionRate = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
@@ -60,12 +59,12 @@ export default function VendorDashboard() {
   const todaySchedule = useMemo(() => {
     if (apiBookings.length === 0) return [];
     return apiBookings
-      .filter((b: any) => {
+      .filter((b) => {
         const bDate = b.booking_date?.split("T")[0];
         return bDate === todayStr && (b.status === "Pending" || b.status === "Confirmed");
       })
       .slice(0, 5)
-      .map((b: any) => ({
+      .map((b) => ({
         time: b.start_time?.slice(0, 5) ?? "—",
         duration: `${b.duration} min`,
         service: `Service #${b.service_id}`,
@@ -82,7 +81,7 @@ export default function VendorDashboard() {
     }
     // Group by day of week
     const dayTotals = new Array(7).fill(0);
-    apiBookings.forEach((b: any) => {
+    apiBookings.forEach((b) => {
       if (!b.booking_date) return;
       const d = new Date(b.booking_date);
       const dayIdx = (d.getDay() + 6) % 7; // Mon=0, Sun=6

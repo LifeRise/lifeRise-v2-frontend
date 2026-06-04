@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import {
   CheckCircle,

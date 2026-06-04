@@ -77,7 +77,7 @@ export default function ResidentSignupPage() {
     setIsLoading(true);
 
     try {
-      const { user, session } = await authService.signUp({
+      const { session } = await authService.signUp({
         first_name: firstName,
         last_name: lastName,
         email,
@@ -96,8 +96,8 @@ export default function ResidentSignupPage() {
       setTimeout(() => {
         router.push("/login");
       }, 1500);
-    } catch (err: any) {
-      setError(err?.message || "Signup failed. Please try again.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Signup failed. Please try again.");
       setIsLoading(false);
     }
   };

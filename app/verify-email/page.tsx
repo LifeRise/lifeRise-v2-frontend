@@ -23,8 +23,8 @@ export default function VerifyEmailPage() {
     try {
       await authService.resendConfirmation(email);
       setResent(true);
-    } catch (err: any) {
-      setError(err?.message || "Failed to resend confirmation email");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to resend confirmation email");
     } finally {
       setIsResending(false);
     }
@@ -92,6 +92,7 @@ export default function VerifyEmailPage() {
             </motion.div>
           ) : (
             <button
+              type="button"
               onClick={handleResend}
               disabled={isResending || !email}
               className="w-full py-3 rounded-xl font-semibold text-sm glass border border-white/10 text-lr-white hover:bg-white/8 transition-all flex items-center justify-center gap-2 disabled:opacity-50"

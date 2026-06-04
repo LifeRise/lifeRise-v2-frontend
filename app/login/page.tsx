@@ -16,6 +16,7 @@ import {
   Phone,
   Sparkles,
   MessageSquare,
+  LayoutDashboard,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/hooks";
 import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
@@ -28,7 +29,7 @@ export default function LoginPage() {
   const { signIn } = useAuth();
 
   const [tab, setTab] = useState<LoginTab>("password");
-  const [userType, setUserType] = useState<"resident" | "vendor">("resident");
+  const [userType, setUserType] = useState<"resident" | "vendor" | "manager">("resident");
 
   // Password login fields
   const [email, setEmail] = useState("");
@@ -72,8 +73,8 @@ export default function LoginPage() {
           ? "/vendor"
           : "/resident";
       router.push(dest);
-    } catch (err: any) {
-      setError(err?.message || "Invalid email or password");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Invalid email or password");
     } finally {
       setIsLoading(false);
     }
@@ -90,8 +91,8 @@ export default function LoginPage() {
     try {
       await authService.signInWithMagicLink(magicEmail);
       setMagicSent(true);
-    } catch (err: any) {
-      setError(err?.message || "Failed to send magic link");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to send magic link");
     } finally {
       setIsLoading(false);
     }
@@ -107,8 +108,8 @@ export default function LoginPage() {
     try {
       await authService.signInWithOtp(phone);
       setOtpSent(true);
-    } catch (err: any) {
-      setError(err?.message || "Failed to send OTP");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to send OTP");
     } finally {
       setIsLoading(false);
     }
@@ -125,8 +126,8 @@ export default function LoginPage() {
     try {
       await authService.verifyOtp({ phone, token: otpCode, type: "sms" });
       router.push("/resident");
-    } catch (err: any) {
-      setError(err?.message || "Invalid OTP code");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Invalid OTP code");
     } finally {
       setIsLoading(false);
     }
@@ -174,26 +175,38 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setUserType("resident")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium transition-all ${
                 userType === "resident"
                   ? "bg-teal text-midnight"
                   : "text-muted hover:text-lr-white"
               }`}
             >
-              <Building2 size={16} />
+              <Building2 size={15} />
               Residents
             </button>
             <button
               type="button"
               onClick={() => setUserType("vendor")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium transition-all ${
                 userType === "vendor"
                   ? "bg-gold text-midnight"
                   : "text-muted hover:text-lr-white"
               }`}
             >
-              <Wrench size={16} />
-              Service Provider
+              <Wrench size={15} />
+              Vendor
+            </button>
+            <button
+              type="button"
+              onClick={() => setUserType("manager")}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium transition-all ${
+                userType === "manager"
+                  ? "bg-purple-accent text-midnight"
+                  : "text-muted hover:text-lr-white"
+              }`}
+            >
+              <LayoutDashboard size={15} />
+              Manager
             </button>
           </div>
 

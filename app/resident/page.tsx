@@ -23,8 +23,8 @@ export default function ResidentDashboard() {
   const setActiveCategory = useSetActiveCategory();
   const [bookedId, setBookedId] = useState<string | null>(null);
 
-  const { vendors: apiVendors, isLoading: servicesLoading } = useServices();
-  const { residentBookings: apiBookings, isLoading: bookingsLoading } = useBookings();
+  const { vendors: apiVendors } = useServices();
+  const { residentBookings: apiBookings } = useBookings();
 
   // Use API data when available, fall back to mock data
   const vendors = apiVendors.length > 0 ? apiVendors : mockVendors;

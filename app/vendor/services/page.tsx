@@ -7,7 +7,8 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useAuth } from "@/lib/auth/hooks";
 import { useServices } from "@/lib/api/hooks";
-import { createService, updateService, deleteService, type ServiceInput } from "@/lib/api/services";
+import { createService, updateService, deleteService } from "@/lib/api/services";
+import type { Service } from "@/lib/api/services";
 import { cn } from "@/lib/utils";
 
 interface ServiceForm {
@@ -22,8 +23,8 @@ function ServiceCard({
   onEdit,
   onDelete,
 }: {
-  service: any;
-  onEdit: (s: any) => void;
+  service: Service;
+  onEdit: (s: Service) => void;
   onDelete: (id: number) => void;
 }) {
   const price = parseFloat(service.price ?? "0").toFixed(0);
@@ -66,12 +67,16 @@ function ServiceCard({
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <button
+              type="button"
+              title="Edit service"
               onClick={() => onEdit(service)}
               className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center text-muted hover:text-lr-white hover:bg-white/10 transition-colors"
             >
               <Pencil size={12} />
             </button>
             <button
+              type="button"
+              title="Delete service"
               onClick={() => onDelete(service.id)}
               className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center text-muted hover:text-rose hover:bg-rose/10 transition-colors"
             >
@@ -126,14 +131,14 @@ export default function VendorServicesPage() {
       setEditingId(null);
       setShowForm(false);
       refresh();
-    } catch (err: any) {
-      console.error("Save service failed:", err.message);
+    } catch (err: unknown) {
+      console.error("Save service failed:", err instanceof Error ? err.message : String(err));
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleEdit = (s: any) => {
+  const handleEdit = (s: Service) => {
     setEditingId(s.id);
     setForm({
       name: s.name ?? "",
@@ -149,8 +154,8 @@ export default function VendorServicesPage() {
     try {
       await deleteService(profile.role, id);
       refresh();
-    } catch (err: any) {
-      console.error("Delete failed:", err.message);
+    } catch (err: unknown) {
+      console.error("Delete failed:", err instanceof Error ? err.message : String(err));
     }
   };
 
@@ -174,6 +179,7 @@ export default function VendorServicesPage() {
             <span className="text-[10px] text-muted bg-white/5 px-2 py-0.5 rounded-full">Demo data</span>
           )}
           <button
+            type="button"
             onClick={() => setShowForm(true)}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gold text-midnight hover:opacity-90 transition-opacity"
           >
@@ -196,7 +202,7 @@ export default function VendorServicesPage() {
                 <p className="text-sm font-semibold text-lr-white">
                   {editingId ? "Edit Service" : "New Service"}
                 </p>
-                <button onClick={handleCancel} className="text-muted hover:text-lr-white">
+                <button type="button" title="Cancel" onClick={handleCancel} className="text-muted hover:text-lr-white">
                   <X size={14} />
                 </button>
               </div>
@@ -228,6 +234,7 @@ export default function VendorServicesPage() {
                 />
               </div>
               <button
+                type="button"
                 onClick={handleSave}
                 disabled={submitting || !form.name || !form.price}
                 className="w-full py-2 rounded-lg text-xs font-semibold bg-gold text-midnight disabled:opacity-50 flex items-center justify-center gap-1"
@@ -253,6 +260,7 @@ export default function VendorServicesPage() {
           description="Add your first service to start receiving bookings."
           action={
             <button
+              type="button"
               onClick={() => setShowForm(true)}
               className="px-4 py-2 rounded-lg text-xs font-semibold bg-gold text-midnight inline-flex items-center gap-1"
             >
@@ -263,7 +271,7 @@ export default function VendorServicesPage() {
       ) : (
         <div className="space-y-2">
           <AnimatePresence mode="popLayout">
-            {apiServices.map((s: any) => (
+            {apiServices.map((s) => (
               <ServiceCard key={s.id} service={s} onEdit={handleEdit} onDelete={handleDelete} />
             ))}
           </AnimatePresence>

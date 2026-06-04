@@ -22,7 +22,7 @@ export default function FavoritesPage() {
     if (apiFavorites.length === 0) return new Set<string>();
     return new Set(
       apiFavorites
-        .map((f: any) => f.service_id ?? f.serviceId ?? f.ServiceID)
+        .map((f) => f.service_id)
         .filter(Boolean)
         .map(String)
     );
@@ -95,6 +95,8 @@ export default function FavoritesPage() {
                       </span>
                     </div>
                     <button
+                      type="button"
+                      aria-label="Remove from favorites"
                       onClick={() => handleToggleFavorite(v.id)}
                       className="absolute top-3 right-3 w-8 h-8 rounded-full bg-midnight/60 flex items-center justify-center border border-white/10 hover:bg-midnight/80 transition-colors"
                     >
@@ -114,22 +116,19 @@ export default function FavoritesPage() {
                     </p>
                     <p className="text-muted text-xs line-clamp-2 mb-3 flex-1">{v.description}</p>
 
-                    <div className="flex items-center justify-between pt-3 border-t border-white/[0.05]">
+                    <div className="flex items-center justify-between pt-3 border-t border-white/5">
                       <button
+                        type="button"
                         onClick={() => handleToggleFavorite(v.id)}
                         className="text-[11px] text-muted hover:text-red-400 transition-colors flex items-center gap-1"
                       >
                         <Heart size={10} className="fill-red-400 text-red-400" /> Remove
                       </button>
                       <button
+                        type="button"
                         onClick={() => setBookedId(v.id)}
                         disabled={!v.available || bookedId === v.id}
-                        className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
-                        style={
-                          bookedId === v.id
-                            ? { background: "rgba(0,212,170,0.2)", color: "#00D4AA" }
-                            : { background: "#00D4AA", color: "#0A0F1E" }
-                        }
+                        className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 ${bookedId === v.id ? "bg-teal/20 text-teal" : "bg-teal text-midnight"}`}
                       >
                         {bookedId === v.id ? "✓ Booked!" : <>Book <ArrowRight size={11} /></>}
                       </button>

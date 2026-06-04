@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { DollarSign, TrendingUp, Clock, Briefcase, CheckCircle } from "lucide-react";
+import { DollarSign, TrendingUp, Clock, CheckCircle } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SectionHeader } from "@/components/ui/SectionHeader";
@@ -10,7 +10,7 @@ import { useAuth } from "@/lib/auth/hooks";
 import { useBookings } from "@/lib/api/hooks";
 
 export default function VendorEarningsPage() {
-  const { profile } = useAuth();
+  useAuth();
   const { bookings: apiBookings, isLoading } = useBookings();
   const isLive = apiBookings.length > 0;
 
@@ -30,19 +30,19 @@ export default function VendorEarningsPage() {
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
     const totalEarnings = apiBookings
-      .filter((b: any) => b.status === "Completed")
-      .reduce((sum: number, b: any) => sum + parseFloat(b.final_price ?? b.price ?? "0"), 0);
+      .filter((b) => b.status === "Completed")
+      .reduce((sum, b) => sum + parseFloat(b.final_price ?? b.price ?? "0"), 0);
 
     const weeklyTotal = apiBookings
-      .filter((b: any) => {
+      .filter((b) => {
         if (b.status !== "Completed" || !b.booking_date) return false;
         const d = new Date(b.booking_date);
         return d >= weekAgo;
       })
-      .reduce((sum: number, b: any) => sum + parseFloat(b.final_price ?? b.price ?? "0"), 0);
+      .reduce((sum, b) => sum + parseFloat(b.final_price ?? b.price ?? "0"), 0);
 
-    const completedJobs = apiBookings.filter((b: any) => b.status === "Completed").length;
-    const pendingJobs = apiBookings.filter((b: any) => b.status === "Pending" || b.status === "Confirmed").length;
+    const completedJobs = apiBookings.filter((b) => b.status === "Completed").length;
+    const pendingJobs = apiBookings.filter((b) => b.status === "Pending" || b.status === "Confirmed").length;
     const avgJobValue = completedJobs > 0 ? totalEarnings / completedJobs : 0;
 
     return { totalEarnings, weeklyTotal, completedJobs, pendingJobs, avgJobValue, platformFee: 0.12 };
@@ -54,7 +54,7 @@ export default function VendorEarningsPage() {
       return days.map((day) => ({ day, h: "10%", amount: 0 }));
     }
     const dayTotals = new Array(7).fill(0);
-    apiBookings.forEach((b: any) => {
+    apiBookings.forEach((b) => {
       if (!b.booking_date || b.status !== "Completed") return;
       const d = new Date(b.booking_date);
       const dayIdx = (d.getDay() + 6) % 7;
@@ -71,9 +71,9 @@ export default function VendorEarningsPage() {
 
   const recentJobs = useMemo(() => {
     return apiBookings
-      .filter((b: any) => b.status === "Completed")
+      .filter((b) => b.status === "Completed")
       .slice(0, 5)
-      .map((b: any) => ({
+      .map((b) => ({
         id: b.id,
         service: `Service #${b.service_id}`,
         date: b.booking_date?.split("T")[0] ?? "—",

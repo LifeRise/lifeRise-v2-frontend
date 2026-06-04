@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export function FacebookButton({ label = "Continue with Facebook" }: { label?: string }) {
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const handleFacebookSignIn = async () => {
     setLoading(true);
