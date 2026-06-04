@@ -31,7 +31,7 @@ export function useServices() {
     servicesApi
       .listServices(profile.role)
       .then((res) => {
-        const list = Array.isArray(res) ? res : res.data ?? res.services ?? [];
+        const list = Array.isArray(res) ? res : res.services ?? [];
         setServices(list);
       })
       .catch((err) => setError(err.message))
@@ -63,7 +63,7 @@ export function useBookings() {
     bookingsApi
       .listBookings(profile.role)
       .then((res) => {
-        const list = Array.isArray(res) ? res : res.data ?? res.bookings ?? [];
+        const list = Array.isArray(res) ? res : res.bookings ?? [];
         setBookings(list);
       })
       .catch((err) => setError(err.message))
@@ -95,8 +95,7 @@ export function useFavorites() {
     favoritesApi
       .listFavorites()
       .then((res) => {
-        // Backend list endpoints return { data: [...], links: {}, meta: {} }
-        const list = Array.isArray(res) ? res : res.data ?? res.favorites ?? [];
+        const list = Array.isArray(res) ? res : res.favorites ?? [];
         setFavorites(list);
       })
       .catch((err) => setError(err.message))

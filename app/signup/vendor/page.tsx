@@ -107,7 +107,7 @@ export default function VendorSignupPage() {
         router.push("/login");
       }, 1500);
     } catch (err: unknown) {
-      setError(err?.message || "Signup failed. Please try again.");
+      setError(err instanceof Error ? err.message : "Signup failed. Please try again.");
       setIsLoading(false);
     }
   };
