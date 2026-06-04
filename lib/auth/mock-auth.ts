@@ -497,6 +497,7 @@ export function seedMockData() {
     first_name: "Admin",
     last_name: "Manager",
     role: "manager",
+    approval_status: "approved",
   });
   users["manager@liferise.demo"] = { password: "Manager123!", user: managerUser, confirmed: true };
   profiles[managerUser.id] = {
@@ -517,6 +518,7 @@ export function seedMockData() {
     first_name: "Marcus",
     last_name: "Rivers",
     role: "vendor",
+    approval_status: "approved",
   });
   users["vendor@liferise.demo"] = { password: "Vendor123!", user: vendorUser, confirmed: true };
   profiles[vendorUser.id] = {
@@ -539,6 +541,7 @@ export function seedMockData() {
     first_name: "Sarah",
     last_name: "Pending",
     role: "vendor",
+    approval_status: "pending",
   });
   users["pending@liferise.demo"] = { password: "Pending123!", user: pendingVendor, confirmed: true };
   profiles[pendingVendor.id] = {
@@ -561,6 +564,7 @@ export function seedMockData() {
     first_name: "Sarah",
     last_name: "Mitchell",
     role: "resident",
+    approval_status: "approved",
   });
   users["resident@liferise.demo"] = { password: "Resident123!", user: residentUser, confirmed: true };
   profiles[residentUser.id] = {

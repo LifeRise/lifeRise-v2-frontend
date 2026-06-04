@@ -54,6 +54,13 @@ function buildProfileFromSupabaseUser(supabaseUser: SupabaseUser): Profile {
     (supabaseUser.user_metadata?.avatar_url as string) ??
     (supabaseUser.user_metadata?.picture as string);
 
+  const approvalStatus = supabaseUser.user_metadata?.approval_status as
+    | "approved"
+    | "pending"
+    | "rejected"
+    | undefined;
+  const status = approvalStatus && approvalStatus !== "approved" ? approvalStatus : "active";
+
   return {
     id: 0,
     email: supabaseUser.email ?? "",
@@ -62,7 +69,7 @@ function buildProfileFromSupabaseUser(supabaseUser: SupabaseUser): Profile {
     phone: (supabaseUser.user_metadata?.phone as string) ?? "",
     avatar,
     timezone: "UTC",
-    status: "active",
+    status,
     role: (supabaseUser.user_metadata?.role as Profile["role"]) ?? "resident",
     user_type: "customer",
     roles: ["customer"],
@@ -114,42 +121,38 @@ export function useAuth() {
         }
       }
 
-      // 2. Fall back to Supabase session
-      if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
-        const supabase = createClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user && mounted) {
-          setUser(buildUserFromSupabaseUser(session.user));
-          setProfile(buildProfileFromSupabaseUser(session.user));
-          if (session.user.user_metadata?.role) {
-            setRole(session.user.user_metadata.role as BackendProfile["role"]);
+      // 2. Fall back to Supabase session (or mock session in demo mode)
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user && mounted) {
+        setUser(buildUserFromSupabaseUser(session.user));
+        setProfile(buildProfileFromSupabaseUser(session.user));
+        if (session.user.user_metadata?.role) {
+          setRole(session.user.user_metadata.role as BackendProfile["role"]);
+        }
+        setIsLoading(false);
+      } else if (mounted) {
+        setIsLoading(false);
+      }
+
+      // Listen for auth changes (real Supabase or mock)
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (_event, newSession) => {
+          if (newSession?.user) {
+            setUser(buildUserFromSupabaseUser(newSession.user));
+            setProfile(buildProfileFromSupabaseUser(newSession.user));
+            if (newSession.user.user_metadata?.role) {
+              setRole(newSession.user.user_metadata.role as BackendProfile["role"]);
+            }
+          } else if (!getAccessToken()) {
+            setUser(null);
+            setProfile(null);
+            setRole(null);
           }
-          setIsLoading(false);
-        } else if (mounted) {
           setIsLoading(false);
         }
-
-        // Listen for Supabase auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          (_event, newSession) => {
-            if (newSession?.user) {
-              setUser(buildUserFromSupabaseUser(newSession.user));
-              setProfile(buildProfileFromSupabaseUser(newSession.user));
-              if (newSession.user.user_metadata?.role) {
-                setRole(newSession.user.user_metadata.role as BackendProfile["role"]);
-              }
-            } else if (!getAccessToken()) {
-              setUser(null);
-              setProfile(null);
-              setRole(null);
-            }
-            setIsLoading(false);
-          }
-        );
-        supabaseSubscription = subscription;
-      } else {
-        if (mounted) setIsLoading(false);
-      }
+      );
+      supabaseSubscription = subscription;
     };
 
     init();
