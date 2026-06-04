@@ -21,6 +21,8 @@ import type {
   AnalyticsTimeSeries,
   CategoryRevenue,
 } from "./types";
+import type { Booking } from "./api/bookings";
+import type { Service } from "./api/services";
 
 // ─── Vendors / Services ─────────────────────────────────────────
 export const vendors: Vendor[] = [
@@ -218,11 +220,12 @@ export const engagementData: EngagementSlice[] = [
 ];
 
 export const vendorLeaderboard: LeaderboardEntry[] = [
-  { rank: 1, name: "Maya Chen", specialty: "Wellness", bookings: 47, rating: 4.9, earnings: "$3,245", trend: "up" },
-  { rank: 2, name: "Carlos Rivera", specialty: "Meal Prep", bookings: 38, rating: 4.8, earnings: "$2,890", trend: "up" },
-  { rank: 3, name: "Aria Johnson", specialty: "Fitness", bookings: 35, rating: 4.9, earnings: "$2,100", trend: "stable" },
-  { rank: 4, name: "David Kim", specialty: "Home Care", bookings: 29, rating: 4.7, earnings: "$1,950", trend: "down" },
-  { rank: 5, name: "Luna Park", specialty: "Pets", bookings: 22, rating: 5.0, earnings: "$1,320", trend: "up" },
+  { rank: 1, name: "Maya Chen", specialty: "Wellness", bookings: 47, rating: 4.9, earnings: "$3,245", trend: "up", initials: "MC", gradient: "from-emerald-700 to-teal-800", bio: "Licensed massage therapist, 6+ years in deep tissue and prenatal care.", completionRate: 98, avgResponseTime: "< 30 min", reviewCount: 127, topService: "Deep Tissue Massage" },
+  { rank: 2, name: "Carlos Rivera", specialty: "Meal Prep", bookings: 38, rating: 4.8, earnings: "$2,890", trend: "up", initials: "CR", gradient: "from-amber-700 to-orange-800", bio: "Certified nutritionist and personal chef specialising in healthy weekly meal plans.", completionRate: 97, avgResponseTime: "< 1 hr", reviewCount: 89, topService: "Weekly Meal Prep" },
+  { rank: 3, name: "Aria Johnson", specialty: "Fitness", bookings: 35, rating: 4.9, earnings: "$2,100", trend: "stable", initials: "AJ", gradient: "from-blue-700 to-indigo-800", bio: "NASM-certified personal trainer focused on strength, mobility, and athletic performance.", completionRate: 96, avgResponseTime: "< 2 hr", reviewCount: 203, topService: "Personal Training" },
+  { rank: 4, name: "David Kim", specialty: "Home Care", bookings: 29, rating: 4.7, earnings: "$1,950", trend: "down", initials: "DK", gradient: "from-purple-700 to-violet-800", bio: "Professional cleaner using eco-friendly products with meticulous attention to detail.", completionRate: 94, avgResponseTime: "< 1 hr", reviewCount: 156, topService: "Home Deep Clean" },
+  { rank: 5, name: "Luna Park", specialty: "Pets", bookings: 22, rating: 5.0, earnings: "$1,320", trend: "up", initials: "LP", gradient: "from-pink-700 to-rose-800", bio: "Certified dog trainer and licensed pet groomer with a lifelong passion for animals.", completionRate: 100, avgResponseTime: "< 30 min", reviewCount: 67, topService: "Dog Walking & Care" },
+  { rank: 6, name: "James Wilson", specialty: "Wellness", bookings: 18, rating: 4.8, earnings: "$1,080", trend: "stable", initials: "JW", gradient: "from-cyan-700 to-sky-800", bio: "RYT-500 yoga instructor and mindfulness coach offering group and private sessions.", completionRate: 95, avgResponseTime: "< 1 hr", reviewCount: 94, topService: "Yoga & Meditation" },
 ];
 
 export const analyticsTimeSeries: AnalyticsTimeSeries[] = [
@@ -231,6 +234,27 @@ export const analyticsTimeSeries: AnalyticsTimeSeries[] = [
   { date: "May 10", bookings: 15, revenue: 1150, newResidents: 3, complaints: 0 },
   { date: "May 15", bookings: 22, revenue: 1890, newResidents: 0, complaints: 2 },
   { date: "May 20", bookings: 19, revenue: 1620, newResidents: 1, complaints: 0 },
+];
+
+export const analyticsTimeSeries7d: AnalyticsTimeSeries[] = [
+  { date: "May 15", bookings: 5, revenue: 420, newResidents: 0, complaints: 1 },
+  { date: "May 16", bookings: 8, revenue: 680, newResidents: 1, complaints: 0 },
+  { date: "May 17", bookings: 6, revenue: 510, newResidents: 0, complaints: 0 },
+  { date: "May 18", bookings: 11, revenue: 940, newResidents: 0, complaints: 1 },
+  { date: "May 19", bookings: 9, revenue: 760, newResidents: 1, complaints: 0 },
+  { date: "May 20", bookings: 14, revenue: 1150, newResidents: 0, complaints: 0 },
+  { date: "May 21", bookings: 12, revenue: 1020, newResidents: 1, complaints: 0 },
+];
+
+export const analyticsTimeSeries90d: AnalyticsTimeSeries[] = [
+  { date: "Feb 21", bookings: 38, revenue: 2800, newResidents: 5, complaints: 2 },
+  { date: "Mar 1", bookings: 45, revenue: 3400, newResidents: 7, complaints: 1 },
+  { date: "Mar 15", bookings: 52, revenue: 4100, newResidents: 4, complaints: 3 },
+  { date: "Apr 1", bookings: 61, revenue: 5200, newResidents: 9, complaints: 2 },
+  { date: "Apr 15", bookings: 74, revenue: 6400, newResidents: 6, complaints: 1 },
+  { date: "May 1", bookings: 83, revenue: 7100, newResidents: 8, complaints: 4 },
+  { date: "May 15", bookings: 91, revenue: 7800, newResidents: 5, complaints: 2 },
+  { date: "May 21", bookings: 99, revenue: 8400, newResidents: 3, complaints: 1 },
 ];
 
 export const categoryRevenue: CategoryRevenue[] = [
@@ -253,9 +277,9 @@ export const residentDirectory: ResidentDirectoryEntry[] = [
 
 // ─── Manager Vendors ─────────────────────────────────────────────
 export const vendorApplications: VendorApplication[] = [
-  { id: "va1", name: "Sophia Green", email: "sophia.g@email.com", specialty: "Wellness", appliedDate: "May 18, 2026", status: "pending", documents: ["license.pdf", "insurance.pdf"], rating: 0, totalJobs: 0 },
-  { id: "va2", name: "Daniel Lee", email: "daniel.l@email.com", specialty: "Fitness", appliedDate: "May 15, 2026", status: "pending", documents: ["certification.pdf"], rating: 0, totalJobs: 0 },
-  { id: "va3", name: "Nina Patel", email: "nina.p@email.com", specialty: "Home Care", appliedDate: "May 10, 2026", status: "approved", documents: ["license.pdf", "bg-check.pdf", "insurance.pdf"], rating: 4.8, totalJobs: 14 },
+  { id: "va1", name: "Sophia Green", email: "sophia.g@email.com", specialty: "Wellness", appliedDate: "May 18, 2026", status: "pending", documents: ["license.pdf", "insurance.pdf"], rating: 0, totalJobs: 0, bio: "Certified aromatherapist and holistic wellness practitioner with 5 years of spa experience. Specialises in relaxation and stress-relief therapies.", yearsExperience: 5, phone: "(555) 901-2345" },
+  { id: "va2", name: "Daniel Lee", email: "daniel.l@email.com", specialty: "Fitness", appliedDate: "May 15, 2026", status: "pending", documents: ["certification.pdf"], rating: 0, totalJobs: 0, bio: "NASM-certified personal trainer and former collegiate track athlete. Specialises in strength conditioning, weight loss programmes, and sprint coaching.", yearsExperience: 3, phone: "(555) 012-3456" },
+  { id: "va3", name: "Nina Patel", email: "nina.p@email.com", specialty: "Home Care", appliedDate: "May 10, 2026", status: "approved", documents: ["license.pdf", "bg-check.pdf", "insurance.pdf"], rating: 4.8, totalJobs: 14, bio: "Professional home organiser and certified cleaner with commercial and residential experience. Background-checked and insured.", yearsExperience: 7, phone: "(555) 123-9999" },
 ];
 
 // ─── Manager Announcements ───────────────────────────────────────
@@ -291,4 +315,56 @@ export const notifications: NotificationItem[] = [
   { id: "n3", title: "Pool Maintenance", body: "The pool will be closed May 24–25 for scheduled maintenance.", timestamp: "2026-05-19T09:00:00Z", read: true, type: "alert" },
   { id: "n4", title: "Payment Processed", body: "Your payment of $120 for Weekly Meal Prep has been processed.", timestamp: "2026-05-18T16:00:00Z", read: true, type: "system" },
   { id: "n5", title: "New Event", body: "Community Fitness Challenge on May 28. 47 residents are interested!", timestamp: "2026-05-17T11:00:00Z", read: true, type: "promo" },
+];
+
+// ─── Backend-shaped Mock Data (for useBookings / useServices fallbacks) ───────
+// Dates are relative to "now" so the demo always shows fresh data.
+const _today = new Date();
+function _offsetDate(days: number): string {
+  const d = new Date(_today);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split("T")[0];
+}
+
+export const apiServices: Service[] = [
+  { id: 101, name: "Deep Tissue Massage", slug: "deep-tissue-massage", description: "60-minute targeted release for chronic tension. Includes hot-stone finish.", short_description: "Targeted release for chronic tension.", price: "85.00", currency: "USD", duration: 60, category: { id: 1, name: "Wellness", slug: "wellness" }, provider_id: 201, avg_rating: 4.9, total_reviews: 127, status: "active", images: [], location_type: "on_site" },
+  { id: 102, name: "Swedish Relaxation Massage", slug: "swedish-massage", description: "Classic full-body Swedish technique using aromatic oils.", short_description: "Full-body relaxation with aromatic oils.", price: "75.00", currency: "USD", duration: 60, category: { id: 1, name: "Wellness", slug: "wellness" }, provider_id: 201, avg_rating: 4.8, total_reviews: 94, status: "active", images: [], location_type: "on_site" },
+  { id: 103, name: "Sports Recovery Session", slug: "sports-recovery", description: "Deep-pressure work for athletes with mobility assessment.", short_description: "Deep recovery for athletes.", price: "110.00", currency: "USD", duration: 90, category: { id: 1, name: "Wellness", slug: "wellness" }, provider_id: 201, avg_rating: 5.0, total_reviews: 52, status: "active", images: [], location_type: "on_site" },
+  { id: 104, name: "Prenatal Massage", slug: "prenatal-massage", description: "Gentle, side-lying massage tailored for expectant mothers.", short_description: "Gentle care for expectant mothers.", price: "95.00", currency: "USD", duration: 60, category: { id: 1, name: "Wellness", slug: "wellness" }, provider_id: 201, avg_rating: 4.9, total_reviews: 38, status: "active", images: [], location_type: "on_site" },
+  { id: 105, name: "Mobility & Stretch", slug: "mobility-stretch", description: "Guided assisted-stretch routine to improve range of motion.", short_description: "Assisted stretching session.", price: "60.00", currency: "USD", duration: 45, category: { id: 1, name: "Wellness", slug: "wellness" }, provider_id: 201, avg_rating: 4.7, total_reviews: 41, status: "active", images: [], location_type: "on_site" },
+  { id: 106, name: "Couples Massage", slug: "couples-massage", description: "Side-by-side massage for two in a candlelit setting.", short_description: "Side-by-side for two.", price: "180.00", currency: "USD", duration: 75, category: { id: 1, name: "Wellness", slug: "wellness" }, provider_id: 201, avg_rating: 4.9, total_reviews: 23, status: "inactive", images: [], location_type: "on_site" },
+];
+
+// Vendor-perspective bookings: Marcus Johnson (provider 201) viewing his queue/schedule/earnings.
+export const apiBookings: Booking[] = [
+  // Today
+  { id: 1001, booking_number: "LR-2026-1001", customer_id: 301, service_provider_id: 201, service_id: 101, status: "Confirmed", booking_date: _offsetDate(0), start_time: "10:00:00", end_time: "11:00:00", duration: 60, price: "85.00", final_price: "85.00", currency: "USD", payment_status: "paid", created_at: _offsetDate(-3), service_name: "Deep Tissue Massage", customer_name: "Sarah Mitchell", customer_avatar: "SM", provider_name: "Marcus Johnson", provider_avatar: "MJ", address: "Unit 4B, Riverside Tower" },
+  { id: 1002, booking_number: "LR-2026-1002", customer_id: 302, service_provider_id: 201, service_id: 105, status: "Confirmed", booking_date: _offsetDate(0), start_time: "13:30:00", end_time: "14:15:00", duration: 45, price: "60.00", final_price: "60.00", currency: "USD", payment_status: "paid", created_at: _offsetDate(-2), service_name: "Mobility & Stretch", customer_name: "Daniel Cho", customer_avatar: "DC", provider_name: "Marcus Johnson", provider_avatar: "MJ", address: "Unit 12A, Riverside Tower" },
+  { id: 1003, booking_number: "LR-2026-1003", customer_id: 303, service_provider_id: 201, service_id: 102, status: "Pending", booking_date: _offsetDate(0), start_time: "16:00:00", end_time: "17:00:00", duration: 60, price: "75.00", final_price: "75.00", currency: "USD", notes: "Prefers lavender oil; mild pressure on shoulders.", payment_status: "authorized", created_at: _offsetDate(0), service_name: "Swedish Relaxation Massage", customer_name: "Priya Sharma", customer_avatar: "PS", provider_name: "Marcus Johnson", provider_avatar: "MJ", address: "Unit 7C, Riverside Tower" },
+  // Tomorrow
+  { id: 1004, booking_number: "LR-2026-1004", customer_id: 304, service_provider_id: 201, service_id: 103, status: "Confirmed", booking_date: _offsetDate(1), start_time: "09:00:00", end_time: "10:30:00", duration: 90, price: "110.00", final_price: "110.00", currency: "USD", payment_status: "paid", created_at: _offsetDate(-1), service_name: "Sports Recovery Session", customer_name: "Marcus Hill", customer_avatar: "MH", provider_name: "Marcus Johnson", provider_avatar: "MJ", address: "Unit 9D, Riverside Tower" },
+  { id: 1005, booking_number: "LR-2026-1005", customer_id: 305, service_provider_id: 201, service_id: 101, status: "Pending", booking_date: _offsetDate(1), start_time: "15:00:00", end_time: "16:00:00", duration: 60, price: "85.00", final_price: "85.00", currency: "USD", payment_status: "authorized", created_at: _offsetDate(0), service_name: "Deep Tissue Massage", customer_name: "Elena Rossi", customer_avatar: "ER", provider_name: "Marcus Johnson", provider_avatar: "MJ", address: "Unit 3F, Riverside Tower" },
+  // Next 3 days
+  { id: 1006, booking_number: "LR-2026-1006", customer_id: 306, service_provider_id: 201, service_id: 104, status: "Confirmed", booking_date: _offsetDate(2), start_time: "11:00:00", end_time: "12:00:00", duration: 60, price: "95.00", final_price: "95.00", currency: "USD", payment_status: "paid", created_at: _offsetDate(-1), service_name: "Prenatal Massage", customer_name: "Naomi Park", customer_avatar: "NP", provider_name: "Marcus Johnson", provider_avatar: "MJ", address: "Unit 14B, Riverside Tower" },
+  { id: 1007, booking_number: "LR-2026-1007", customer_id: 307, service_provider_id: 201, service_id: 102, status: "Confirmed", booking_date: _offsetDate(3), start_time: "14:00:00", end_time: "15:00:00", duration: 60, price: "75.00", final_price: "75.00", currency: "USD", payment_status: "paid", created_at: _offsetDate(0), service_name: "Swedish Relaxation Massage", customer_name: "James Okafor", customer_avatar: "JO", provider_name: "Marcus Johnson", provider_avatar: "MJ", address: "Unit 6A, Riverside Tower" },
+  // Last 7 days — completed
+  { id: 1008, booking_number: "LR-2026-1008", customer_id: 308, service_provider_id: 201, service_id: 101, status: "Completed", booking_date: _offsetDate(-1), start_time: "10:00:00", end_time: "11:00:00", duration: 60, price: "85.00", final_price: "85.00", currency: "USD", payment_status: "paid", created_at: _offsetDate(-5), service_name: "Deep Tissue Massage", customer_name: "Aiko Tanaka", customer_avatar: "AT", provider_name: "Marcus Johnson", provider_avatar: "MJ", address: "Unit 11E, Riverside Tower" },
+  { id: 1009, booking_number: "LR-2026-1009", customer_id: 301, service_provider_id: 201, service_id: 103, status: "Completed", booking_date: _offsetDate(-2), start_time: "16:00:00", end_time: "17:30:00", duration: 90, price: "110.00", final_price: "110.00", currency: "USD", payment_status: "paid", created_at: _offsetDate(-7), service_name: "Sports Recovery Session", customer_name: "Sarah Mitchell", customer_avatar: "SM", provider_name: "Marcus Johnson", provider_avatar: "MJ", address: "Unit 4B, Riverside Tower" },
+  { id: 1010, booking_number: "LR-2026-1010", customer_id: 309, service_provider_id: 201, service_id: 102, status: "Completed", booking_date: _offsetDate(-3), start_time: "11:00:00", end_time: "12:00:00", duration: 60, price: "75.00", final_price: "75.00", currency: "USD", payment_status: "paid", created_at: _offsetDate(-8), service_name: "Swedish Relaxation Massage", customer_name: "Hassan Ali", customer_avatar: "HA", provider_name: "Marcus Johnson", provider_avatar: "MJ", address: "Unit 8C, Riverside Tower" },
+  { id: 1011, booking_number: "LR-2026-1011", customer_id: 310, service_provider_id: 201, service_id: 105, status: "Completed", booking_date: _offsetDate(-5), start_time: "09:30:00", end_time: "10:15:00", duration: 45, price: "60.00", final_price: "60.00", currency: "USD", payment_status: "paid", created_at: _offsetDate(-10), service_name: "Mobility & Stretch", customer_name: "Olivia Brennan", customer_avatar: "OB", provider_name: "Marcus Johnson", provider_avatar: "MJ", address: "Unit 2A, Riverside Tower" },
+  { id: 1012, booking_number: "LR-2026-1012", customer_id: 311, service_provider_id: 201, service_id: 104, status: "Cancelled", booking_date: _offsetDate(-4), start_time: "13:00:00", end_time: "14:00:00", duration: 60, price: "95.00", final_price: "0.00", currency: "USD", payment_status: "refunded", created_at: _offsetDate(-9), service_name: "Prenatal Massage", customer_name: "Layla Hassan", customer_avatar: "LH", provider_name: "Marcus Johnson", provider_avatar: "MJ", address: "Unit 5D, Riverside Tower" },
+];
+
+// Resident-perspective bookings: Sarah Mitchell (customer 301) viewing her appointments across multiple vendors.
+export const apiResidentBookings: Booking[] = [
+  // Upcoming
+  { id: 2001, booking_number: "LR-2026-2001", customer_id: 301, service_provider_id: 201, service_id: 101, status: "Confirmed", booking_date: _offsetDate(1), start_time: "15:00:00", end_time: "16:00:00", duration: 60, price: "85.00", final_price: "85.00", currency: "USD", payment_status: "paid", created_at: _offsetDate(-2), service_name: "Deep Tissue Massage", customer_name: "Sarah Mitchell", customer_avatar: "SM", provider_name: "Maya Chen", provider_avatar: "MC", address: "Unit 4B, Riverside Tower" },
+  { id: 2002, booking_number: "LR-2026-2002", customer_id: 301, service_provider_id: 202, service_id: 0, status: "Pending", booking_date: _offsetDate(2), start_time: "10:00:00", end_time: "11:00:00", duration: 60, price: "120.00", final_price: "120.00", currency: "USD", payment_status: "authorized", created_at: _offsetDate(0), service_name: "Weekly Meal Prep", customer_name: "Sarah Mitchell", customer_avatar: "SM", provider_name: "Carlos Rivera", provider_avatar: "CR", address: "Unit 4B, Riverside Tower" },
+  { id: 2003, booking_number: "LR-2026-2003", customer_id: 301, service_provider_id: 204, service_id: 0, status: "Confirmed", booking_date: _offsetDate(4), start_time: "09:00:00", end_time: "12:00:00", duration: 180, price: "95.00", final_price: "95.00", currency: "USD", payment_status: "paid", created_at: _offsetDate(-1), service_name: "Home Deep Clean", customer_name: "Sarah Mitchell", customer_avatar: "SM", provider_name: "David Kim", provider_avatar: "DK", address: "Unit 4B, Riverside Tower" },
+  // Past
+  { id: 2004, booking_number: "LR-2026-2004", customer_id: 301, service_provider_id: 203, service_id: 0, status: "Completed", booking_date: _offsetDate(-3), start_time: "17:00:00", end_time: "18:00:00", duration: 60, price: "75.00", final_price: "75.00", currency: "USD", payment_status: "paid", created_at: _offsetDate(-7), service_name: "Personal Training", customer_name: "Sarah Mitchell", customer_avatar: "SM", provider_name: "Aria Johnson", provider_avatar: "AJ", address: "Riverside Fitness Center" },
+  { id: 2005, booking_number: "LR-2026-2005", customer_id: 301, service_provider_id: 201, service_id: 102, status: "Completed", booking_date: _offsetDate(-7), start_time: "14:00:00", end_time: "15:00:00", duration: 60, price: "75.00", final_price: "75.00", currency: "USD", payment_status: "paid", created_at: _offsetDate(-12), service_name: "Swedish Relaxation Massage", customer_name: "Sarah Mitchell", customer_avatar: "SM", provider_name: "Maya Chen", provider_avatar: "MC", address: "Unit 4B, Riverside Tower" },
+  { id: 2006, booking_number: "LR-2026-2006", customer_id: 301, service_provider_id: 205, service_id: 0, status: "Completed", booking_date: _offsetDate(-10), start_time: "08:00:00", end_time: "08:30:00", duration: 30, price: "25.00", final_price: "25.00", currency: "USD", payment_status: "paid", created_at: _offsetDate(-15), service_name: "Dog Walking & Care", customer_name: "Sarah Mitchell", customer_avatar: "SM", provider_name: "Luna Park", provider_avatar: "LP", address: "Riverside Dog Park" },
+  // Cancelled
+  { id: 2007, booking_number: "LR-2026-2007", customer_id: 301, service_provider_id: 201, service_id: 101, status: "Cancelled", booking_date: _offsetDate(-14), start_time: "14:00:00", end_time: "15:00:00", duration: 60, price: "75.00", final_price: "0.00", currency: "USD", payment_status: "refunded", created_at: _offsetDate(-18), service_name: "Swedish Massage", customer_name: "Sarah Mitchell", customer_avatar: "SM", provider_name: "Maya Chen", provider_avatar: "MC", address: "Unit 4B, Riverside Tower" },
 ];

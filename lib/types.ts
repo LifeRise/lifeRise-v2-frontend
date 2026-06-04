@@ -239,6 +239,10 @@ export interface VendorApplication {
   documents: string[];
   rating: number;
   totalJobs: number;
+  // UI-only enrichment fields
+  bio?: string;
+  yearsExperience?: number;
+  phone?: string;
 }
 
 export interface LeaderboardEntry {
@@ -249,6 +253,14 @@ export interface LeaderboardEntry {
   rating: number;
   earnings: string;
   trend: Trend;
+  // UI-only enrichment fields
+  initials?: string;
+  gradient?: string;
+  bio?: string;
+  completionRate?: number;
+  avgResponseTime?: string;
+  reviewCount?: number;
+  topService?: string;
 }
 
 // ─── Manager Announcements ──────────────────────────────────────

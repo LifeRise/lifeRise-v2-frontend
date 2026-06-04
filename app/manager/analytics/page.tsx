@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   LineChart,
@@ -18,7 +18,10 @@ import {
 } from "recharts";
 import {
   analyticsTimeSeries,
+  analyticsTimeSeries7d,
+  analyticsTimeSeries90d,
   categoryRevenue,
+  vendorLeaderboard,
 } from "@/lib/mock-data";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { SectionHeader } from "@/components/ui/SectionHeader";
@@ -26,6 +29,33 @@ import { staggerContainerResponsive, fadeUpItem } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 
 type Range = "7d" | "30d" | "90d";
+
+const kpiByRange: Record<Range, Array<{ label: string; value: string; delta: string; up: boolean }>> = {
+  "7d": [
+    { label: "Total Residents", value: "247", delta: "+1", up: true },
+    { label: "Bookings", value: "65", delta: "+8%", up: true },
+    { label: "Revenue", value: "$5.5K", delta: "+5%", up: true },
+    { label: "Complaints", value: "1", delta: "-1", up: false },
+  ],
+  "30d": [
+    { label: "Total Residents", value: "247", delta: "+4", up: true },
+    { label: "Bookings", value: "143", delta: "+18%", up: true },
+    { label: "Revenue", value: "$37K", delta: "+12%", up: true },
+    { label: "Complaints", value: "3", delta: "-2", up: false },
+  ],
+  "90d": [
+    { label: "Total Residents", value: "247", delta: "+23", up: true },
+    { label: "Bookings", value: "543", delta: "+31%", up: true },
+    { label: "Revenue", value: "$91K", delta: "+22%", up: true },
+    { label: "Complaints", value: "14", delta: "+3", up: true },
+  ],
+};
+
+const timeSeriesByRange = {
+  "7d": analyticsTimeSeries7d,
+  "30d": analyticsTimeSeries,
+  "90d": analyticsTimeSeries90d,
+};
 
 function ChartWrapper({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
@@ -53,6 +83,16 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
 export default function AnalyticsPage() {
   const [range, setRange] = useState<Range>("30d");
 
+  const kpis = useMemo(() => kpiByRange[range], [range]);
+  const timeSeries = useMemo(() => timeSeriesByRange[range], [range]);
+  const topVendors = useMemo(() => {
+    const maxBookings = vendorLeaderboard[0]?.bookings ?? 1;
+    return vendorLeaderboard.slice(0, 5).map((v) => ({
+      ...v,
+      fill: Math.round((v.bookings / maxBookings) * 100),
+    }));
+  }, []);
+
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto pb-24 lg:pb-8">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
@@ -77,14 +117,9 @@ export default function AnalyticsPage() {
       </div>
 
       <motion.div variants={staggerContainerResponsive(0.06)} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }}>
-        {/* KPIs */}
+        {/* KPIs — range-aware */}
         <motion.div variants={fadeUpItem} className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-          {[
-            { label: "Total Residents", value: "247", delta: "+4", up: true },
-            { label: "Bookings", value: "143", delta: "+18%", up: true },
-            { label: "Revenue", value: "$37K", delta: "+12%", up: true },
-            { label: "Complaints", value: "3", delta: "-2", up: false },
-          ].map((kpi) => (
+          {kpis.map((kpi) => (
             <GlassCard key={kpi.label} className="p-4">
               <p className="text-muted text-xs font-medium mb-2">{kpi.label}</p>
               <p className="font-heading font-bold text-2xl text-lr-white">{kpi.value}</p>
@@ -109,7 +144,7 @@ export default function AnalyticsPage() {
               </h3>
               <ChartWrapper>
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={analyticsTimeSeries} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                  <LineChart data={timeSeries} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                     <XAxis dataKey="date" tick={{ fill: "#94A3B8", fontSize: 11 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fill: "#94A3B8", fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -151,11 +186,11 @@ export default function AnalyticsPage() {
           <motion.div variants={fadeUpItem}>
             <GlassCard className="p-5">
               <h3 className="font-heading text-sm font-semibold text-lr-white mb-4">
-                Service Mix
+                Revenue Trend
               </h3>
               <ChartWrapper>
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={analyticsTimeSeries} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                  <AreaChart data={timeSeries} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#818CF8" stopOpacity={0.35} />
@@ -176,11 +211,11 @@ export default function AnalyticsPage() {
           <motion.div variants={fadeUpItem}>
             <GlassCard className="p-5">
               <h3 className="font-heading text-sm font-semibold text-lr-white mb-4">
-                Complaints vs Resolutions
+                Complaints Trend
               </h3>
               <ChartWrapper>
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={analyticsTimeSeries} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                  <AreaChart data={timeSeries} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="compGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#F87171" stopOpacity={0.35} />
@@ -199,34 +234,49 @@ export default function AnalyticsPage() {
           </motion.div>
         </div>
 
-        {/* Top Performers */}
+        {/* Top Performers — from enriched leaderboard */}
         <motion.div variants={fadeUpItem}>
           <GlassCard className="p-5">
-            <h3 className="font-heading text-sm font-semibold text-lr-white mb-4">
-              Top Vendors This Month
+            <h3 className="font-heading text-sm font-semibold text-lr-white mb-1">
+              Top Vendors This Period
             </h3>
-            <div className="space-y-3">
-              {[
-                { name: "Maya Chen", bookings: 47, revenue: "$3,245", fill: 85 },
-                { name: "Carlos Rivera", bookings: 38, revenue: "$2,890", fill: 72 },
-                { name: "Aria Johnson", bookings: 35, revenue: "$2,100", fill: 65 },
-                { name: "David Kim", bookings: 29, revenue: "$1,950", fill: 55 },
-                { name: "Luna Park", bookings: 22, revenue: "$1,320", fill: 42 },
-              ].map((v, i) => (
+            <p className="text-muted text-[11px] mb-5">Ranked by booking volume · {range === "7d" ? "Last 7 days" : range === "30d" ? "Last 30 days" : "Last 90 days"}</p>
+            <div className="space-y-4">
+              {topVendors.map((v, i) => (
                 <div key={v.name} className="flex items-center gap-3">
-                  <span className="text-xs text-muted w-4">{i + 1}</span>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-lr-white font-medium">{v.name}</span>
-                      <span className="text-xs text-teal font-semibold">{v.revenue}</span>
+                  {/* Gradient avatar */}
+                  <div
+                    className={cn(
+                      "w-8 h-8 rounded-full bg-linear-to-br flex items-center justify-center text-[10px] font-bold text-white font-heading shrink-0",
+                      v.gradient ?? "from-slate-600 to-slate-700"
+                    )}
+                  >
+                    {v.initials ?? v.name.slice(0, 2)}
+                  </div>
+                  <span className="text-[10px] text-muted w-3 shrink-0">{i + 1}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1 gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-sm text-lr-white font-medium truncate">{v.name}</span>
+                        <span className="text-[10px] text-muted shrink-0">{v.specialty}</span>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className="text-[11px] text-muted">{v.bookings} jobs</span>
+                        <span className="text-xs text-teal font-semibold">{v.earnings}</span>
+                      </div>
                     </div>
-                    <div className="h-1.5 rounded-full bg-slate-mid overflow-hidden">
-                      <motion.div
-                        className="h-full rounded-full bg-purple-accent"
-                        initial={{ width: 0 }}
-                        animate={{ width: `${v.fill}%` }}
-                        transition={{ duration: 0.8, delay: i * 0.1 }}
-                      />
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-1.5 rounded-full bg-slate-mid overflow-hidden">
+                        <motion.div
+                          className="h-full rounded-full bg-purple-accent"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${v.fill}%` }}
+                          transition={{ duration: 0.8, delay: i * 0.1 }}
+                        />
+                      </div>
+                      {v.completionRate !== undefined && (
+                        <span className="text-[10px] text-teal shrink-0">{v.completionRate}%</span>
+                      )}
                     </div>
                   </div>
                 </div>

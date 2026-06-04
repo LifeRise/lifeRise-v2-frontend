@@ -51,11 +51,14 @@ function QueueCard({
 
       <div>
         <p className="text-lr-white text-xs font-semibold">
-          Service #{booking.service_id}
+          {booking.service_name ?? `Service #${booking.service_id}`}
         </p>
         <p className="text-muted text-[10px] flex items-center gap-1 mt-0.5">
-          <User size={8} /> Customer #{booking.customer_id}
+          <User size={8} /> {booking.customer_name ?? `Customer #${booking.customer_id}`}
         </p>
+        {booking.address && (
+          <p className="text-muted text-[10px] truncate mt-0.5">{booking.address}</p>
+        )}
       </div>
 
       <div className="flex items-center gap-2 text-[10px] text-muted">

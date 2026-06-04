@@ -82,14 +82,16 @@ export function adaptBookingToResidentBooking(b: BackendBooking): ResidentBookin
     Rejected: "cancelled",
   };
 
+  const serviceLabel = b.service_name || `Service #${b.service_id}`;
+  const vendorLabel = b.provider_name || `Provider #${b.service_provider_id}`;
   return {
     id: String(b.id),
-    vendor: `Provider #${b.service_provider_id}`,
-    service: `Service #${b.service_id}`,
+    vendor: vendorLabel,
+    service: serviceLabel,
     date: b.booking_date,
     time: b.start_time,
     status: statusMap[b.status] || "pending",
     amount: formatPrice(b.final_price, b.currency),
-    avatar: "S",
+    avatar: b.provider_avatar || getInitials(vendorLabel),
   };
 }

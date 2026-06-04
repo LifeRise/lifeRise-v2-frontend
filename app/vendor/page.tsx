@@ -67,8 +67,8 @@ export default function VendorDashboard() {
       .map((b) => ({
         time: b.start_time?.slice(0, 5) ?? "—",
         duration: `${b.duration} min`,
-        service: `Service #${b.service_id}`,
-        client: `Customer #${b.customer_id}`,
+        service: b.service_name ?? `Service #${b.service_id}`,
+        client: b.customer_name ?? `Customer #${b.customer_id}`,
         status: b.status === "Confirmed" ? "in-progress" as const : "upcoming" as const,
       }));
   }, [apiBookings, todayStr]);

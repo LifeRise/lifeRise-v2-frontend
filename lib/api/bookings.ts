@@ -20,6 +20,12 @@ export interface Booking {
   notes?: string;
   payment_status: string;
   created_at: string;
+  service_name?: string;
+  customer_name?: string;
+  customer_avatar?: string;
+  provider_name?: string;
+  provider_avatar?: string;
+  address?: string;
 }
 
 export interface CreateBookingData {

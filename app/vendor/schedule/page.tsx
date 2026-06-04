@@ -97,7 +97,7 @@ export default function VendorSchedulePage() {
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
                                 <p className="text-lr-white text-xs font-semibold truncate">
-                                  Service #{b.service_id}
+                                  {b.service_name ?? `Service #${b.service_id}`}
                                 </p>
                                 <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded-full", cfg.bg, cfg.color)}>
                                   {cfg.label}
@@ -105,10 +105,10 @@ export default function VendorSchedulePage() {
                               </div>
                               <div className="flex items-center gap-2 mt-1 text-[10px] text-muted">
                                 <span className="flex items-center gap-0.5">
-                                  <User size={8} /> Customer #{b.customer_id}
+                                  <User size={8} /> {b.customer_name ?? `Customer #${b.customer_id}`}
                                 </span>
-                                <span className="flex items-center gap-0.5">
-                                  <MapPin size={8} /> On-site
+                                <span className="flex items-center gap-0.5 truncate">
+                                  <MapPin size={8} /> {b.address ?? "On-site"}
                                 </span>
                               </div>
                             </div>

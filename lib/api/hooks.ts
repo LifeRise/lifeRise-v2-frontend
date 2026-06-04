@@ -15,6 +15,11 @@ import type { Service } from "./services";
 import type { Booking } from "./bookings";
 import type { Favorite } from "./favorites";
 import { adaptServiceToVendor, adaptServiceToDetail, adaptBookingToResidentBooking } from "./adapters";
+import {
+  apiBookings as mockVendorBookings,
+  apiResidentBookings as mockResidentBookings,
+  apiServices as mockServices,
+} from "@/lib/mock-data";
 
 
 // --- Services ---
@@ -32,9 +37,12 @@ export function useServices() {
       .listServices(profile.role)
       .then((res) => {
         const list = Array.isArray(res) ? res : res.services ?? [];
-        setServices(list);
+        setServices(list.length > 0 ? list : mockServices);
       })
-      .catch((err) => setError(err.message))
+      .catch((err) => {
+        setError(err.message);
+        setServices(mockServices);
+      })
       .finally(() => setIsLoading(false));
   }, [profile]);
 
@@ -60,13 +68,17 @@ export function useBookings() {
   const refresh = useCallback(() => {
     if (!profile) return;
     setIsLoading(true);
+    const fallback = profile.role === "resident" ? mockResidentBookings : mockVendorBookings;
     bookingsApi
       .listBookings(profile.role)
       .then((res) => {
         const list = Array.isArray(res) ? res : res.bookings ?? [];
-        setBookings(list);
+        setBookings(list.length > 0 ? list : fallback);
       })
-      .catch((err) => setError(err.message))
+      .catch((err) => {
+        setError(err.message);
+        setBookings(fallback);
+      })
       .finally(() => setIsLoading(false));
   }, [profile]);
 

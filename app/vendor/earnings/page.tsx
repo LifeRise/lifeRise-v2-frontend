@@ -75,7 +75,8 @@ export default function VendorEarningsPage() {
       .slice(0, 5)
       .map((b) => ({
         id: b.id,
-        service: `Service #${b.service_id}`,
+        service: b.service_name ?? `Service #${b.service_id}`,
+        customer: b.customer_name ?? `Customer #${b.customer_id}`,
         date: b.booking_date?.split("T")[0] ?? "—",
         amount: parseFloat(b.final_price ?? b.price ?? "0"),
         commission: parseFloat(b.final_price ?? b.price ?? "0") * 0.12,
@@ -156,11 +157,11 @@ export default function VendorEarningsPage() {
                   >
                     <GlassCard className="p-3">
                       <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-lr-white text-xs font-semibold">{job.service}</p>
-                          <p className="text-muted text-[10px]">{job.date}</p>
+                        <div className="min-w-0">
+                          <p className="text-lr-white text-xs font-semibold truncate">{job.service}</p>
+                          <p className="text-muted text-[10px] truncate">{job.customer} · {job.date}</p>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right shrink-0 ml-3">
                           <p className="text-gold text-xs font-bold">${job.amount.toFixed(0)}</p>
                           <p className="text-muted text-[9px]">Fee: ${job.commission.toFixed(0)}</p>
                         </div>
