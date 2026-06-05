@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+
+echo "→ Building apps/web..."
+(cd apps/web && npm run build)
+
+echo "→ Building apps/api..."
+(cd apps/api && make build)

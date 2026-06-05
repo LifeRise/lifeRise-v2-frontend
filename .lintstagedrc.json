@@ -1,4 +1,4 @@
 {
-  "apps/web/**/*.{ts,tsx,js,jsx}": "npm --prefix apps/web run lint",
-  "apps/api/**/*.go": "bash -c 'cd apps/api && make lint'"
+  "apps/web/**/*.{ts,tsx,js,jsx}": ["npx prettier --write", "npm run lint:web"],
+  "apps/api/**/*.go": "npm run lint:api"
 }
