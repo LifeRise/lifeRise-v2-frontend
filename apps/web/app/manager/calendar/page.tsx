@@ -1,17 +1,17 @@
 'use client';
-import { SectionHeader } from '@/components/ui/SectionHeader';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { Construction } from 'lucide-react';
 
-export default function Page() {
+import { AdminPageShell } from '@/components/admin';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { CalendarDays } from 'lucide-react';
+
+export default function CalendarPage() {
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
-      <SectionHeader title="Calendar" subtitle="Coming soon" />
+    <AdminPageShell title="Calendar" subtitle="Event & booking calendar">
       <EmptyState
-        icon={<Construction />}
-        title="Calendar"
-        description="This section is under construction and will be wired to live data in the next phase."
+        icon={<CalendarDays size={24} className="text-muted" />}
+        title="Calendar View"
+        description="Calendar integration is coming soon. Use the Events and Bookings pages to manage schedules."
       />
-    </div>
+    </AdminPageShell>
   );
 }

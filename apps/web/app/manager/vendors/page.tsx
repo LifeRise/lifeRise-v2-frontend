@@ -14,8 +14,25 @@ import {
   Star,
   Phone,
 } from 'lucide-react';
-import { vendorApplications, vendorLeaderboard } from '@/lib/mock-data';
 import type { VendorApplication } from '@/lib/types';
+const vendorApplications: VendorApplication[] = [];
+const vendorLeaderboard: {
+  name: string;
+  initials?: string;
+  gradient?: string;
+  specialty?: string;
+  bio?: string;
+  topService?: string;
+  avgResponseTime?: string;
+  rating?: number;
+  reviewCount?: number;
+  completionRate?: number;
+  trend?: 'up' | 'down' | 'stable';
+  rank?: number;
+  earnings?: string;
+  bookings: number;
+  revenue: number;
+}[] = [];
 import { GlassCard } from '@/components/ui/GlassCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { SectionHeader } from '@/components/ui/SectionHeader';
@@ -51,7 +68,7 @@ export default function VendorsPage() {
   // Summary stats for the header bar
   const totalActiveJobs = activeVendors.reduce((s, v) => s + v.bookings, 0);
   const avgRating = (
-    activeVendors.reduce((s, v) => s + v.rating, 0) / activeVendors.length
+    activeVendors.reduce((s, v) => s + (v.rating ?? 0), 0) / activeVendors.length
   ).toFixed(1);
   const avgCompletion = Math.round(
     activeVendors.reduce((s, v) => s + (v.completionRate ?? 95), 0) / activeVendors.length
@@ -205,7 +222,9 @@ export default function VendorsPage() {
                               <button
                                 type="button"
                                 className="w-full text-left"
-                                onClick={() => setExpandedVendor(isExpanded ? null : v.rank)}
+                                onClick={() =>
+                                  setExpandedVendor(isExpanded ? null : (v.rank ?? null))
+                                }
                               >
                                 <div className="flex items-center gap-3 px-4 py-3">
                                   {/* Rank medal or number */}

@@ -3,7 +3,22 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Users, CalendarDays, Phone, Mail, X } from 'lucide-react';
-import { residentDirectory } from '@/lib/mock-data';
+interface Resident {
+  id: string;
+  name: string;
+  unit: string;
+  building: string;
+  email: string;
+  phone: string;
+  status: string;
+  moveInDate: string;
+  avatar?: string;
+  lastService?: string;
+  totalBookings?: number;
+  outstandingBalance?: number;
+  lastActivity?: string;
+}
+const residentDirectory: Resident[] = [];
 import { GlassCard } from '@/components/ui/GlassCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { SectionHeader } from '@/components/ui/SectionHeader';
@@ -132,7 +147,7 @@ export default function ResidentsPage() {
                           <span className="flex items-center gap-1">
                             <CalendarDays size={9} /> {r.totalBookings} bookings
                           </span>
-                          {r.outstandingBalance > 0 && (
+                          {(r.outstandingBalance ?? 0) > 0 && (
                             <span className="text-red-400">${r.outstandingBalance} due</span>
                           )}
                         </div>

@@ -16,13 +16,20 @@ import {
   Area,
   Cell,
 } from 'recharts';
-import {
-  analyticsTimeSeries,
-  analyticsTimeSeries7d,
-  analyticsTimeSeries90d,
-  categoryRevenue,
-  vendorLeaderboard,
-} from '@/lib/mock-data';
+const analyticsTimeSeries: { label: string; value: number }[] = [];
+const analyticsTimeSeries7d: { label: string; value: number }[] = [];
+const analyticsTimeSeries90d: { label: string; value: number }[] = [];
+const categoryRevenue: { name: string; revenue: number; color: string }[] = [];
+const vendorLeaderboard: {
+  name: string;
+  initials?: string;
+  gradient?: string;
+  specialty?: string;
+  earnings?: string;
+  completionRate?: string;
+  bookings: number;
+  revenue: number;
+}[] = [];
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { staggerContainerResponsive, fadeUpItem } from '@/lib/animations';
