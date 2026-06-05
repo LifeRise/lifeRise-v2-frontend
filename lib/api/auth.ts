@@ -81,3 +81,19 @@ export async function refreshToken(): Promise<TokenPair> {
     refresh_token: localStorage.getItem("liferise_refresh_token"),
   });
 }
+
+/**
+ * Request a password reset email from the Go backend.
+ */
+export async function forgotPassword(email: string): Promise<void> {
+  const baseUrl = getAuthBaseUrl();
+  await apiPost<unknown>(baseUrl, "/api/forgot-password", { email }, { skipAuth: true });
+}
+
+/**
+ * Complete a password reset with token + code from the email link.
+ */
+export async function resetPassword(token: string, code: string, password: string): Promise<void> {
+  const baseUrl = getAuthBaseUrl();
+  await apiPost<unknown>(baseUrl, "/api/reset-password", { token, code, password }, { skipAuth: true });
+}

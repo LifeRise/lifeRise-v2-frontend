@@ -19,6 +19,7 @@ const MOCK_PROFILES_KEY = "liferise_mock_profiles";
 const MOCK_PENDING_CONFIRMATIONS_KEY = "liferise_mock_pending_confirmations";
 const MOCK_MAGIC_LINKS_KEY = "liferise_mock_magic_links";
 const MOCK_OTP_CODES_KEY = "liferise_mock_otp_codes";
+const MOCK_PENDING_RESET_KEY = "liferise_mock_pending_reset";
 
 export interface MockProfile {
   id: string;
@@ -412,6 +413,8 @@ export const mockAuth = {
       // Don't leak whether email exists
       return { data: {}, error: null };
     }
+    // Store pending reset so updateUser can work without an active session
+    setItem(MOCK_PENDING_RESET_KEY, email);
     console.log(`[MOCK] Password reset link sent to ${email}. Redirect: ${options?.redirectTo}`);
     return { data: {}, error: null };
   },
@@ -423,16 +426,30 @@ export const mockAuth = {
   }) => {
     await new Promise((r) => setTimeout(r, 400));
     const session = getSession();
-    if (!session) throw { message: "Not authenticated" };
     const users = getUsers();
-    const entry = Object.entries(users).find(
-      ([_, v]) => v.user.id === session.user.id
-    );
-    if (entry) {
-      entry[1].password = password;
-      setUsers(users);
+
+    if (session) {
+      const entry = Object.entries(users).find(
+        ([_, v]) => v.user.id === session.user.id
+      );
+      if (entry) {
+        entry[1].password = password;
+        setUsers(users);
+      }
+      return { data: { user: session.user }, error: null };
     }
-    return { data: { user: session.user }, error: null };
+
+    // Fallback: allow update if there's a pending reset (password-reset flow)
+    const pendingResetEmail = getItem<string | null>(MOCK_PENDING_RESET_KEY, null);
+    if (pendingResetEmail && users[pendingResetEmail]) {
+      users[pendingResetEmail].password = password;
+      setUsers(users);
+      setItem(MOCK_PENDING_RESET_KEY, null);
+      notify("USER_UPDATED", getSession());
+      return { data: { user: users[pendingResetEmail].user }, error: null };
+    }
+
+    throw { message: "Not authenticated" };
   },
 
   onAuthStateChange: (

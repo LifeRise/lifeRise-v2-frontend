@@ -15,17 +15,30 @@ export default function ResetPasswordPage() {
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
   // Verify we're in a valid password-reset context
   useEffect(() => {
-    if (!authService.isSupabaseConfigured()) {
-      // In mock mode, just show the form
-      return;
-    }
-    // Supabase handles the token in the URL fragment (#access_token=...)
-    // The session is automatically set by the callback or middleware
+    const init = async () => {
+      try {
+        const session = await authService.exchangeRecoverySession();
+        if (!session) {
+          setError("Invalid or expired reset link. Please request a new one.");
+        }
+      } catch (err: unknown) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Invalid or expired reset link. Please request a new one."
+        );
+      } finally {
+        setIsVerifying(false);
+      }
+    };
+
+    init();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -106,6 +119,11 @@ export default function ResetPasswordPage() {
                 Your password has been reset successfully. Redirecting to login…
               </p>
             </motion.div>
+          ) : isVerifying ? (
+            <div className="text-center py-8 space-y-3">
+              <div className="w-8 h-8 rounded-full border-2 border-white/20 border-t-teal animate-spin mx-auto" />
+              <p className="text-muted text-sm">Verifying your reset link…</p>
+            </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="relative">

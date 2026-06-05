@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Mail, ArrowRight, CheckCircle, ChevronLeft } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { authService } from "@/lib/auth/auth-service";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -29,22 +29,9 @@ export default function ForgotPasswordPage() {
     }
 
     setIsLoading(true);
-    const supabase = createClient();
 
     try {
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-        email,
-        {
-          redirectTo: `${window.location.origin}/reset-password`,
-        }
-      );
-
-      if (resetError) {
-        setError(resetError.message || "Failed to send reset email");
-        setIsLoading(false);
-        return;
-      }
-
+      await authService.resetPassword(email);
       setSuccess(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to send reset email");

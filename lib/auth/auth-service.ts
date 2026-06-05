@@ -7,10 +7,13 @@
  */
 
 import { createClient } from "@/lib/supabase/client";
-import { login as apiLogin, signup as apiSignup, logout as apiLogout } from "@/lib/api/auth";
+import { login as apiLogin, signup as apiSignup, logout as apiLogout, forgotPassword as apiForgotPassword, resetPassword as apiResetPassword } from "@/lib/api/auth";
 import { setTokens, clearTokens } from "@/lib/api/client";
 import type { LoginCredentials, SignupData, BackendProfile } from "@/lib/api/types";
 import type { User, Session } from "@supabase/supabase-js";
+
+const BACKEND_RESET_TOKEN_KEY = "liferise_backend_reset_token";
+const BACKEND_RESET_CODE_KEY = "liferise_backend_reset_code";
 
 const isSupabaseConfigured = () => !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 
@@ -147,17 +150,91 @@ export const authService = {
     if (error) throw new Error(error.message);
   },
 
-  /** Request password reset */
+  /** Request password reset (backend-first; falls back to Supabase) */
   async resetPassword(email: string): Promise<void> {
+    // Always try backend first — users live in the Go DB, not Supabase Auth
+    try {
+      await apiForgotPassword(email);
+      return;
+    } catch (backendErr: unknown) {
+      // If backend is unavailable and Supabase is configured, fall back
+      if (isSupabaseConfigured()) {
+        const supabase = getSupabase();
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw new Error(error.message);
+        return;
+      }
+      throw backendErr;
+    }
+  },
+
+  /**
+   * Handle password-reset callback.
+   * Backend flow: ?token=...&code=... (stores for updatePassword).
+   * Supabase flow: ?code=... or #access_token=... (exchanges for session).
+   * Call this on mount of the /reset-password page.
+   */
+  async exchangeRecoverySession(): Promise<Session | null> {
+    const url = new URL(window.location.href);
+
+    // Backend flow: token + code in query params
+    const token = url.searchParams.get("token");
+    const code = url.searchParams.get("code");
+    if (token && code) {
+      localStorage.setItem(BACKEND_RESET_TOKEN_KEY, token);
+      localStorage.setItem(BACKEND_RESET_CODE_KEY, code);
+      window.history.replaceState(null, "", window.location.pathname);
+      // Return a minimal mock session so the UI knows context is valid
+      return { access_token: "", refresh_token: "", expires_in: 0, token_type: "bearer", user: null } as unknown as Session;
+    }
+
+    if (!isSupabaseConfigured()) return null;
+
     const supabase = getSupabase();
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    if (error) throw new Error(error.message);
+
+    // PKCE flow: exchange code query param for session
+    const pkceCode = url.searchParams.get("code");
+    if (pkceCode) {
+      const { error } = await supabase.auth.exchangeCodeForSession(pkceCode);
+      if (error) throw new Error(error.message);
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+
+    // Implicit flow: tokens in URL hash
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash);
+    const access_token = params.get("access_token");
+    const refresh_token = params.get("refresh_token");
+    const type = params.get("type");
+
+    if (access_token && refresh_token && type === "recovery") {
+      const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+      if (error) throw new Error(error.message);
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+
+    // Verify session was established
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) throw new Error(sessionError.message);
+    return session;
   },
 
   /** Update password (used on reset-password page) */
   async updatePassword(password: string): Promise<void> {
+    const token = localStorage.getItem(BACKEND_RESET_TOKEN_KEY);
+    const code = localStorage.getItem(BACKEND_RESET_CODE_KEY);
+
+    if (token && code) {
+      // Backend flow
+      await apiResetPassword(token, code, password);
+      localStorage.removeItem(BACKEND_RESET_TOKEN_KEY);
+      localStorage.removeItem(BACKEND_RESET_CODE_KEY);
+      return;
+    }
+
+    // Supabase flow
     const supabase = getSupabase();
     const { error } = await supabase.auth.updateUser({ password });
     if (error) throw new Error(error.message);
