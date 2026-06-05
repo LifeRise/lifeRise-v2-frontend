@@ -6,7 +6,6 @@ import {
   LayoutDashboard,
   ShoppingBag,
   CalendarDays,
-  Bell,
   User,
   DollarSign,
   List,
@@ -14,15 +13,35 @@ import {
   Users,
   LogOut,
   ShieldCheck,
+  MoreHorizontal,
+  ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/hooks';
 import { useAppStore } from '@/lib/store';
+import { ResponsiveModal } from '@/components/ui/ResponsiveModal';
 
 type Role = 'resident' | 'vendor' | 'manager';
+
+interface LeafItem {
+  icon: React.ElementType;
+  label: string;
+  href: string;
+}
+
+interface GroupItem {
+  label: string;
+  children: LeafItem[];
+}
+
+type NavItem = LeafItem | GroupItem;
+
+function isGroup(item: NavItem): item is GroupItem {
+  return 'children' in item;
+}
 
 const mobileNav: Record<
   Role,
@@ -45,9 +64,55 @@ const mobileNav: Record<
     { icon: BarChart3, label: 'Analytics', href: '/manager/analytics' },
     { icon: Users, label: 'Directory', href: '/manager/residents' },
     { icon: ShieldCheck, label: 'Approvals', href: '/admin/approvals' },
-    { icon: User, label: 'Profile', href: '/manager/profile' },
+    { icon: MoreHorizontal, label: 'More', href: '#', isDrawer: true },
   ],
 };
+
+const managerFullNav: NavItem[] = [
+  { icon: LayoutDashboard, label: 'Dashboard', href: '/manager' },
+  { icon: CalendarDays, label: 'Calendar', href: '/manager/calendar' },
+  { icon: ShieldCheck, label: 'Roles', href: '/manager/roles' },
+  { icon: Users, label: 'Users', href: '/manager/users' },
+  { icon: LayoutDashboard, label: 'Companies', href: '/manager/companies' },
+  { icon: ShoppingBag, label: 'Vendor Companies', href: '/manager/companies/vendor' },
+  { icon: LayoutDashboard, label: 'Affiliate Companies', href: '/manager/companies/affiliate' },
+  { icon: ShieldCheck, label: 'Complex Managers', href: '/manager/complex-managers' },
+  { icon: Users, label: 'Service Providers', href: '/manager/service-providers' },
+  { icon: Users, label: 'Customers', href: '/manager/customers' },
+  {
+    label: 'Location Management',
+    children: [
+      { icon: LayoutDashboard, label: 'Regions', href: '/manager/locations/regions' },
+      { icon: LayoutDashboard, label: 'Cities', href: '/manager/locations/cities' },
+      { icon: LayoutDashboard, label: 'Neighborhoods', href: '/manager/locations/neighborhoods' },
+    ],
+  },
+  { icon: LayoutDashboard, label: 'App Banners', href: '/manager/banners' },
+  { icon: LayoutDashboard, label: 'Announcements', href: '/manager/announcements' },
+  { icon: LayoutDashboard, label: 'Group Events', href: '/manager/events' },
+  { icon: LayoutDashboard, label: 'Event Responses', href: '/manager/events/responses' },
+  { icon: LayoutDashboard, label: 'Waitlists', href: '/manager/waitlists' },
+  { icon: LayoutDashboard, label: 'Event Bookings', href: '/manager/events/bookings' },
+  { icon: LayoutDashboard, label: 'Bookings', href: '/manager/bookings' },
+  { icon: LayoutDashboard, label: 'Refunded Bookings', href: '/manager/bookings/refunded' },
+  { icon: LayoutDashboard, label: 'Feedbacks', href: '/manager/feedbacks' },
+  {
+    label: 'Services Management',
+    children: [
+      { icon: LayoutDashboard, label: 'Services', href: '/manager/services' },
+      { icon: LayoutDashboard, label: 'Categories', href: '/manager/services/categories' },
+    ],
+  },
+  {
+    label: 'Configuration',
+    children: [
+      { icon: LayoutDashboard, label: 'General', href: '/manager/settings' },
+      { icon: LayoutDashboard, label: 'Approvals', href: '/admin/approvals' },
+    ],
+  },
+  { icon: LayoutDashboard, label: 'Manage FAQs', href: '/manager/faqs' },
+  { icon: LayoutDashboard, label: 'Support', href: '/manager/support' },
+];
 
 const accentTextClass: Record<Role, string> = {
   resident: 'text-teal',
@@ -61,11 +126,26 @@ const accentColor: Record<Role, string> = {
   manager: '#818CF8',
 };
 
+function isLeafActive(pathname: string, href: string): boolean {
+  if (pathname === href) return true;
+  if (
+    href !== '/manager' &&
+    href !== '/resident' &&
+    href !== '/vendor' &&
+    pathname.startsWith(href)
+  ) {
+    return true;
+  }
+  return false;
+}
+
 export default function MobileNav({ role }: { role: Role }) {
   const pathname = usePathname();
   const router = useRouter();
   const nav = mobileNav[role];
   const [showAccountDrawer, setShowAccountDrawer] = useState(false);
+  const [showMoreSheet, setShowMoreSheet] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const { profile, signOut } = useAuth();
   const setRole = useAppStore((s) => s.setRole);
 
@@ -74,6 +154,10 @@ export default function MobileNav({ role }: { role: Role }) {
     setRole(null);
     router.push('/login');
   };
+
+  const toggleGroup = useCallback((label: string) => {
+    setCollapsedGroups((prev) => ({ ...prev, [label]: !prev[label] }));
+  }, []);
 
   return (
     <>
@@ -107,7 +191,13 @@ export default function MobileNav({ role }: { role: Role }) {
               <button
                 type="button"
                 key={label}
-                onClick={() => setShowAccountDrawer(true)}
+                onClick={() => {
+                  if (role === 'manager') {
+                    setShowMoreSheet(true);
+                  } else {
+                    setShowAccountDrawer(true);
+                  }
+                }}
                 className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all opacity-50 hover:opacity-100"
               >
                 {content}
@@ -152,7 +242,6 @@ export default function MobileNav({ role }: { role: Role }) {
                 <div className="w-10 h-1 rounded-full" style={{ background: accentColor[role] }} />
               </div>
               <div className="p-5 space-y-1">
-                {/* User info */}
                 {profile && (
                   <div className="flex items-center gap-3 px-3 py-2 mb-2">
                     <div className="w-10 h-10 rounded-full bg-teal flex items-center justify-center text-midnight text-sm font-bold">
@@ -170,7 +259,12 @@ export default function MobileNav({ role }: { role: Role }) {
                   Account
                 </p>
                 {[
-                  { label: 'Notifications', href: '/resident/notifications', icon: Bell, badge: 3 },
+                  {
+                    label: 'Notifications',
+                    href: '/resident/notifications',
+                    icon: CalendarDays,
+                    badge: 3,
+                  },
                   { label: 'Profile', href: '/resident/profile', icon: User },
                   { label: 'Events', href: '/resident/events', icon: CalendarDays },
                   { label: 'Favorites', href: '/resident/favorites', icon: ShoppingBag },
@@ -208,6 +302,96 @@ export default function MobileNav({ role }: { role: Role }) {
           </>
         )}
       </AnimatePresence>
+
+      {/* More Sheet for Manager */}
+      <ResponsiveModal open={showMoreSheet} onOpenChange={setShowMoreSheet}>
+        <div className="p-5 max-h-[80vh] overflow-y-auto">
+          <p className="text-xs font-bold uppercase tracking-wider text-muted mb-3">Manager Menu</p>
+          <div className="space-y-1">
+            {managerFullNav.map((item) => {
+              if (isGroup(item)) {
+                const isOpen = !collapsedGroups[item.label];
+                return (
+                  <div key={item.label}>
+                    <button
+                      type="button"
+                      onClick={() => toggleGroup(item.label)}
+                      className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-muted hover:text-lr-white hover:bg-white/5 transition-colors"
+                    >
+                      <span>{item.label}</span>
+                      <motion.div
+                        animate={{ rotate: isOpen ? 180 : 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ChevronDown size={14} />
+                      </motion.div>
+                    </button>
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="pl-4 space-y-0.5 border-l border-white/[0.07] ml-3">
+                            {item.children.map((child) => (
+                              <Link
+                                key={child.href}
+                                href={child.href}
+                                onClick={() => setShowMoreSheet(false)}
+                                className={cn(
+                                  'flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium',
+                                  isLeafActive(pathname, child.href)
+                                    ? 'text-purple-accent bg-purple-accent/10'
+                                    : 'text-muted hover:text-lr-white hover:bg-white/5'
+                                )}
+                              >
+                                <child.icon size={16} />
+                                {child.label}
+                              </Link>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              }
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setShowMoreSheet(false)}
+                  className={cn(
+                    'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium',
+                    isLeafActive(pathname, item.href)
+                      ? 'text-purple-accent bg-purple-accent/10'
+                      : 'text-muted hover:text-lr-white hover:bg-white/5'
+                  )}
+                >
+                  <item.icon size={18} />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+          <div className="border-t border-white/[0.07] my-3" />
+          <button
+            type="button"
+            onClick={() => {
+              setShowMoreSheet(false);
+              handleSignOut();
+            }}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted hover:text-lr-white hover:bg-white/5 transition-colors w-full"
+          >
+            <LogOut size={18} />
+            Sign Out
+          </button>
+        </div>
+      </ResponsiveModal>
     </>
   );
 }
