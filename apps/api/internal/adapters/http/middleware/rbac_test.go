@@ -94,11 +94,11 @@ func TestRequireCompanyScopedRole(t *testing.T) {
 	companyB := uint64(20)
 
 	tests := []struct {
-		name       string
+		name        string
 		assignments []auth.RoleAssignment
 		pathCompany string
-		allowed    []string
-		expectCode int
+		allowed     []string
+		expectCode  int
 	}{
 		{
 			"global role accesses any company",

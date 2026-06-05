@@ -31,9 +31,10 @@ func (r *FavoriteRepo) GetByID(ctx context.Context, db *gorm.DB, id uint64) (*fa
 func (r *FavoriteRepo) ListByCustomer(ctx context.Context, db *gorm.DB, customerID uint64, favoriteType favorite.FavoriteType, page, perPage int) ([]favorite.Favorite, int64, error) {
 	query := db.WithContext(ctx).Model(&favorite.Favorite{}).Where("customerId = ?", customerID)
 
-	if favoriteType == favorite.FavoriteTypeService {
+	switch favoriteType {
+	case favorite.FavoriteTypeService:
 		query = query.Where("serviceId IS NOT NULL")
-	} else if favoriteType == favorite.FavoriteTypeProvider {
+	case favorite.FavoriteTypeProvider:
 		query = query.Where("providerId IS NOT NULL")
 	}
 

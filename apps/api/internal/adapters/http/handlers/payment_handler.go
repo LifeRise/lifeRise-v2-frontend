@@ -17,7 +17,7 @@ import (
 
 // PaymentHandler handles Stripe payment and refund endpoints.
 type PaymentHandler struct {
-	stripeUC *apppayment.StripeUseCase
+	stripeUC      *apppayment.StripeUseCase
 	webhookSecret string
 }
 

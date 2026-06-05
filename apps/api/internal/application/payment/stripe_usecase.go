@@ -51,12 +51,12 @@ type WebhookIdempotencyRepository interface {
 
 // StripeUseCase implements the Stripe Connect payment flow.
 type StripeUseCase struct {
-	db                 *gorm.DB
-	stripeClient       StripeClient
-	paymentRepo        PaymentRepository
-	bookingRepo        BookingRepository
-	connectRepo        ConnectRepository
-	idempotencyRepo    WebhookIdempotencyRepository
+	db              *gorm.DB
+	stripeClient    StripeClient
+	paymentRepo     PaymentRepository
+	bookingRepo     BookingRepository
+	connectRepo     ConnectRepository
+	idempotencyRepo WebhookIdempotencyRepository
 }
 
 // NewStripeUseCase creates a new Stripe use case.

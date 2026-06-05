@@ -19,9 +19,9 @@ type ProfileResponse struct {
 	Avatar    *string  `json:"avatar,omitempty"`
 	Timezone  string   `json:"timezone"`
 	Status    string   `json:"status"`
-	Role      string   `json:"role"`         // frontend-friendly role: resident | vendor | manager
-	UserType  string   `json:"user_type"`    // backend user type: customer | user
-	Roles     []string `json:"roles"`        // all backend roles
+	Role      string   `json:"role"`      // frontend-friendly role: resident | vendor | manager
+	UserType  string   `json:"user_type"` // backend user type: customer | user
+	Roles     []string `json:"roles"`     // all backend roles
 	CreatedAt string   `json:"created_at"`
 }
 

@@ -108,15 +108,15 @@ func buildMultipartMessage(cfg config.MailConfig, to, subject, plainBody, htmlBo
 	boundary := "=_LifeRiseBoundary_" + randomBoundarySuffix()
 
 	var msg strings.Builder
-	msg.WriteString(fmt.Sprintf("From: %s <%s>\r\n", fromName, from))
-	msg.WriteString(fmt.Sprintf("To: %s\r\n", to))
-	msg.WriteString(fmt.Sprintf("Subject: %s\r\n", subject))
+	fmt.Fprintf(&msg, "From: %s <%s>\r\n", fromName, from)
+	fmt.Fprintf(&msg, "To: %s\r\n", to)
+	fmt.Fprintf(&msg, "Subject: %s\r\n", subject)
 	msg.WriteString("MIME-Version: 1.0\r\n")
-	msg.WriteString(fmt.Sprintf("Content-Type: multipart/alternative; boundary=\"%s\"\r\n", boundary))
+	fmt.Fprintf(&msg, "Content-Type: multipart/alternative; boundary=\"%s\"\r\n", boundary)
 	msg.WriteString("\r\n")
 
 	// Plain text part
-	msg.WriteString(fmt.Sprintf("--%s\r\n", boundary))
+	fmt.Fprintf(&msg, "--%s\r\n", boundary)
 	msg.WriteString("Content-Type: text/plain; charset=\"utf-8\"\r\n")
 	msg.WriteString("Content-Transfer-Encoding: quoted-printable\r\n")
 	msg.WriteString("\r\n")
@@ -124,14 +124,14 @@ func buildMultipartMessage(cfg config.MailConfig, to, subject, plainBody, htmlBo
 	msg.WriteString("\r\n\r\n")
 
 	// HTML part
-	msg.WriteString(fmt.Sprintf("--%s\r\n", boundary))
+	fmt.Fprintf(&msg, "--%s\r\n", boundary)
 	msg.WriteString("Content-Type: text/html; charset=\"utf-8\"\r\n")
 	msg.WriteString("Content-Transfer-Encoding: quoted-printable\r\n")
 	msg.WriteString("\r\n")
 	msg.WriteString(htmlBody)
 	msg.WriteString("\r\n\r\n")
 
-	msg.WriteString(fmt.Sprintf("--%s--\r\n", boundary))
+	fmt.Fprintf(&msg, "--%s--\r\n", boundary)
 	return msg.String()
 }
 
@@ -292,9 +292,9 @@ func (s *SMTPClient) sendMessage(client *smtp.Client, from, to, msg string) erro
 
 func buildSimpleMessage(from, fromName, to, subject, body string) string {
 	var msg strings.Builder
-	msg.WriteString(fmt.Sprintf("From: %s <%s>\r\n", fromName, from))
-	msg.WriteString(fmt.Sprintf("To: %s\r\n", to))
-	msg.WriteString(fmt.Sprintf("Subject: %s\r\n", subject))
+	fmt.Fprintf(&msg, "From: %s <%s>\r\n", fromName, from)
+	fmt.Fprintf(&msg, "To: %s\r\n", to)
+	fmt.Fprintf(&msg, "Subject: %s\r\n", subject)
 	msg.WriteString("MIME-Version: 1.0\r\n")
 	msg.WriteString("Content-Type: text/plain; charset=\"utf-8\"\r\n")
 	msg.WriteString("\r\n")

@@ -12,19 +12,19 @@ import (
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 
+	appnotification "github.com/liferise/backend/internal/application/notification"
 	"github.com/liferise/backend/internal/domain/customer"
 	"github.com/liferise/backend/internal/domain/user"
-	appnotification "github.com/liferise/backend/internal/application/notification"
 	"github.com/liferise/backend/pkg/auth"
 	apperrors "github.com/liferise/backend/pkg/errors"
 )
 
 // AuthUseCase handles authentication flows for both Users and Customers.
 type AuthUseCase struct {
-	db            *gorm.DB
-	userRepo      user.Repository
-	customerRepo  customer.Repository
-	jwtService    *auth.Service
+	db             *gorm.DB
+	userRepo       user.Repository
+	customerRepo   customer.Repository
+	jwtService     *auth.Service
 	notificationUC *appnotification.UseCase
 }
 
@@ -37,10 +37,10 @@ func NewAuthUseCase(
 	notificationUC *appnotification.UseCase,
 ) *AuthUseCase {
 	return &AuthUseCase{
-		db:            db,
-		userRepo:      userRepo,
-		customerRepo:  customerRepo,
-		jwtService:    jwtService,
+		db:             db,
+		userRepo:       userRepo,
+		customerRepo:   customerRepo,
+		jwtService:     jwtService,
 		notificationUC: notificationUC,
 	}
 }
@@ -415,7 +415,7 @@ func (uc *AuthUseCase) ResetPassword(ctx context.Context, req ResetPasswordReque
 func randInt(max int) int {
 	b := make([]byte, 4)
 	_, _ = rand.Read(b)
-	return int((uint32(b[0])|uint32(b[1])<<8|uint32(b[2])<<16|uint32(b[3])<<24)%uint32(max))
+	return int((uint32(b[0]) | uint32(b[1])<<8 | uint32(b[2])<<16 | uint32(b[3])<<24) % uint32(max))
 }
 
 // RefreshToken validates a refresh token and issues a new token pair.

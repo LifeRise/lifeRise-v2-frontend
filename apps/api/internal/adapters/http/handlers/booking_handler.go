@@ -202,11 +202,11 @@ func (h *BookingHandler) Reschedule(c *gin.Context) {
 	}
 
 	var req struct {
-		BookingDate  string `json:"booking_date" validate:"required,datetime=2006-01-02"`
-		StartTime    string `json:"start_time" validate:"required,datetime=15:04:05"`
-		EndTime      string `json:"end_time" validate:"required,datetime=15:04:05"`
-		SlotID       uint64 `json:"slot_id" validate:"required"`
-		Reason       string `json:"reason,omitempty"`
+		BookingDate string `json:"booking_date" validate:"required,datetime=2006-01-02"`
+		StartTime   string `json:"start_time" validate:"required,datetime=15:04:05"`
+		EndTime     string `json:"end_time" validate:"required,datetime=15:04:05"`
+		SlotID      uint64 `json:"slot_id" validate:"required"`
+		Reason      string `json:"reason,omitempty"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.ValidationError(c, validation.ValidationErrorsToMap(err))

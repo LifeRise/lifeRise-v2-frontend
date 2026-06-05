@@ -6,8 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	appservice "github.com/liferise/backend/internal/application/service"
 	"github.com/liferise/backend/internal/adapters/http/middleware"
+	appservice "github.com/liferise/backend/internal/application/service"
 	"github.com/liferise/backend/pkg/response"
 	"github.com/liferise/backend/pkg/validation"
 )
@@ -39,10 +39,11 @@ func (h *ServiceHandler) List(c *gin.Context) {
 	}
 
 	var isFeatured *bool
-	if isFeaturedStr == "1" || isFeaturedStr == "true" {
+	switch isFeaturedStr {
+	case "1", "true":
 		t := true
 		isFeatured = &t
-	} else if isFeaturedStr == "0" || isFeaturedStr == "false" {
+	case "0", "false":
 		f := false
 		isFeatured = &f
 	}

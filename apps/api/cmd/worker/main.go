@@ -10,8 +10,8 @@ import (
 	"github.com/hibiken/asynq"
 	"go.uber.org/zap"
 
-	firebaseadapter "github.com/liferise/backend/internal/adapters/firebase"
 	emailadapter "github.com/liferise/backend/internal/adapters/email"
+	firebaseadapter "github.com/liferise/backend/internal/adapters/firebase"
 	"github.com/liferise/backend/internal/adapters/queue/tasks"
 	"github.com/liferise/backend/internal/infrastructure/config"
 )

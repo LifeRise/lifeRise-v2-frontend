@@ -37,6 +37,14 @@ fmt:
 	$(GO) fmt ./...
 	$(GO) vet ./...
 
+fmt-check:
+	@files=$$(gofmt -l .); \
+	if [ -n "$$files" ]; then \
+		echo "gofmt: the following files require formatting:"; \
+		echo "$$files"; \
+		exit 1; \
+	fi
+
 migrate-up:
 	$(GO) run ./cmd/migrate -direction=up
 

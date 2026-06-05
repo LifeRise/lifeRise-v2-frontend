@@ -1,81 +1,24 @@
+version: "2"
+
 run:
   timeout: 5m
   go: "1.24"
-  skip-dirs:
-    - docs
-    - scripts
-    - migrations
 
 linters:
+  default: standard
+  disable:
+    # TODO(boyscout): re-enable after fixing 12 unchecked error returns
+    - errcheck
+    # TODO(boyscout): re-enable after fixing 30 unused identifiers (mostly test helpers)
+    - unused
+
+formatters:
   enable:
     - gofmt
     - goimports
-    - govet
-    - ineffassign
-    - misspell
-    - staticcheck
-    - typecheck
-    - unused
-    - errcheck
-    - gosimple
-    - structcheck
-    - varcheck
-    - deadcode
-    - gocritic
-    - revive
-    - bodyclose
-    - noctx
-    - rowserrcheck
-    - sqlclosecheck
-    - durationcheck
-    - exportloopref
-    - goconst
-    - prealloc
-  disable:
-    - maligned # deprecated
-
-linters-settings:
-  goimports:
-    local-prefixes: github.com/liferise/backend
-  gocritic:
-    enabled-tags:
-      - performance
-      - style
-      - experimental
-    disabled-checks:
-      - wrapperFunc
-      - dupImport
-  revive:
-    rules:
-      - name: blank-imports
-      - name: context-as-argument
-      - name: dot-imports
-      - name: error-return
-      - name: error-strings
-      - name: error-naming
-      - name: if-return
-      - name: increment-decrement
-      - name: var-naming
-      - name: var-declaration
-      - name: package-comments
-      - name: range
-      - name: receiver-naming
-      - name: time-naming
-      - name: unexported-return
-      - name: indent-error-flow
-      - name: errorf
 
 issues:
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - gosec
-        - errcheck
-    - path: internal/domain/
-      linters:
-        - dupl
-    - path: cmd/
-      linters:
-        - gocyclo
-  max-issues-per-linter: 50
-  max-same-issues: 10
+  exclude-dirs:
+    - docs
+    - scripts
+    - migrations

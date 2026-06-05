@@ -20,13 +20,13 @@ const (
 // Must remain compatible with mobile app parsing expectations.
 type Claims struct {
 	jwt.RegisteredClaims
-	UserID          uint64            `json:"sub"`
-	UserType        string            `json:"type"` // "customer" | "user"
-	Roles           []string          `json:"roles"`
-	Permissions     []string          `json:"permissions"`
-	RoleAssignments []RoleAssignment  `json:"role_assignments,omitempty"`
-	Timezone        string            `json:"timezone,omitempty"`
-	EmailVerifiedAt *int64            `json:"email_verified_at,omitempty"`
+	UserID          uint64           `json:"sub"`
+	UserType        string           `json:"type"` // "customer" | "user"
+	Roles           []string         `json:"roles"`
+	Permissions     []string         `json:"permissions"`
+	RoleAssignments []RoleAssignment `json:"role_assignments,omitempty"`
+	Timezone        string           `json:"timezone,omitempty"`
+	EmailVerifiedAt *int64           `json:"email_verified_at,omitempty"`
 }
 
 // RoleAssignment represents a company-scoped role assignment.

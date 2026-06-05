@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	ClaimsKey   = "claims"
-	UserIDKey   = "user_id"
-	UserTypeKey = "user_type"
+	ClaimsKey    = "claims"
+	UserIDKey    = "user_id"
+	UserTypeKey  = "user_type"
 	CompanyIDKey = "company_id"
 )
 

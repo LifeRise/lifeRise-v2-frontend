@@ -21,11 +21,11 @@ func newFakeAsynqClient() *fakeAsynqClient {
 func (f *fakeAsynqClient) Enqueue(task *asynq.Task, opts ...asynq.Option) (*asynq.TaskInfo, error) {
 	f.enqueued[task.Type()] = task
 	return &asynq.TaskInfo{
-		ID:        "fake-id",
-		Queue:     "default",
-		Type:      task.Type(),
-		Payload:   task.Payload(),
-		State:     asynq.TaskStatePending,
+		ID:            "fake-id",
+		Queue:         "default",
+		Type:          task.Type(),
+		Payload:       task.Payload(),
+		State:         asynq.TaskStatePending,
 		NextProcessAt: time.Now(),
 	}, nil
 }

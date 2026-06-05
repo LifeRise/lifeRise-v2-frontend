@@ -37,7 +37,7 @@ type Service struct {
 	ShortDescription *string         `gorm:"column:short_description;size:500" json:"short_description,omitempty"`
 	Price            decimal.Decimal `gorm:"column:price;type:decimal(10,2)" json:"price"`
 	Currency         string          `gorm:"column:currency;size:3;default:'USD'" json:"currency"`
-	Duration         int             `gorm:"column:duration;not null" json:"duration"` // minutes
+	Duration         int             `gorm:"column:duration;not null" json:"duration"`        // minutes
 	BufferTime       int             `gorm:"column:buffer_time;default:0" json:"buffer_time"` // minutes between bookings
 	MaxParticipants  int             `gorm:"column:max_participants;default:1" json:"max_participants"`
 	Images           datatypes.JSON  `gorm:"column:images;type:jsonb" json:"images,omitempty"`

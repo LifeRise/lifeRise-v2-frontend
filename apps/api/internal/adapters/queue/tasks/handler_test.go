@@ -24,8 +24,8 @@ func TestHandleEmailDelivery(t *testing.T) {
 	handler := NewHandler(emailSender, nil, nil)
 
 	payload, _ := json.Marshal(EmailDeliveryPayload{
-		To:      "test@example.com",
-		Subject: "Test Subject",
+		To:       "test@example.com",
+		Subject:  "Test Subject",
 		Template: "test_template",
 		Data:     map[string]string{"key": "value"},
 	})

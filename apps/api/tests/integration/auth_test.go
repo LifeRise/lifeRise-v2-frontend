@@ -19,11 +19,11 @@ import (
 // ── Fake Repositories ──────────────────────────────────────────
 
 type fakeCustomerRepo struct {
-	mu         sync.RWMutex
-	customers  map[uint64]*customer.Customer
-	byEmail    map[string]*customer.Customer
-	byPhone    map[string]*customer.Customer
-	nextID     uint64
+	mu        sync.RWMutex
+	customers map[uint64]*customer.Customer
+	byEmail   map[string]*customer.Customer
+	byPhone   map[string]*customer.Customer
+	nextID    uint64
 }
 
 func newFakeCustomerRepo() *fakeCustomerRepo {

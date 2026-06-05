@@ -32,7 +32,7 @@ type User struct {
 	DeletedAt             gorm.DeletedAt `gorm:"column:deleted_at;index"`
 
 	// Associations
-	Role          *Role          `gorm:"foreignKey:role_id"`
+	Role            *Role                `gorm:"foreignKey:role_id"`
 	RoleAssignments []UserRoleAssignment `gorm:"foreignKey:user_id"`
 }
 
@@ -70,8 +70,8 @@ func (Permission) TableName() string { return "permissions" }
 
 // RolePermission is the pivot table between roles and permissions.
 type RolePermission struct {
-	RoleID       uint64 `gorm:"column:role_id;primaryKey"`
-	PermissionID uint64 `gorm:"column:permission_id;primaryKey"`
+	RoleID       uint64    `gorm:"column:role_id;primaryKey"`
+	PermissionID uint64    `gorm:"column:permission_id;primaryKey"`
 	CreatedAt    time.Time `gorm:"column:created_at;autoCreateTime"`
 }
 
@@ -87,21 +87,21 @@ type UserRoleAssignment struct {
 	CreatedAt time.Time `gorm:"column:created_at;autoCreateTime"`
 	UpdatedAt time.Time `gorm:"column:updated_at;autoUpdateTime"`
 
-	Role   *Role    `gorm:"foreignKey:role_id"`
-	User   *User    `gorm:"foreignKey:user_id"`
+	Role *Role `gorm:"foreignKey:role_id"`
+	User *User `gorm:"foreignKey:user_id"`
 }
 
 func (UserRoleAssignment) TableName() string { return "user_role_assignments" }
 
 // UserOTP stores OTP codes for user authentication flows.
 type UserOTP struct {
-	ID        uint64    `gorm:"column:id;primaryKey"`
-	UserID    uint64    `gorm:"column:user_id;not null;index"`
-	Code      string    `gorm:"column:code;size:10;not null"`
-	Type      string    `gorm:"column:type;size:50;not null"` // "login", "password_reset", "phone_verify"
-	ExpiresAt time.Time `gorm:"column:expires_at;not null"`
+	ID        uint64     `gorm:"column:id;primaryKey"`
+	UserID    uint64     `gorm:"column:user_id;not null;index"`
+	Code      string     `gorm:"column:code;size:10;not null"`
+	Type      string     `gorm:"column:type;size:50;not null"` // "login", "password_reset", "phone_verify"
+	ExpiresAt time.Time  `gorm:"column:expires_at;not null"`
 	UsedAt    *time.Time `gorm:"column:used_at"`
-	CreatedAt time.Time `gorm:"column:created_at;autoCreateTime"`
+	CreatedAt time.Time  `gorm:"column:created_at;autoCreateTime"`
 }
 
 func (UserOTP) TableName() string { return "user_otps" }

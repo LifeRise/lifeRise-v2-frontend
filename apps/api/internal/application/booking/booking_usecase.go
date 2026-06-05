@@ -14,7 +14,7 @@ import (
 
 // UseCase handles booking operations.
 type UseCase struct {
-	db         *gorm.DB
+	db          *gorm.DB
 	bookingRepo booking.Repository
 	slotRepo    booking.SlotRepository
 	serviceRepo domainService.Repository
@@ -169,13 +169,13 @@ func (uc *UseCase) UpdateStatus(ctx context.Context, req UpdateStatusRequest) (*
 
 // RescheduleBooking moves a booking to a new slot.
 type RescheduleBookingRequest struct {
-	BookingID   uint64
-	NewSlotID   uint64
-	NewDate     time.Time
+	BookingID    uint64
+	NewSlotID    uint64
+	NewDate      time.Time
 	NewStartTime time.Time
-	NewEndTime  time.Time
-	Reason      string
-	UserID      uint64
+	NewEndTime   time.Time
+	Reason       string
+	UserID       uint64
 }
 
 // RescheduleBooking reschedules a booking to a new slot.

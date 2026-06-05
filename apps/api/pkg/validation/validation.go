@@ -1,8 +1,8 @@
 package validation
 
 import (
-	"github.com/go-playground/validator/v10"
 	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 )
 
 // Validator is the global validator instance configured with custom LifeRise rules.

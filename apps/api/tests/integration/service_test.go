@@ -156,7 +156,7 @@ func TestServiceUseCase_UpdateAndDelete(t *testing.T) {
 	svc, _ := uc.CreateService(ctx, appservice.CreateServiceRequest{Name: "Old Name", Price: 50, Duration: 30, ProviderID: 1})
 
 	updated, err := uc.UpdateService(ctx, svc.ID, appservice.CreateServiceRequest{
-		Name: "New Name",
+		Name:  "New Name",
 		Price: 75,
 	})
 	require.NoError(t, err)

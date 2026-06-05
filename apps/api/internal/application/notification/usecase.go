@@ -95,9 +95,9 @@ func (uc *UseCase) SendBookingConfirmation(ctx context.Context, customerEmail st
 // SendBookingReminder enqueues a reminder for an upcoming booking.
 func (uc *UseCase) SendBookingReminder(ctx context.Context, customerEmail string, deviceTokens []string, bookingID uint64, bookingTime string) error {
 	task, err := tasks.NewBookingReminderTask(tasks.BookingReminderPayload{
-		BookingID:     bookingID,
-		CustomerID:    0, // filled by caller
-		ReminderType:  "upcoming",
+		BookingID:    bookingID,
+		CustomerID:   0, // filled by caller
+		ReminderType: "upcoming",
 	}, asynq.ProcessIn(0)) // immediate; scheduling handled by caller
 	if err != nil {
 		return fmt.Errorf("create reminder task: %w", err)

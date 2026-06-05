@@ -62,9 +62,9 @@ func (r *PaymentRepo) UpdateStatus(ctx context.Context, db *gorm.DB, id uint64, 
 func (r *PaymentRepo) MarkAsReleased(ctx context.Context, db *gorm.DB, id uint64, platformFee decimal.Decimal) error {
 	now := time.Now().UTC()
 	return db.WithContext(ctx).Model(&payment.StripePayment{}).Where("id = ?", id).Updates(map[string]interface{}{
-		"status":        "released",
-		"platform_fee":  platformFee,
-		"released_at":   &now,
+		"status":       "released",
+		"platform_fee": platformFee,
+		"released_at":  &now,
 	}).Error
 }
 

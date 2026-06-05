@@ -24,7 +24,7 @@ func Success(c *gin.Context, status int, message string, data interface{}) {
 // Error returns an error response matching Laravel's error format.
 func Error(c *gin.Context, status int, message string, errors interface{}) {
 	c.JSON(status, APIResponse{
-		Status: false,
+		Status:  false,
 		Message: message,
 		Errors:  errors,
 	})
@@ -49,9 +49,9 @@ func ValidationErrorSingle(c *gin.Context, field, errMsg string) {
 
 // PaginatedData replicates Laravel's pagination wrapper.
 type PaginatedData struct {
-	Data       interface{} `json:"data"`
-	Links      PaginationLinks `json:"links"`
-	Meta       PaginationMeta  `json:"meta"`
+	Data  interface{}     `json:"data"`
+	Links PaginationLinks `json:"links"`
+	Meta  PaginationMeta  `json:"meta"`
 }
 
 // PaginationLinks replicates Laravel's pagination links.

@@ -203,10 +203,10 @@ func (r *fakeConnectRepo) UpdateStatus(_ context.Context, _ *gorm.DB, id uint64,
 // ── Fake Stripe Client ─────────────────────────────────────────
 
 type fakeStripeClient struct {
-	mu              sync.Mutex
-	transfers       []*fakeTransfer
-	refunds         []*fakeRefund
-	paymentIntents  map[string]*fakePaymentIntent
+	mu             sync.Mutex
+	transfers      []*fakeTransfer
+	refunds        []*fakeRefund
+	paymentIntents map[string]*fakePaymentIntent
 }
 
 type fakeTransfer struct {

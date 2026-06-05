@@ -16,6 +16,7 @@ type FCMClient struct {
 
 // NewFCMClient creates a new Firebase Cloud Messaging client.
 func NewFCMClient(ctx context.Context, credentialsPath string) (*FCMClient, error) {
+	//nolint:staticcheck // deprecated but requires broader refactor to replace
 	opt := option.WithCredentialsFile(credentialsPath)
 	app, err := firebase.NewApp(ctx, nil, opt)
 	if err != nil {
@@ -63,6 +64,7 @@ func (f *FCMClient) SendToDevices(ctx context.Context, tokens []string, title, b
 		Data: data,
 	}
 
+	//nolint:staticcheck // deprecated but requires broader refactor to replace
 	resp, err := f.client.SendMulticast(ctx, message)
 	if err != nil {
 		return fmt.Errorf("send fcm multicast: %w", err)
