@@ -135,3 +135,19 @@ Public routes (no auth): `/`, `/login`, `/signup/*`, `/forgot-password`, `/reset
 4. **`globalInitStarted`** flag prevents double-init on auth. It resets on sign-out. Never call `init()` directly.
 5. **`.env.local` belongs in `apps/web/`** — placing it at the repo root will be silently ignored.
 6. **Backend JWT is checked before Supabase** — if Supabase is configured but the backend is down, API calls will fail even though login succeeds.
+
+## Strict Operational Rules
+
+The following rules are mandatory and designed to prevent architectural drift and hallucinations encountered during implementation.
+
+### 1. Zero-Hallucination Policy (Digital Oath)
+
+The agent must operate under a "digital oath" of factual accuracy. Every claim, summary, or architectural statement made regarding the current state of the repository must be verified against the actual files. Assumptions about existing logic, schema structures, or available variables are strictly prohibited.
+
+### 2. Pre-Edit Verification Loop
+
+Before performing any file modification or finalizing an implementation plan, the agent must explicitly verify the target code's current state. This ensures that the plan is grounded in reality rather than an outdated or assumed mental model of the codebase.
+
+### 3. Mandatory Visual Grounding
+
+If a screenshot or image is provided (such as the legacy dashboard UI), the agent must perform a comprehensive analysis of every visible element, label, and data point. The agent is forbidden from assuming the contents of an image; it must map visual components directly to technical requirements and database entities.

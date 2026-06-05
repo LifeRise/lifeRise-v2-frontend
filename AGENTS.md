@@ -688,3 +688,19 @@ The root `package.json` specifies `"engines": { "node": ">=20.0.0", "npm": ">=10
 11. **`.env.local` must be in `apps/web/`**, not the repo root. Next.js only reads env files from its own directory.
 12. **Root `npm install` is required.** The repo now has a root `package.json` for monorepo-level tooling (Husky, lint-staged, commitlint, Prettier). Run `npm install` at the root first, then `cd apps/web && npm install` for frontend dependencies, and `cd apps/api && make deps` (or `go mod download`) for backend Go modules.
 13. **`rootDirectory` for Vercel is a project-level setting**, not a `vercel.json` field. It is already set to `apps/web` via the Vercel API.
+
+## Strict Operational Rules
+
+The following rules are mandatory and designed to prevent architectural drift and hallucinations encountered during implementation.
+
+### 1. Zero-Hallucination Policy (Digital Oath)
+
+The agent must operate under a "digital oath" of factual accuracy. Every claim, summary, or architectural statement made regarding the current state of the repository must be verified against the actual files. Assumptions about existing logic, schema structures, or available variables are strictly prohibited.
+
+### 2. Pre-Edit Verification Loop
+
+Before performing any file modification or finalizing an implementation plan, the agent must explicitly verify the target code's current state. This ensures that the plan is grounded in reality rather than an outdated or assumed mental model of the codebase.
+
+### 3. Mandatory Visual Grounding
+
+If a screenshot or image is provided (such as the legacy dashboard UI), the agent must perform a comprehensive analysis of every visible element, label, and data point. The agent is forbidden from assuming the contents of an image; it must map visual components directly to technical requirements and database entities.

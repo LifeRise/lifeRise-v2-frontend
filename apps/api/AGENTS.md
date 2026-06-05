@@ -194,3 +194,19 @@ All config keys have a `LIFERISE_` env-var equivalent (read by Viper). Key vars:
 5. **`config.yaml` is gitignored** — copy from `config.example.yaml` and fill in real values for local dev.
 6. **Never leave background processes running.** Kill `go run ./cmd/api` and release port 8080 before finishing a task.
 7. **Frontend lives at `apps/web/`** — see root `AGENTS.md` and `apps/web/AGENTS.md` for frontend conventions.
+
+## Strict Operational Rules
+
+The following rules are mandatory and designed to prevent architectural drift and hallucinations encountered during implementation.
+
+### 1. Zero-Hallucination Policy (Digital Oath)
+
+The agent must operate under a "digital oath" of factual accuracy. Every claim, summary, or architectural statement made regarding the current state of the repository must be verified against the actual files. Assumptions about existing logic, schema structures, or available variables are strictly prohibited.
+
+### 2. Pre-Edit Verification Loop
+
+Before performing any file modification or finalizing an implementation plan, the agent must explicitly verify the target code's current state. This ensures that the plan is grounded in reality rather than an outdated or assumed mental model of the codebase.
+
+### 3. Mandatory Visual Grounding
+
+If a screenshot or image is provided (such as the legacy dashboard UI), the agent must perform a comprehensive analysis of every visible element, label, and data point. The agent is forbidden from assuming the contents of an image; it must map visual components directly to technical requirements and database entities.
