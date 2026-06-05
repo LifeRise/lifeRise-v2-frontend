@@ -60,3 +60,36 @@ func (r *CustomerRepo) Update(ctx context.Context, db *gorm.DB, c *customer.Cust
 func (r *CustomerRepo) Delete(ctx context.Context, db *gorm.DB, id uint64) error {
 	return db.WithContext(ctx).Delete(&customer.Customer{}, id).Error
 }
+
+func (r *CustomerRepo) ListAdmin(ctx context.Context, db *gorm.DB, status string, search string, page, perPage int) ([]customer.Customer, int64, error) {
+	query := db.WithContext(ctx).Model(&customer.Customer{})
+	if status != "" {
+		query = query.Where("status = ?", status)
+	}
+	if search != "" {
+		searchPattern := "%" + search + "%"
+		query = query.Where("first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ?", searchPattern, searchPattern, searchPattern)
+	}
+
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if page < 1 {
+		page = 1
+	}
+	if perPage < 1 {
+		perPage = 25
+	}
+	if perPage > 100 {
+		perPage = 100
+	}
+
+	var results []customer.Customer
+	offset := (page - 1) * perPage
+	if err := query.Order("created_at desc").Offset(offset).Limit(perPage).Find(&results).Error; err != nil {
+		return nil, 0, err
+	}
+	return results, total, nil
+}

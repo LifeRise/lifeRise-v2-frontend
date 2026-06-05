@@ -64,6 +64,22 @@ func (r *fakeServiceRepoForBooking) ListCategories(_ context.Context, _ *gorm.DB
 	return nil, nil
 }
 
+func (r *fakeServiceRepoForBooking) GetCategoryByID(_ context.Context, _ *gorm.DB, id uint64) (*service.ServiceCategory, error) {
+	return nil, assert.AnError
+}
+
+func (r *fakeServiceRepoForBooking) CreateCategory(_ context.Context, _ *gorm.DB, cat *service.ServiceCategory) error {
+	return nil
+}
+
+func (r *fakeServiceRepoForBooking) UpdateCategory(_ context.Context, _ *gorm.DB, cat *service.ServiceCategory) error {
+	return nil
+}
+
+func (r *fakeServiceRepoForBooking) DeleteCategory(_ context.Context, _ *gorm.DB, id uint64) error {
+	return nil
+}
+
 // ── Fake Slot Repo ─────────────────────────────────────────────
 
 type fakeSlotRepo struct {
@@ -164,9 +180,24 @@ func (r *fakeBookingRepo) ListByProvider(_ context.Context, _ *gorm.DB, provider
 	return result, int64(len(result)), nil
 }
 
+func (r *fakeBookingRepo) ListAdmin(_ context.Context, _ *gorm.DB, status string, search string, page, perPage int) ([]booking.Booking, int64, error) {
+	var result []booking.Booking
+	for _, b := range r.bookings {
+		if status == "" || b.Status == status {
+			result = append(result, *b)
+		}
+	}
+	return result, int64(len(result)), nil
+}
+
 func (r *fakeBookingRepo) Create(_ context.Context, _ *gorm.DB, b *booking.Booking) error {
 	b.ID = r.nextID
 	r.nextID++
+	r.bookings[b.ID] = b
+	return nil
+}
+
+func (r *fakeBookingRepo) Update(_ context.Context, _ *gorm.DB, b *booking.Booking) error {
 	r.bookings[b.ID] = b
 	return nil
 }

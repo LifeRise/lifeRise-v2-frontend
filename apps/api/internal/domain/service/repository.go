@@ -17,6 +17,10 @@ type Repository interface {
 
 	GetCategoryBySlug(ctx context.Context, db *gorm.DB, slug string) (*ServiceCategory, error)
 	ListCategories(ctx context.Context, db *gorm.DB) ([]ServiceCategory, error)
+	GetCategoryByID(ctx context.Context, db *gorm.DB, id uint64) (*ServiceCategory, error)
+	CreateCategory(ctx context.Context, db *gorm.DB, cat *ServiceCategory) error
+	UpdateCategory(ctx context.Context, db *gorm.DB, cat *ServiceCategory) error
+	DeleteCategory(ctx context.Context, db *gorm.DB, id uint64) error
 }
 
 // ListFilter holds query parameters for service listings.

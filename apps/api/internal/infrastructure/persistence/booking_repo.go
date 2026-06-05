@@ -97,8 +97,44 @@ func (r *BookingRepo) ListByProvider(ctx context.Context, db *gorm.DB, providerI
 	return results, total, nil
 }
 
+func (r *BookingRepo) ListAdmin(ctx context.Context, db *gorm.DB, status string, search string, page, perPage int) ([]booking.Booking, int64, error) {
+	query := db.WithContext(ctx).Model(&booking.Booking{}).Where("deleted_at IS NULL")
+	if status != "" {
+		query = query.Where("status = ?", status)
+	}
+	if search != "" {
+		query = query.Where("booking_number ILIKE ?", "%"+search+"%")
+	}
+
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if page < 1 {
+		page = 1
+	}
+	if perPage < 1 {
+		perPage = 15
+	}
+	if perPage > 100 {
+		perPage = 100
+	}
+
+	var results []booking.Booking
+	offset := (page - 1) * perPage
+	if err := query.Order("booking_date DESC").Offset(offset).Limit(perPage).Find(&results).Error; err != nil {
+		return nil, 0, err
+	}
+	return results, total, nil
+}
+
 func (r *BookingRepo) Create(ctx context.Context, db *gorm.DB, b *booking.Booking) error {
 	return db.WithContext(ctx).Create(b).Error
+}
+
+func (r *BookingRepo) Update(ctx context.Context, db *gorm.DB, b *booking.Booking) error {
+	return db.WithContext(ctx).Save(b).Error
 }
 
 func (r *BookingRepo) UpdateStatus(ctx context.Context, db *gorm.DB, id uint64, status string) error {

@@ -121,3 +121,26 @@ func (r *ServiceRepo) ListCategories(ctx context.Context, db *gorm.DB) ([]servic
 	}
 	return cats, nil
 }
+
+func (r *ServiceRepo) GetCategoryByID(ctx context.Context, db *gorm.DB, id uint64) (*service.ServiceCategory, error) {
+	var cat service.ServiceCategory
+	if err := db.WithContext(ctx).First(&cat, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperrors.ErrNotFound
+		}
+		return nil, err
+	}
+	return &cat, nil
+}
+
+func (r *ServiceRepo) CreateCategory(ctx context.Context, db *gorm.DB, cat *service.ServiceCategory) error {
+	return db.WithContext(ctx).Create(cat).Error
+}
+
+func (r *ServiceRepo) UpdateCategory(ctx context.Context, db *gorm.DB, cat *service.ServiceCategory) error {
+	return db.WithContext(ctx).Save(cat).Error
+}
+
+func (r *ServiceRepo) DeleteCategory(ctx context.Context, db *gorm.DB, id uint64) error {
+	return db.WithContext(ctx).Delete(&service.ServiceCategory{}, id).Error
+}

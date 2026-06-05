@@ -14,4 +14,5 @@ type Repository interface {
 	Create(ctx context.Context, db *gorm.DB, customer *Customer) error
 	Update(ctx context.Context, db *gorm.DB, customer *Customer) error
 	Delete(ctx context.Context, db *gorm.DB, id uint64) error
+	ListAdmin(ctx context.Context, db *gorm.DB, status string, search string, page, perPage int) ([]Customer, int64, error)
 }

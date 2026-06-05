@@ -22,7 +22,7 @@ func adminPaginatedSuccess(c *gin.Context, message string, data interface{}, met
 			From:        meta.From,
 			LastPage:    meta.LastPage,
 			Path:        c.Request.URL.Path,
-			PerPage:     meta.CurrentPage,
+			PerPage:     meta.PerPage,
 			To:          meta.To,
 			Total:       int(meta.Total),
 		},

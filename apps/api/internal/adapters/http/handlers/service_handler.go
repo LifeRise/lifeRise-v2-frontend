@@ -129,8 +129,8 @@ func (h *ServiceHandler) GetSlots(c *gin.Context) {
 	})
 }
 
-// CreateServiceRequest mirrors Laravel's service store validation.
-type CreateServiceRequest struct {
+// ProviderServiceRequest mirrors Laravel's service store validation.
+type ProviderServiceRequest struct {
 	Name            string  `json:"name" validate:"required,max=255"`
 	Description     *string `json:"description,omitempty"`
 	Price           float64 `json:"price" validate:"required,gte=0"`
@@ -143,7 +143,7 @@ type CreateServiceRequest struct {
 
 // Create handles new service creation (provider/admin).
 func (h *ServiceHandler) Create(c *gin.Context) {
-	var req CreateServiceRequest
+	var req ProviderServiceRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.ValidationError(c, validation.ValidationErrorsToMap(err))
 		return
@@ -180,7 +180,7 @@ func (h *ServiceHandler) Update(c *gin.Context) {
 		return
 	}
 
-	var req CreateServiceRequest
+	var req ProviderServiceRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.ValidationError(c, validation.ValidationErrorsToMap(err))
 		return

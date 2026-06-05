@@ -90,6 +90,16 @@ func (r *fakeCustomerRepo) Delete(_ context.Context, _ *gorm.DB, id uint64) erro
 	return nil
 }
 
+func (r *fakeCustomerRepo) ListAdmin(_ context.Context, _ *gorm.DB, _ string, _ string, _, _ int) ([]customer.Customer, int64, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	var results []customer.Customer
+	for _, c := range r.customers {
+		results = append(results, *c)
+	}
+	return results, int64(len(results)), nil
+}
+
 type fakeUserRepo struct {
 	mu          sync.RWMutex
 	users       map[uint64]*user.User

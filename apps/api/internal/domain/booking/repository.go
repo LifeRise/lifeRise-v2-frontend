@@ -13,7 +13,9 @@ type Repository interface {
 	GetByBookingNumber(ctx context.Context, db *gorm.DB, number string) (*Booking, error)
 	ListByCustomer(ctx context.Context, db *gorm.DB, customerID uint64, status string, page, perPage int) ([]Booking, int64, error)
 	ListByProvider(ctx context.Context, db *gorm.DB, providerID uint64, status string, page, perPage int) ([]Booking, int64, error)
+	ListAdmin(ctx context.Context, db *gorm.DB, status string, search string, page, perPage int) ([]Booking, int64, error)
 	Create(ctx context.Context, db *gorm.DB, booking *Booking) error
+	Update(ctx context.Context, db *gorm.DB, booking *Booking) error
 	UpdateStatus(ctx context.Context, db *gorm.DB, id uint64, status string) error
 	UpdatePaymentStatus(ctx context.Context, db *gorm.DB, id uint64, status string) error
 	SoftDelete(ctx context.Context, db *gorm.DB, id uint64) error

@@ -49,6 +49,7 @@ type Meta struct {
 	From        int
 	To          int
 	Total       int64
+	PerPage     int
 }
 
 // CalculateMeta computes pagination metadata after a count.
@@ -63,7 +64,7 @@ func CalculateMeta(total int64, p Params, retrieved int) Meta {
 		from = 0
 		to = 0
 	}
-	return Meta{CurrentPage: p.Page, LastPage: lastPage, From: from, To: to, Total: total}
+	return Meta{CurrentPage: p.Page, LastPage: lastPage, From: from, To: to, Total: total, PerPage: p.PerPage}
 }
 
 // BuildLinks constructs Laravel-style pagination links.

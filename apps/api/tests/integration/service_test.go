@@ -98,6 +98,37 @@ func (r *fakeServiceRepo) ListCategories(_ context.Context, _ *gorm.DB) ([]servi
 	return cats, nil
 }
 
+func (r *fakeServiceRepo) GetCategoryByID(_ context.Context, _ *gorm.DB, id uint64) (*service.ServiceCategory, error) {
+	for _, c := range r.categories {
+		if c.ID == id {
+			return c, nil
+		}
+	}
+	return nil, assert.AnError
+}
+
+func (r *fakeServiceRepo) CreateCategory(_ context.Context, _ *gorm.DB, cat *service.ServiceCategory) error {
+	cat.ID = r.nextID
+	r.nextID++
+	r.categories[cat.Slug] = cat
+	return nil
+}
+
+func (r *fakeServiceRepo) UpdateCategory(_ context.Context, _ *gorm.DB, cat *service.ServiceCategory) error {
+	r.categories[cat.Slug] = cat
+	return nil
+}
+
+func (r *fakeServiceRepo) DeleteCategory(_ context.Context, _ *gorm.DB, id uint64) error {
+	for slug, c := range r.categories {
+		if c.ID == id {
+			delete(r.categories, slug)
+			break
+		}
+	}
+	return nil
+}
+
 // ── Tests ──────────────────────────────────────────────────────
 
 func TestServiceUseCase_CreateAndGet(t *testing.T) {
