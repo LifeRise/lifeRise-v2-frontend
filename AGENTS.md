@@ -571,6 +571,56 @@ This is not optional. It applies to every task, regardless of scope.
 | Build warning from a file unrelated to your task | Fix it now if trivial (< 5 lines); otherwise add a `TODO(boyscout):` |
 | Architectural issue outside your scope | Note it, do not touch it without user approval |
 
+## Git Workflow & Commit Standards
+
+> **Proactive but disciplined codebase management.**
+
+These rules are mandatory for all AI agents operating on this repository.
+
+### 1. Incremental Commits
+
+Stage and commit changes **immediately** upon the completion of a specific fix, edit, or sub-task. Maintain an **atomic commit history** rather than bundling unrelated changes.
+
+- One logical change = one commit.
+- Do not accumulate multiple unrelated edits into a single commit.
+- If you finish a task and move to an unrelated file, commit the first task before starting the next.
+
+### 2. No Automated Pushes
+
+Agents are **strictly forbidden** from executing `git push`.
+
+- All pushing to the remote repository must be performed **manually by the user**.
+- This ensures final human oversight before any change reaches the remote.
+- Commit freely; push never.
+
+### 3. Commit Message Syntax
+
+To prevent shell escaping issues and terminal command errors, **always use single quotes (`'`)** for commit messages instead of double quotes (`"`).
+
+**Correct:**
+```bash
+git commit -m 'fix: update cors allow-list for production'
+```
+
+**Incorrect:**
+```bash
+git commit -m "fix: update cors allow-list for production"
+```
+
+Use concise, descriptive messages in the imperative mood (e.g., `fix:`, `feat:`, `docs:`, `refactor:`).
+
+### Pre-Commit Enforcement
+
+The repository uses **Husky v9** + **lint-staged** to enforce the Boy Scout Rule automatically on every commit. The hook is configured at the monorepo root and runs the appropriate checks based on staged files:
+
+| Staged files | Command executed | Failure behaviour |
+|--------------|-----------------|-------------------|
+| `apps/web/**/*.{ts,tsx,js,jsx}` | `cd apps/web && npm run lint` | Aborts commit on **any** ESLint warning/error or TypeScript type error |
+| `apps/api/**/*.go` | `cd apps/api && make lint` | Aborts commit on any `golangci-lint` finding |
+
+- **Fail-fast:** If either check exits with a non-zero status, the commit is aborted immediately.
+- **Zero tolerance:** The frontend lint command runs with `--max-warnings=0` and `tsc --noEmit`, so warnings are treated as failures.
+
 ---
 
 ## Common Pitfalls
