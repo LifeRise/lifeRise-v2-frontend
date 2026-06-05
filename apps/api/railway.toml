@@ -1,12 +1,18 @@
 # LifeRise Go Backend — Railway service configuration
 #
-# In Railway, create one service PER binary and set:
-#   Source > Root Directory = apps/api
-#   Build > Dockerfile Path = Dockerfile.api  (or .vendor / .admin / .worker)
+# IMPORTANT — monorepo setup:
+#   In the Railway dashboard, set for this service:
+#     Source > Root Directory  = apps/api
+#     Source > GitHub Repo     = LifeRise/LifeRise-Enterprise
+#     Source > Branch          = main
+#     Source > Auto Deploy     = ON
 #
-# This file is the config for the *customer API* service (port 8080).
-# Duplicate the Railway service for vendor-api and admin-api, changing
-# dockerfilePath and the LIFERISE_SERVER_PORT env var accordingly.
+#   The Root Directory setting is what makes auto-deploy work.
+#   Without it, Railway looks for this file and the Dockerfiles at the
+#   repo root, finds nothing, and the build/deploy fails.
+#
+# One service PER binary — duplicate the service for vendor-api and admin-api,
+# changing dockerfilePath and the LIFERISE_SERVER_PORT env var accordingly.
 #
 # Required Railway environment variables (set in Railway dashboard):
 #   LIFERISE_DATABASE_URL         — Supabase/PostgreSQL connection string
@@ -15,8 +21,9 @@
 #   LIFERISE_STRIPE_SECRET_KEY    — Stripe secret key
 #   LIFERISE_STRIPE_WEBHOOK_SECRET
 #   LIFERISE_CORS_ALLOW_ORIGINS   — Comma-separated: https://your-app.vercel.app,https://yourdomain.com
-#   LIFERISE_SERVER_PORT          — 8080 (api) | 8081 (vendor-api) | 8082 (admin-api)
 #   LIFERISE_APP_ENV              — production
+#
+# NOTE: Do NOT manually set LIFERISE_SERVER_PORT — Railway injects PORT automatically.
 
 [build]
 builder = "dockerfile"
