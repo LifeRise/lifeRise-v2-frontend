@@ -11,9 +11,11 @@ import { useAuth } from '@/lib/auth/hooks';
 import * as servicesApi from './services';
 import * as bookingsApi from './bookings';
 import * as favoritesApi from './favorites';
+import * as adminApi from './admin';
 import type { Service } from './services';
 import type { Booking } from './bookings';
 import type { Favorite } from './favorites';
+import type { DashboardOverview } from './types';
 import {
   adaptServiceToVendor,
   adaptServiceToDetail,
@@ -135,4 +137,39 @@ export function useFavorites() {
   );
 
   return { favorites, isLoading, error, refresh, toggle };
+}
+
+// --- Admin Dashboard ---
+
+export function useDashboardOverview(companyId?: number) {
+  const [data, setData] = useState<DashboardOverview | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const refresh = useCallback(() => {
+    setIsLoading(true);
+    setError(null);
+
+    const controller = new AbortController();
+    adminApi
+      .fetchDashboardOverview({ companyId, signal: controller.signal })
+      .then((overview) => {
+        setData(overview);
+      })
+      .catch((err: unknown) => {
+        if (err instanceof Error && err.name === 'AbortError') return;
+        setError(err instanceof Error ? err.message : 'Failed to load dashboard');
+      })
+      .finally(() => setIsLoading(false));
+
+    return () => controller.abort();
+  }, [companyId]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    const cleanup = refresh();
+    return cleanup;
+  }, [refresh]);
+
+  return { data, isLoading, error, refresh };
 }

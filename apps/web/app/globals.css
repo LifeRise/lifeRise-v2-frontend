@@ -13,6 +13,11 @@
   --color-muted: #94A3B8;
   --color-emerald: #34D399;
   --color-rose: #F472B6;
+  /* Manager dashboard KPI accents (legacy image match) */
+  --color-kpi-emerald: #22C55E;
+  --color-kpi-red: #F87171;
+  --color-kpi-slate: #64748B;
+  --color-kpi-blue: #3B82F6;
 }
 
 @theme inline {

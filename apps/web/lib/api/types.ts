@@ -60,3 +60,69 @@ export class ApiError extends Error {
     this.errors = errors;
   }
 }
+
+// ─── Admin Dashboard Types ──────────────────────────────────────
+
+export interface KPISet {
+  total_complex_managers: number;
+  active_customers: number;
+  total_service_providers: number;
+  total_bookings: number;
+  total_complex_companies: number;
+  total_vendor_companies: number;
+}
+
+export interface VendorBookingStatusBreakdown {
+  pending: number;
+  accepted: number;
+  active: number;
+  completed: number;
+  cancelled: number;
+  rejected: number;
+}
+
+export interface EventBookingStatusBreakdown {
+  pending: number;
+  accepted: number;
+  active: number;
+  cancelled: number;
+  rejected: number;
+}
+
+export interface PopularService {
+  service_id: number;
+  service_name: string;
+  booking_count: number;
+}
+
+export interface MostBookedVendor {
+  vendor_id: number;
+  vendor_name: string;
+  company_id: number | null;
+  company_name: string | null;
+  booking_count: number;
+}
+
+export interface UpcomingEvent {
+  event_id: number;
+  title: string;
+  start_at: string;
+  location: string | null;
+  responses: number;
+}
+
+export interface TopLocation {
+  label: string;
+  booking_count: number;
+}
+
+export interface DashboardOverview {
+  kpis: KPISet;
+  vendor_booking_stats: VendorBookingStatusBreakdown;
+  event_booking_stats: EventBookingStatusBreakdown;
+  popular_services: PopularService[];
+  most_booked_vendors: MostBookedVendor[];
+  upcoming_events: UpcomingEvent[];
+  top_locations: TopLocation[];
+  generated_at: string;
+}
