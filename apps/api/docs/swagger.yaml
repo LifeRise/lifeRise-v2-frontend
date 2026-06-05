@@ -1,0 +1,801 @@
+openapi: 3.0.3
+info:
+  title: LifeRise Customer API
+  description: Customer-facing mobile API for the LifeRise service marketplace.
+  version: 1.0.0
+  contact:
+    name: LifeRise Support
+    email: support@liferise.io
+servers:
+  - url: http://localhost:8080/api
+    description: Local development server
+  - url: https://api.liferise.io/api
+    description: Production server
+
+tags:
+  - name: Auth
+    description: Authentication and user management
+  - name: Services
+    description: Service catalog and discovery
+  - name: Bookings
+    description: Booking lifecycle management
+  - name: Payments
+    description: Stripe payment processing
+  - name: Favorites
+    description: Customer favorites
+  - name: Notifications
+    description: Push and email notifications
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /signup:
+    post:
+      tags: [Auth]
+      summary: Register a new customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '422':
+          description: Validation error
+
+  /login:
+    post:
+      tags: [Auth]
+      summary: Login with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          description: Invalid credentials
+
+  /refresh-token:
+    post:
+      tags: [Auth]
+      summary: Refresh access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: New token pair issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+
+  /forgot-password:
+    post:
+      tags: [Auth]
+      summary: Request password reset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Reset email sent
+
+  /reset-password:
+    post:
+      tags: [Auth]
+      summary: Reset password with token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                password:
+                  type: string
+                  minLength: 8
+      responses:
+        '200':
+          description: Password reset successful
+
+  /profile:
+    get:
+      tags: [Auth]
+      summary: Get current user profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+
+  /logout:
+    post:
+      tags: [Auth]
+      summary: Logout and invalidate token
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+
+  /services:
+    get:
+      tags: [Services]
+      summary: List services with filters
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 15
+      responses:
+        '200':
+          description: Paginated list of services
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedServices'
+    post:
+      tags: [Services]
+      summary: Create a new service (admin/vendor only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateServiceRequest'
+      responses:
+        '201':
+          description: Service created
+
+  /services/{id}:
+    get:
+      tags: [Services]
+      summary: Get service details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Service details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+    patch:
+      tags: [Services]
+      summary: Update service (admin/vendor only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateServiceRequest'
+      responses:
+        '200':
+          description: Service updated
+    delete:
+      tags: [Services]
+      summary: Delete service (admin/vendor only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Service deleted
+
+  /services/{id}/slots:
+    get:
+      tags: [Services]
+      summary: Get available time slots for a service
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: List of available slots
+
+  /bookings:
+    get:
+      tags: [Bookings]
+      summary: List user bookings
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, confirmed, cancelled, completed, rejected]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Paginated bookings
+    post:
+      tags: [Bookings]
+      summary: Create a new booking
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookingRequest'
+      responses:
+        '201':
+          description: Booking created
+
+  /bookings/{id}:
+    get:
+      tags: [Bookings]
+      summary: Get booking details
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Booking details
+
+  /bookings/{id}/status:
+    patch:
+      tags: [Bookings]
+      summary: Update booking status
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [confirmed, cancelled, completed, rejected]
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Status updated
+
+  /bookings/{id}/reschedule:
+    post:
+      tags: [Bookings]
+      summary: Reschedule a booking
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                new_slot_id:
+                  type: integer
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Booking rescheduled
+
+  /payments/intent:
+    post:
+      tags: [Payments]
+      summary: Create a Stripe PaymentIntent
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                booking_id:
+                  type: integer
+                amount:
+                  type: number
+                currency:
+                  type: string
+                  default: usd
+      responses:
+        '200':
+          description: Payment intent created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  client_secret:
+                    type: string
+
+  /payments/intent/{id}/confirm:
+    post:
+      tags: [Payments]
+      summary: Confirm a PaymentIntent
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Payment confirmed
+
+  /payments/{id}:
+    get:
+      tags: [Payments]
+      summary: Get payment details
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Payment details
+
+  /payments/{id}/refund:
+    post:
+      tags: [Payments]
+      summary: Process a refund
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Refund processed
+
+  /payments/release/{booking_id}:
+    post:
+      tags: [Payments]
+      summary: Release payment to vendor
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: booking_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Payment released
+
+  /favorites:
+    get:
+      tags: [Favorites]
+      summary: List user favorites
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of favorite services
+
+  /favorites/toggle:
+    post:
+      tags: [Favorites]
+      summary: Toggle favorite on/off
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                service_id:
+                  type: integer
+      responses:
+        '200':
+          description: Favorite toggled
+
+  /favorites/{id}:
+    delete:
+      tags: [Favorites]
+      summary: Remove a favorite
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Favorite removed
+
+  /notifications/email:
+    post:
+      tags: [Notifications]
+      summary: Enqueue an email notification
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                to:
+                  type: string
+                  format: email
+                subject:
+                  type: string
+                template:
+                  type: string
+                data:
+                  type: object
+                  additionalProperties:
+                    type: string
+      responses:
+        '202':
+          description: Email queued
+
+  /notifications/push:
+    post:
+      tags: [Notifications]
+      summary: Enqueue a push notification
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tokens:
+                  type: array
+                  items:
+                    type: string
+                title:
+                  type: string
+                body:
+                  type: string
+                data:
+                  type: object
+                  additionalProperties:
+                    type: string
+      responses:
+        '202':
+          description: Push notification queued
+
+  /notifications/booking-confirmation:
+    post:
+      tags: [Notifications]
+      summary: Send booking confirmation notifications
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                customer_email:
+                  type: string
+                  format: email
+                device_tokens:
+                  type: array
+                  items:
+                    type: string
+                booking_id:
+                  type: integer
+      responses:
+        '202':
+          description: Confirmation notifications sent
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    SignupRequest:
+      type: object
+      required: [email, password, first_name, last_name]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        first_name:
+          type: string
+        last_name:
+          type: string
+        phone:
+          type: string
+        timezone:
+          type: string
+          default: UTC
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    TokenResponse:
+      type: object
+      properties:
+        status:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            access_token:
+              type: string
+            refresh_token:
+              type: string
+            expires_at:
+              type: string
+              format: date-time
+            token_type:
+              type: string
+              default: Bearer
+
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        phone:
+          type: string
+        timezone:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+        email_verified_at:
+          type: string
+          format: date-time
+
+    Service:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        currency:
+          type: string
+        duration_minutes:
+          type: integer
+        category:
+          type: string
+        slug:
+          type: string
+        service_provider_id:
+          type: integer
+        company_id:
+          type: integer
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    CreateServiceRequest:
+      type: object
+      required: [name, price, duration_minutes]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        currency:
+          type: string
+          default: usd
+        duration_minutes:
+          type: integer
+        category:
+          type: string
+
+    PaginatedServices:
+      type: object
+      properties:
+        status:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Service'
+        links:
+          type: object
+          properties:
+            first:
+              type: string
+            last:
+              type: string
+            prev:
+              type: string
+            next:
+              type: string
+        meta:
+          type: object
+          properties:
+            current_page:
+              type: integer
+            from:
+              type: integer
+            last_page:
+              type: integer
+            per_page:
+              type: integer
+            to:
+              type: integer
+            total:
+              type: integer
+
+    CreateBookingRequest:
+      type: object
+      required: [service_id, slot_id]
+      properties:
+        service_id:
+          type: integer
+        slot_id:
+          type: integer
+        notes:
+          type: string

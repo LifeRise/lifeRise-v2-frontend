@@ -1,0 +1,25 @@
+-- Rollback all baseline tables (reverse dependency order)
+DROP TABLE IF EXISTS feedbacks;
+DROP TABLE IF EXISTS webhook_idempotencies;
+DROP TABLE IF EXISTS stripe_refunds;
+DROP TABLE IF EXISTS user_stripe_connects;
+DROP TABLE IF EXISTS stripe_payments;
+DROP TABLE IF EXISTS favorites;
+DROP TABLE IF EXISTS waitlist_entries;
+DROP TABLE IF EXISTS booking_reschedule_records;
+DROP TABLE IF EXISTS booking_available_slots;
+DROP TABLE IF EXISTS available_slots;
+DROP TABLE IF EXISTS bookings;
+DROP TABLE IF EXISTS services;
+DROP TABLE IF EXISTS service_categories;
+DROP TABLE IF EXISTS company_users;
+DROP TABLE IF EXISTS companies;
+DROP TABLE IF EXISTS customer_otps;
+DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS password_resets;
+DROP TABLE IF EXISTS user_otps;
+DROP TABLE IF EXISTS user_role_assignments;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS role_permissions;
+DROP TABLE IF EXISTS permissions;
+DROP TABLE IF EXISTS roles;

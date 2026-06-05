@@ -1,41 +1,53 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# LifeRise Enterprise Monorepo — .gitignore
+# Patterns without a leading / match anywhere in the tree (apps/web/, apps/api/, etc.)
+# See https://help.github.com/articles/ignoring-files/
 
-# dependencies
-/node_modules
-/.pnp
+# ── Node / npm ────────────────────────────────────────────────────────────────
+node_modules/
+.pnp
 .pnp.*
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# ── Next.js (apps/web) ────────────────────────────────────────────────────────
+.next/
+out/
+next-env.d.ts
 
-# vercel
+# ── Go backend (apps/api) ─────────────────────────────────────────────────────
+# Compiled binaries
+apps/api/build/
+*.exe
+*.exe~
+
+# Go test/coverage output
+coverage.out
+coverage/
+
+# Backend config with secrets (copy from config.example.yaml)
+apps/api/config.yaml
+
+# ── General build artefacts ───────────────────────────────────────────────────
+*.tsbuildinfo
+dist/
+
+# ── Environment / secrets ─────────────────────────────────────────────────────
+.env*
+# Allow committing example/template env files (they contain only placeholders)
+!.env*.example
+!**/.env*.example
+
+# ── Vercel ────────────────────────────────────────────────────────────────────
 .vercel
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# ── OS / Editor ───────────────────────────────────────────────────────────────
+.DS_Store
+*.pem
+Thumbs.db

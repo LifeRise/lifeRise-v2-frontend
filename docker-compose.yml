@@ -1,0 +1,163 @@
+# LifeRise Enterprise — Full-Stack Docker Compose
+# Targets the post-migration structure:
+#   apps/web  → Next.js frontend
+#   apps/api  → Go backend
+#
+# Usage:
+#   docker compose up -d          # start everything
+#   docker compose logs -f web    # tail frontend logs
+#   docker compose down -v        # stop + delete volumes
+
+version: "3.8"
+
+services:
+
+  # ── Infrastructure ───────────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: liferise-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: liferise_secret
+      MYSQL_DATABASE: liferise
+      MYSQL_USER: liferise
+      MYSQL_PASSWORD: liferise_secret
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: liferise-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Backend APIs ─────────────────────────────────────────────────────────────
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile.api
+    container_name: liferise-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./apps/api/.env
+    environment:
+      LIFERISE_APP_ENV: production
+      LIFERISE_DATABASE_HOST: mysql
+      LIFERISE_DATABASE_PORT: "3306"
+      LIFERISE_REDIS_HOST: redis
+      LIFERISE_REDIS_PORT: "6379"
+      LIFERISE_SERVER_PORT: "8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  vendor-api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile.vendor
+    container_name: liferise-vendor-api
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    env_file:
+      - ./apps/api/.env
+    environment:
+      LIFERISE_APP_ENV: production
+      LIFERISE_DATABASE_HOST: mysql
+      LIFERISE_DATABASE_PORT: "3306"
+      LIFERISE_REDIS_HOST: redis
+      LIFERISE_REDIS_PORT: "6379"
+      LIFERISE_SERVER_PORT: "8081"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  admin-api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile.admin
+    container_name: liferise-admin-api
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    env_file:
+      - ./apps/api/.env
+    environment:
+      LIFERISE_APP_ENV: production
+      LIFERISE_DATABASE_HOST: mysql
+      LIFERISE_DATABASE_PORT: "3306"
+      LIFERISE_REDIS_HOST: redis
+      LIFERISE_REDIS_PORT: "6379"
+      LIFERISE_SERVER_PORT: "8082"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile.worker
+    container_name: liferise-worker
+    restart: unless-stopped
+    env_file:
+      - ./apps/api/.env
+    environment:
+      LIFERISE_APP_ENV: production
+      LIFERISE_DATABASE_HOST: mysql
+      LIFERISE_REDIS_HOST: redis
+      LIFERISE_REDIS_PORT: "6379"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ── Frontend ─────────────────────────────────────────────────────────────────
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+      args:
+        # These build-time args are baked into the Next.js bundle at build time.
+        NEXT_PUBLIC_API_URL: http://api:8080
+        NEXT_PUBLIC_VENDOR_API_URL: http://vendor-api:8081
+        NEXT_PUBLIC_ADMIN_API_URL: http://admin-api:8082
+    container_name: liferise-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./apps/web/.env.local
+    environment:
+      NODE_ENV: production
+    depends_on:
+      - api
+      - vendor-api
+      - admin-api
+
+volumes:
+  mysql_data:
+  redis_data:

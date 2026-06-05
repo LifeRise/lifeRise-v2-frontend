@@ -1,0 +1,104 @@
+app:
+  name: liferise-backend
+  env: development
+  debug: true
+  timezone: UTC
+
+database:
+  # Option A — Supabase connection string (recommended).
+  # Direct:  postgres://postgres.[ref]:[password]@db.[ref].supabase.co:5432/postgres?sslmode=require
+  # Pooler:  postgres://postgres.[ref]:[password]@aws-0-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require&prefer_simple_protocol=true
+  # Set via LIFERISE_DATABASE_URL environment variable.
+  url: ""
+  # Option B — individual fields (used only when url is empty).
+  driver: postgres
+  host: db.bbiebzxbgiiobjhuougr.supabase.co
+  port: 5432
+  database: postgres
+  username: postgres
+  password: your-supabase-db-password
+  ssl_mode: require
+  app_name: liferise-backend
+  search_path: public
+  max_open_conns: 25
+  max_idle_conns: 10
+  conn_max_lifetime: 1h
+  conn_max_idle_time: 30m
+
+redis:
+  host: 127.0.0.1
+  port: 6379
+  password: ""
+  db: 0
+
+jwt:
+  secret: your-jwt-secret-min-32-characters-long
+  access_expiry: 15m
+  refresh_expiry: 168h
+  issuer: liferise-backend
+
+stripe:
+  secret_key: sk_test_your_stripe_secret_key
+  webhook_secret: whsec_your_webhook_secret
+  platform_fee_percent: 12.0
+
+firebase:
+  credentials_path: "./firebase-credentials.json"
+  project_id: liferise-project
+
+asynq:
+  redis_addr: "127.0.0.1:6379"
+  redis_password: ""
+  redis_db: 0
+  concurrency: 10
+
+server:
+  host: 0.0.0.0
+  port: 8080
+  read_timeout: 15s
+  write_timeout: 15s
+  idle_timeout: 60s
+
+s3:
+  bucket: liferise-uploads
+  region: us-east-1
+  endpoint: ""
+  access_key: ""
+  secret_key: ""
+  use_path_style: false
+
+# CORS settings for frontend integration.
+cors:
+  enabled: true
+  allow_origins:
+    - "http://localhost:3000"
+  allow_methods:
+    - "GET"
+    - "POST"
+    - "PUT"
+    - "PATCH"
+    - "DELETE"
+    - "OPTIONS"
+    - "HEAD"
+  allow_headers:
+    - "Origin"
+    - "Content-Type"
+    - "Accept"
+    - "Authorization"
+    - "X-Requested-With"
+  expose_headers:
+    - "Content-Length"
+    - "Content-Type"
+    - "Authorization"
+  allow_credentials: true
+  max_age: 86400
+
+# Supabase project credentials.
+# Used for Supabase REST/Realtime/Storage APIs (not the raw PostgreSQL connection).
+# NEVER commit real anon_key or service_role_key values. Use environment variables:
+#   LIFERISE_SUPABASE_PROJECT_REF, LIFERISE_SUPABASE_ANON_KEY, LIFERISE_SUPABASE_SERVICE_ROLE_KEY
+supabase:
+  project_ref: "bbiebzxbgiiobjhuougr"
+  project_url: "https://bbiebzxbgiiobjhuougr.supabase.co"
+  anon_key: "your-supabase-anon-key"
+  service_role_key: "your-supabase-service-role-key"

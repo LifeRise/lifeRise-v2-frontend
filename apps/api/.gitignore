@@ -1,0 +1,47 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Local config file (contains credentials — use .env instead)
+config.yaml
+config.yml
+
+# Firebase credentials (sensitive)
+firebase-credentials.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+/vendor/
+dist/
+build/
+tmp/
+
+# Local database
+*.db
+*.sqlite
+*.sqlite3
+/pgdata/
