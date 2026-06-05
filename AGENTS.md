@@ -6,6 +6,32 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # LifeRise Solutions — Agent Guide
 
+## Monorepo Layout
+
+This is a **monorepo** (`LifeRise-Enterprise`). The two apps live under `apps/`:
+
+```
+LifeRise-Enterprise/           # Repo root
+├── apps/
+│   ├── web/                   # Next.js 16 frontend  ← most UI work happens here
+│   └── api/                   # Go 1.26+ backend     ← REST API, workers, migrations
+├── Makefile                   # Root orchestration (dev, build-all, docker-up)
+├── docker-compose.yml         # Full local stack (MySQL, Redis, all APIs, web)
+├── vercel.json                # Vercel build config (rootDirectory=apps/web set via project API)
+├── DEPLOYMENT.md              # Platform wiring guide (Vercel + Railway)
+├── AGENTS.md                  # ← this file (primary agent guide)
+├── CLAUDE.md                  # Points to AGENTS.md
+└── docs/                      # Additional planning docs
+```
+
+> **Always run frontend commands from `apps/web/`** and backend commands from `apps/api/`. Running `npm install` or `go build` from the repo root will fail.
+
+Sub-guides with deeper conventions:
+- `apps/web/AGENTS.md` — frontend-specific supplement
+- `apps/api/AGENTS.md` — backend-specific guide
+
+---
+
 ## Project Overview
 
 LifeRise Solutions is a **production-grade** Next.js web application for a property-management service marketplace. It is a real, fully wired frontend connected to a **Go REST backend** and **Supabase** (auth + DB). Three user portals are served from a single frontend codebase:
@@ -62,28 +88,44 @@ The app uses a **three-tier authentication chain** (evaluated in priority order)
 
 ## Build & Development Commands
 
+> All frontend commands must be run from **`apps/web/`**. All backend commands from **`apps/api/`**.
+
 ```bash
-# Install dependencies
-npm install
+# ── Frontend (from apps/web/) ─────────────────────────────────────────
+cd apps/web
 
-# Development server (localhost:3000)
-npm run dev
+npm install          # Install dependencies
+npm run dev          # Development server → localhost:3000
+npm run build        # Production build (outputs to .next/)
+npm start            # Start production server
+npm run lint         # ESLint 9 flat config
 
-# Production build
-npm run build
+# ── Backend (from apps/api/) ──────────────────────────────────────────
+cd apps/api
 
-# Start production server
-npm start
+make deps            # Download and tidy Go modules
+make build           # Build all binaries → ./build/
+make run-api         # Customer API → :8080
+make run-vendor      # Vendor API   → :8081
+make run-admin       # Admin API    → :8082
+make run-worker      # Background worker
+make test            # go test ./... with race detection
+make lint            # golangci-lint
+make fmt             # goimports + vet
 
-# Lint (ESLint 9 with flat config)
-npm run lint
+# ── Root orchestration ────────────────────────────────────────────────
+# (from repo root, requires make)
+make dev             # frontend + customer API concurrently
+make run-all         # frontend + all 3 APIs + worker
+make docker-up       # Full Docker stack (MySQL, Redis, APIs, web)
+make docker-down
 ```
 
-There are **no test scripts** configured. The project currently has no testing framework.
+There are **no test scripts** configured for the frontend. The project currently has no JS/TS testing framework.
 
 ## Environment Variables
 
-Create `.env.local` at the project root. All variables are optional — the app degrades gracefully to mock mode if omitted.
+Create `apps/web/.env.local` (never at the repo root — Next.js won't find it there). All variables are optional — the app degrades gracefully to mock mode if omitted.
 
 ```bash
 # Go backend (defaults to localhost:8080 if omitted)
@@ -212,6 +254,8 @@ lib/
 
 middleware.ts                 # Next.js middleware (Supabase session refresh)
 ```
+
+> All paths above are relative to `apps/web/`. For example `lib/api/client.ts` lives at `apps/web/lib/api/client.ts` in the repo.
 
 ## Authentication Architecture
 
@@ -463,28 +507,71 @@ The app ships a full PWA setup:
 
 | File | Why it matters |
 |------|---------------|
-| `lib/api/client.ts` | HTTP client — JWT injection, token refresh logic |
-| `lib/api/config.ts` | API URL resolution per role — update when adding new backend ports |
-| `lib/api/auth.ts` | Go backend auth endpoints — login, signup, profile |
-| `lib/api/hooks.ts` | React data hooks — primary way to consume backend data in UI |
-| `lib/api/adapters.ts` | Backend → frontend type transforms |
-| `lib/api/types.ts` | Backend response types (BackendProfile, TokenPair, etc.) |
-| `lib/auth/auth-service.ts` | Unified auth service — Supabase + Go backend bridge |
-| `lib/auth/hooks.ts` | `useAuth()`, `useAllProfiles()`, `doLogin()` |
-| `lib/auth/mock-auth.ts` | Mock auth fallback (offline/demo mode) |
-| `lib/supabase/client.ts` | Supabase browser client (switches mock ↔ real based on env vars) |
-| `components/auth/AuthProvider.tsx` | Route guards — update when adding new protected routes |
-| `lib/types.ts` | Frontend domain types — add new UI-facing types here |
-| `lib/mock-data.ts` | Static dashboard mock data |
-| `lib/store.ts` | Zustand global store — all auth + app state |
-| `lib/animations.ts` | Reusable Framer Motion presets |
-| `lib/utils.ts` | `cn()`, `getInitials()`, `getGreeting()`, `formatDate()` |
-| `components/ui/GlassCard.tsx` | Standard card primitive |
-| `components/ui/ResponsiveModal.tsx` | Sheet (mobile) / Dialog (desktop) modal primitive |
-| `components/layout/Sidebar.tsx` | Navigation config per role |
-| `app/globals.css` | Tailwind v4 theme tokens + custom utilities |
-| `next.config.ts` | Next.js config |
-| `eslint.config.mjs` | ESLint 9 flat config |
+| `apps/web/lib/api/client.ts` | HTTP client — JWT injection, token refresh logic |
+| `apps/web/lib/api/config.ts` | API URL resolution per role — update when adding new backend ports |
+| `apps/web/lib/api/auth.ts` | Go backend auth endpoints — login, signup, profile |
+| `apps/web/lib/api/hooks.ts` | React data hooks — primary way to consume backend data in UI |
+| `apps/web/lib/api/adapters.ts` | Backend → frontend type transforms |
+| `apps/web/lib/api/types.ts` | Backend response types (BackendProfile, TokenPair, etc.) |
+| `apps/web/lib/auth/auth-service.ts` | Unified auth service — Supabase + Go backend bridge |
+| `apps/web/lib/auth/hooks.ts` | `useAuth()`, `useAllProfiles()`, `doLogin()` |
+| `apps/web/lib/auth/mock-auth.ts` | Mock auth fallback (offline/demo mode) |
+| `apps/web/lib/supabase/client.ts` | Supabase browser client (switches mock ↔ real based on env vars) |
+| `apps/web/components/auth/AuthProvider.tsx` | Route guards — update when adding new protected routes |
+| `apps/web/lib/types.ts` | Frontend domain types — add new UI-facing types here |
+| `apps/web/lib/mock-data.ts` | Static dashboard mock data |
+| `apps/web/lib/store.ts` | Zustand global store — all auth + app state |
+| `apps/web/lib/animations.ts` | Reusable Framer Motion presets |
+| `apps/web/lib/utils.ts` | `cn()`, `getInitials()`, `getGreeting()`, `formatDate()` |
+| `apps/web/components/ui/GlassCard.tsx` | Standard card primitive |
+| `apps/web/components/ui/ResponsiveModal.tsx` | Sheet (mobile) / Dialog (desktop) modal primitive |
+| `apps/web/components/layout/Sidebar.tsx` | Navigation config per role |
+| `apps/web/app/globals.css` | Tailwind v4 theme tokens + custom utilities |
+| `apps/web/next.config.ts` | Next.js config |
+| `apps/web/eslint.config.mjs` | ESLint 9 flat config |
+| `apps/api/internal/infrastructure/config/config.go` | Backend config — reads `PORT`, `LIFERISE_*` env vars |
+| `apps/api/internal/adapters/http/middleware/cors.go` | CORS allow-list (update when adding new origins) |
+| `apps/api/internal/application/payment/stripe_usecase.go` | Platform fee (12%) — change here only |
+
+## Boy Scout Rule
+
+> **Leave the codebase cleaner than you found it — every single time.**
+
+This is not optional. It applies to every task, regardless of scope.
+
+### What this means in practice
+
+**Fix it when you see it.** If you encounter any of the following while working on any task, fix it immediately — even if it is outside your current task scope:
+
+- ESLint errors or TypeScript errors (zero tolerance — these are build-blockers)
+- Console warnings visible during `npm run build` or `npm run dev`
+- Stale file paths in docs or comments (e.g., old `lifeRise-go-backend/` references)
+- Dead imports or unused variables
+- `any` type annotations where the correct type is obvious
+- Hardcoded localhost URLs or placeholder values in non-example files
+- `TODO` comments that are trivially fixable right now
+- Missing `ssr: false` on components that use `window`/`localStorage`
+- Go build warnings (`go vet`, `golangci-lint` findings)
+- Incorrect or outdated information in `AGENTS.md`, `DEPLOYMENT.md`, or inline comments
+
+### What this does NOT mean
+
+- Do not refactor large sections of working code to satisfy a style preference
+- Do not change behaviour or logic unless it is demonstrably broken
+- Do not add new features outside the current task
+- If a proper fix requires significant effort, leave a precise `// TODO(boyscout):` comment with a description and move on
+
+### Scope vs. polish
+
+| Situation | Action |
+|-----------|--------|
+| TypeScript error in a file you're already editing | Fix it now |
+| ESLint warning in a file you're already editing | Fix it now |
+| Stale path in a doc file you're reading | Fix it now |
+| Build warning from a file unrelated to your task | Fix it now if trivial (< 5 lines); otherwise add a `TODO(boyscout):` |
+| Architectural issue outside your scope | Note it, do not touch it without user approval |
+
+---
 
 ## Common Pitfalls
 
@@ -498,3 +585,6 @@ The app ships a full PWA setup:
 8. **`useAllProfiles()` is a stub.** The vendor approval functionality in `lib/auth/hooks.ts` is not yet wired to the admin API. `approveVendor()` and `rejectVendor()` are no-ops with TODO comments.
 9. **The mock auth stores data in localStorage.** Clearing browser data will reset demo accounts.
 10. **`globalInitStarted` flag** in `lib/auth/hooks.ts` prevents double-init. It is reset on sign-out. Do not call `init()` directly.
+11. **`.env.local` must be in `apps/web/`**, not the repo root. Next.js only reads env files from its own directory.
+12. **Never run `npm install` from the repo root.** `package.json` is in `apps/web/`. Running npm at root will fail.
+13. **`rootDirectory` for Vercel is a project-level setting**, not a `vercel.json` field. It is already set to `apps/web` via the Vercel API.

@@ -1,57 +1,48 @@
-# LifeRise — Agent Guide
+# LifeRise — Backend Agent Guide (`apps/api/`)
 
-This repository contains two independent codebases for the **LifeRise** property-management service marketplace:
+This is the **Go backend** for the LifeRise property-management service marketplace. It lives at `apps/api/` inside the `LifeRise-Enterprise` monorepo.
 
-1. **`lifeRise-go-backend/`** — Production Go backend API serving mobile clients and admin portals. Built with Go 1.26+ using Clean Architecture (Ports & Adapters).
-2. **`lifeRise-v2-frontend/`** — Production-grade Next.js 16 web application for resident, vendor, and manager portals. Connected to the Go backend REST API and Supabase for auth. Can also run in mock/demo mode.
-
-> **Important:** These are independent projects with different tech stacks, build processes, and data sources. Always verify which subdirectory you are working in before running commands or installing dependencies.
+> **Always run backend commands from `apps/api/`.** The repo root has no `go.mod`.
+> The frontend lives at `apps/web/` — see `apps/web/AGENTS.md` and the root `AGENTS.md` for frontend conventions.
 
 ---
 
-## Repository Layout
+## Directory Layout
 
 ```
-.
-├── lifeRise-go-backend/          # Go 1.26 production backend
-│   ├── cmd/                      # Entry-point binaries (api, vendor-api, admin-api, worker, migrate)
-│   ├── internal/
-│   │   ├── domain/               # GORM entities, repository interfaces, enums
-│   │   ├── application/          # Use cases / application services
-│   │   ├── adapters/             # HTTP handlers, middleware, Stripe, Firebase, email, queue tasks
-│   │   └── infrastructure/       # Config (Viper), database (GORM), persistence implementations
-│   ├── pkg/                      # Shared utilities (auth, errors, response, validation)
-│   ├── tests/integration/        # Integration test suites
-│   ├── migrations/               # golang-migrate SQL files
-│   ├── docs/swagger.yaml         # OpenAPI specification
-│   ├── Makefile                  # Build, test, lint, migrate, run targets
-│   ├── config.example.yaml       # Configuration template
-│   ├── docker-compose.yml        # Local MySQL + Redis + API stack
-│   ├── Dockerfile.api            # API container build
-│   ├── go.mod / go.sum           # Go module dependencies
-│   └── AGENTS.md                 # Backend-specific agent guide
-│
-└── lifeRise-v2-frontend/         # Next.js 16 web application
-    ├── app/                      # Next.js App Router pages
-    ├── components/               # React components (layout, ui, modals, pwa)
-    ├── lib/                      # Types, mock data, store, utils, animations, auth, hooks
-    ├── public/                   # Static assets (PWA manifest, icons, sw.js)
-    ├── scripts/                  # Utility scripts (icon generation)
-    ├── package.json              # Dependencies + npm scripts
-    ├── next.config.ts            # Next.js configuration
-    ├── tsconfig.json             # TypeScript config
-    ├── postcss.config.mjs        # PostCSS config (Tailwind v4)
-    ├── eslint.config.mjs         # ESLint 9 flat config
-    ├── middleware.ts             # Supabase session refresh middleware
-    ├── app/globals.css           # Tailwind v4 theme + custom utilities
-    └── AGENTS.md                 # Demo-specific agent guide
+apps/api/
+├── cmd/
+│   ├── api/            # Customer-facing API entry point (port 8080)
+│   ├── vendor-api/     # Vendor-facing API entry point (port 8081)
+│   ├── admin-api/      # Admin/manager API entry point (port 8082)
+│   ├── worker/         # Asynq background worker
+│   └── migrate/        # Database migration CLI
+├── internal/
+│   ├── domain/         # GORM entities, repository interfaces, enums
+│   ├── application/    # Use cases / application services
+│   ├── adapters/       # HTTP handlers (Gin), Stripe, Firebase, email, Asynq tasks
+│   └── infrastructure/ # Config (Viper), GORM connection, repository implementations
+├── pkg/                # Shared utilities (auth/JWT, errors, response helpers, validation)
+├── tests/
+│   └── integration/    # In-memory fake-repo integration test suites
+├── migrations/         # golang-migrate SQL files
+├── docs/
+│   └── swagger.yaml    # OpenAPI specification
+├── Makefile            # Build, test, lint, migrate, run targets
+├── railway.toml        # Railway deployment config
+├── config.example.yaml # Configuration template (copy → config.yaml, gitignored)
+├── docker-compose.yml  # Local MySQL + Redis + API stack
+├── Dockerfile.api      # Customer API container
+├── Dockerfile.vendor   # Vendor API container
+├── Dockerfile.admin    # Admin API container
+├── Dockerfile.worker   # Worker container
+├── go.mod / go.sum     # Go module dependencies
+└── AGENTS.md           # ← this file
 ```
-
-Each subdirectory contains its own `AGENTS.md` with deeper conventions. This root file provides the cross-project overview.
 
 ---
 
-## `lifeRise-go-backend/` — Go Backend API
+## Go Backend API
 
 ### Technology Stack
 
@@ -94,7 +85,7 @@ Each subdirectory contains its own `AGENTS.md` with deeper conventions. This roo
 
 ### Build & Development Commands
 
-All commands must be run from inside `lifeRise-go-backend/`.
+All commands must be run from inside `apps/api/`.
 
 ```bash
 # Download and tidy dependencies
@@ -113,9 +104,9 @@ make lint
 make fmt
 
 # Run individual services
-make run-api      # Customer API
-make run-vendor   # Vendor API
-make run-admin    # Admin API
+make run-api      # Customer API → :8080
+make run-vendor   # Vendor API   → :8081
+make run-admin    # Admin API    → :8082
 make run-worker   # Background worker
 
 # Database migrations
@@ -123,7 +114,7 @@ make migrate-up
 make migrate-down
 make migrate-version
 
-# Docker
+# Docker (local stack)
 make docker-build
 make docker-compose-up
 make docker-compose-down
@@ -159,93 +150,47 @@ make clean
 - **Config:** All config keys map to env vars with `LIFERISE_` prefix. `config.yaml` contains credentials and must never be committed (it is currently in the repo — treat as a development convenience only).
 - **Database:** Supports Supabase PostgreSQL (direct DSN or pooler). Docker Compose provides local MySQL + Redis for development.
 
----
+### Environment Variables
 
-## `lifeRise-v2-frontend/` — Next.js Web Application
+All config keys have a `LIFERISE_` env-var equivalent (read by Viper). Key vars:
 
-### Technology Stack
+| Variable | Purpose |
+|----------|---------|
+| `LIFERISE_APP_ENV` | Set to `production` to enable Gin release mode |
+| `LIFERISE_DATABASE_URL` | Supabase PostgreSQL connection string |
+| `LIFERISE_JWT_SECRET` | Shared HS256 signing secret (min 32 chars) — **must be identical across all API services** |
+| `LIFERISE_CORS_ALLOW_ORIGINS` | Comma-separated list of allowed frontend origins |
+| `LIFERISE_STRIPE_SECRET_KEY` | Stripe secret key |
+| `LIFERISE_STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
+| `PORT` | Injected by Railway — takes priority over `LIFERISE_SERVER_PORT` |
 
-| Concern | Library / Tool | Version |
-|---|---|---|
-| Framework | Next.js (App Router) | 16.2.6 |
-| React | react / react-dom | 19.2.4 |
-| Language | TypeScript | ~5 |
-| Styling | Tailwind CSS | 4.x |
-| PostCSS | `@tailwindcss/postcss` | 4.x |
-| Animation | Framer Motion | ~12.39 |
-| Animation (legacy) | GSAP | ~3.15 |
-| State | Zustand | ~5.0 |
-| Charts | Recharts | ~3.8 |
-| UI Primitives | Radix UI (avatar, dialog, dropdown, progress, scroll-area, select, separator, switch, tabs, tooltip) | latest |
-| Icons | lucide-react | ~1.16 |
-| Auth (optional) | `@supabase/supabase-js`, `@supabase/ssr` | 2.x |
-| Fonts | Google Fonts via `next/font` — Syne (headings) + Inter (body) | — |
-
-### Architecture
-
-- **App Router:** Next.js 16 App Router. Most pages are `"use client"` for interactive state. Server components are opt-in.
-- **No backend by default:** All data is hard-coded in `lib/mock-data.ts`. Do not write `fetch` calls expecting an API unless explicitly adding Supabase integration.
-- **Dual-mode auth:** Works offline with mock auth by default. Can connect to a real Supabase backend by setting `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local`.
-- **Role-based layouts:** Three portals (resident, vendor, manager) each have their own `layout.tsx` rendering `<Sidebar>` and `<MobileNav>`.
-- **PWA:** Service worker (`public/sw.js`) caches shell routes for offline access. Install prompt with engagement gating.
-
-### Build & Development Commands
-
-All commands must be run from inside `lifeRise-v2-frontend/`.
-
-```bash
-# Install dependencies
-npm install
-
-# Development server (localhost:3000)
-npm run dev
-
-# Production build
-npm run build
-
-# Start production server
-npm start
-
-# Lint (ESLint 9 flat config)
-npm run lint
-```
-
-### Code Style Guidelines
-
-- **Tailwind v4:** Uses `@import "tailwindcss"` and `@theme` in `app/globals.css`. There is **no separate `tailwind.config.ts`**.
-- **Design tokens:** Colors like `--color-midnight`, `--color-teal`, `--color-gold`, `--color-purple-accent` are defined in `globals.css` inside `@theme`.
-- **Glassmorphism:** Surfaces use `.glass` or `.glass-dark` classes (backdrop blur + semi-transparent background).
-- **Role accent colors:**
-  - Resident: `#00D4AA` (teal)
-  - Vendor: `#F5A623` (gold)
-  - Manager: `#818CF8` (purple)
-- **Typography:** Syne for headings (`font-heading`), Inter for body (`font-sans`).
-- **Reusable components:** Prefer `<GlassCard>` for cards. Reuse animation variants from `lib/animations.ts`.
-- **Dynamic imports:** Heavy components (charts, maps) are dynamically imported with `ssr: false` to avoid hydration mismatches.
-- **Role accent colors at runtime** are passed via inline `style={{ color: accent, background: \`\${accent}18\` }}` rather than Tailwind arbitrary values.
-
-### Testing Instructions
-
-- **No test framework is currently configured.** There are no `*.test.*` or `*.spec.*` files in the project.
-- Searching for tests only finds files inside `node_modules/`.
-
-### Security Considerations
-
-- This is a **frontend demo only**. No real authentication, authorization, API, or secrets when running in mock mode.
-- The login page is cosmetic; the actual entry points are the "Quick Demo Access" role buttons.
-- Mock auth stores sessions in `localStorage`. Pre-seeded demo accounts exist in `lib/auth/mock-auth.ts`.
-- No sensitive data is handled in mock mode. Mock data uses fake emails and phone numbers.
-- The service worker caches GET requests without origin restrictions — acceptable for a static demo but should be hardened if a real backend is introduced.
-- When Supabase credentials are provided, auth state is managed via `@supabase/ssr` cookies and middleware session refresh.
+> **Do not manually set `LIFERISE_SERVER_PORT` on Railway** — the platform injects `PORT` automatically and the config reads it first.
 
 ---
 
-## Cross-Project Notes for Agents
+## Key Files for Backend Agents
 
-1. **Always check your working directory.** `lifeRise-go-backend/` and `lifeRise-v2-frontend/` are independent. Running `npm install` in the wrong folder will not install the needed dependencies.
-2. **Do not assume Next.js 14 patterns** in the web demo. It is Next.js 16 with React 19 and Tailwind v4.
-3. **Do not write backend API calls** in the web demo unless you are explicitly wiring Supabase integration. It has no backend by default.
-4. **Do not put secrets in source files.** The Go backend uses `LIFERISE_*` environment variables. The web demo uses `.env.local` for optional Supabase credentials.
-5. **Both folders have their own `package.json`, `tsconfig.json`, and lock files** (Go backend has `go.mod`/`go.sum`). Do not mix dependencies between them.
-6. **Never leave development servers or background processes running after a task completes.** If you start `npm run dev`, `npm start`, `go run ./cmd/api`, or any other long-running process, you must terminate it before finishing. Always verify the port is released (e.g., port 3000 for Next.js, port 8080 for Go API) and kill any dangling processes you spawned.
-7. **Refer to subdirectory `AGENTS.md` files** for deeper conventions specific to each codebase.
+| File | Why it matters |
+|------|---------------|
+| `internal/infrastructure/config/config.go` | Reads all `LIFERISE_*` env vars via Viper; `PORT` override logic lives here |
+| `internal/adapters/http/middleware/cors.go` | CORS allow-list — update when adding new frontend origins |
+| `internal/application/payment/stripe_usecase.go` | Platform fee constant (`PlatformFeePercent = 12.0`) — change here only |
+| `pkg/response/` | Laravel-compatible JSON response helpers used by all handlers |
+| `pkg/errors/` | Sentinel error types (`ErrNotFound`, `ErrConflict`, etc.) |
+| `pkg/auth/` | JWT service (sign, verify, decode) |
+| `migrations/` | golang-migrate SQL files — run with `make migrate-up` |
+| `docs/swagger.yaml` | OpenAPI spec — keep in sync with handler changes |
+| `railway.toml` | Railway deployment config (Dockerfile path, restart policy) |
+| `config.example.yaml` | Template for local `config.yaml` (gitignored) |
+
+---
+
+## Agent Notes
+
+1. **Always work from `apps/api/`** — the repo root has no `go.mod`.
+2. **Never change the platform fee** without explicit user instruction. It is `12.0` in `stripe_usecase.go`.
+3. **CORS must be updated** in `cors.go` or via `LIFERISE_CORS_ALLOW_ORIGINS` when adding new frontend domains.
+4. **`PORT` takes priority** over `LIFERISE_SERVER_PORT` — this is intentional for Railway.
+5. **`config.yaml` is gitignored** — copy from `config.example.yaml` and fill in real values for local dev.
+6. **Never leave background processes running.** Kill `go run ./cmd/api` and release port 8080 before finishing a task.
+7. **Frontend lives at `apps/web/`** — see root `AGENTS.md` and `apps/web/AGENTS.md` for frontend conventions.
