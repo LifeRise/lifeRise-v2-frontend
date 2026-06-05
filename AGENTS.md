@@ -24,7 +24,7 @@ LifeRise-Enterprise/           # Repo root
 └── docs/                      # Additional planning docs
 ```
 
-> **Always run frontend commands from `apps/web/`** and backend commands from `apps/api/`. Running `npm install` or `go build` from the repo root will fail.
+> **Always run frontend commands from `apps/web/`** and backend commands from `apps/api/`. Running `go build` from the repo root will fail. `npm install` at the root is now valid — it installs monorepo-level devDependencies (Husky, lint-staged, commitlint, Prettier).
 
 Sub-guides with deeper conventions:
 - `apps/web/AGENTS.md` — frontend-specific supplement
@@ -615,11 +615,41 @@ The repository uses **Husky v9** + **lint-staged** to enforce the Boy Scout Rule
 
 | Staged files | Command executed | Failure behaviour |
 |--------------|-----------------|-------------------|
-| `apps/web/**/*.{ts,tsx,js,jsx}` | `cd apps/web && npm run lint` | Aborts commit on **any** ESLint warning/error or TypeScript type error |
-| `apps/api/**/*.go` | `cd apps/api && make lint` | Aborts commit on any `golangci-lint` finding |
+| `apps/web/**/*.{ts,tsx,js,jsx}` | `npx prettier --write` then `npm run lint:web` | Aborts commit on any formatting, ESLint, or TypeScript issue |
+| `apps/api/**/*.go` | `npm run lint:api` (`make fmt-check && make lint`) | Aborts commit on any `gofmt` or `golangci-lint` finding |
 
-- **Fail-fast:** If either check exits with a non-zero status, the commit is aborted immediately.
-- **Zero tolerance:** The frontend lint command runs with `--max-warnings=0` and `tsc --noEmit`, so warnings are treated as failures.
+- **Fail-fast:** If any check exits with a non-zero status, the commit is aborted immediately.
+- **Zero tolerance:** The frontend lint command runs with `--cache --max-warnings=0` and `tsc --noEmit`, so warnings are treated as failures.
+- **Prettier** is enforced for all web files via lint-staged before linting runs.
+- **Go formatting** is verified with `make fmt-check` before `golangci-lint` runs.
+
+### Commit Message Enforcement
+
+All commits must follow the **Conventional Commits** specification. The `.husky/commit-msg` hook runs `commitlint` against every message. Valid prefixes include `feat:`, `fix:`, `docs:`, `style:`, `refactor:`, `test:`, `chore:`, `ci:`, `build:`, and `revert:`.
+
+### Pre-Push Build Guard
+
+The `.husky/pre-push` hook verifies that both apps compile successfully before any push:
+
+1. `npm run build:web` — runs `npm run build` inside `apps/web`
+2. `npm run build:api` — runs `make build` inside `apps/api`
+
+If either build fails, the push is aborted.
+
+### Root Orchestration Scripts
+
+To improve maintainability, monorepo-wide commands are exposed from the root `package.json`:
+
+| Script | Purpose |
+|--------|---------|
+| `npm run lint:web` | Frontend lint + type-check |
+| `npm run lint:api` | Go format-check + golangci-lint |
+| `npm run build:web` | Next.js production build |
+| `npm run build:api` | Go binary build |
+
+### Node Version Enforcement
+
+The root `package.json` specifies `"engines": { "node": ">=20.0.0", "npm": ">=10.0.0" }`, and `.nvmrc` pins `v20`. Ensure your local environment meets these requirements before running root-level scripts.
 
 ---
 
@@ -636,5 +666,5 @@ The repository uses **Husky v9** + **lint-staged** to enforce the Boy Scout Rule
 9. **The mock auth stores data in localStorage.** Clearing browser data will reset demo accounts.
 10. **`globalInitStarted` flag** in `lib/auth/hooks.ts` prevents double-init. It is reset on sign-out. Do not call `init()` directly.
 11. **`.env.local` must be in `apps/web/`**, not the repo root. Next.js only reads env files from its own directory.
-12. **Never run `npm install` from the repo root.** `package.json` is in `apps/web/`. Running npm at root will fail.
+12. **Root `npm install` is required.** The repo now has a root `package.json` for monorepo-level tooling (Husky, lint-staged, commitlint, Prettier). Run `npm install` at the root first, then `cd apps/web && npm install` for frontend dependencies.
 13. **`rootDirectory` for Vercel is a project-level setting**, not a `vercel.json` field. It is already set to `apps/web` via the Vercel API.
