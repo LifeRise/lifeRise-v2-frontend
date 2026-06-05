@@ -1,0 +1,4 @@
+{
+  "apps/web/**/*.{ts,tsx,js,jsx}": "bash -c 'cd apps/web && npm run lint'",
+  "apps/api/**/*.go": "bash -c 'cd apps/api && make lint'"
+}

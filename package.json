@@ -1,0 +1,13 @@
+{
+  "name": "liferise-enterprise",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LifeRise Enterprise monorepo — root orchestration and pre-commit enforcement",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.2"
+  }
+}
