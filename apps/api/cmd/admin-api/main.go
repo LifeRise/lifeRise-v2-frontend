@@ -252,6 +252,7 @@ func main() {
 			authRequired.DELETE("/admin/waitlists/:id", adminWaitlistHandler.Delete)
 
 			authRequired.GET("/admin/bookings", adminBookingHandler.List)
+			authRequired.GET("/admin/bookings/refunded", adminBookingHandler.ListRefunded)
 			authRequired.GET("/admin/bookings/:id", adminBookingHandler.Get)
 			authRequired.PATCH("/admin/bookings/:id", adminBookingHandler.Update)
 			authRequired.DELETE("/admin/bookings/:id", adminBookingHandler.Delete)

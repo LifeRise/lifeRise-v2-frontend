@@ -221,6 +221,16 @@ func (r *fakeBookingRepo) SoftDelete(_ context.Context, _ *gorm.DB, id uint64) e
 	return nil
 }
 
+func (r *fakeBookingRepo) ListRefunded(_ context.Context, _ *gorm.DB, _ string, _ string, _ string, _, _ int) ([]booking.Booking, int64, error) {
+	var result []booking.Booking
+	for _, b := range r.bookings {
+		if b.PaymentStatus == "refunded" {
+			result = append(result, *b)
+		}
+	}
+	return result, int64(len(result)), nil
+}
+
 // ── Tests ──────────────────────────────────────────────────────
 
 func setupBookingUC() (*appbooking.UseCase, *fakeBookingRepo, *fakeSlotRepo, *fakeServiceRepoForBooking) {

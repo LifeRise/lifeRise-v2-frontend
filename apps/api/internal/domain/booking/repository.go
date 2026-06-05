@@ -19,6 +19,7 @@ type Repository interface {
 	UpdateStatus(ctx context.Context, db *gorm.DB, id uint64, status string) error
 	UpdatePaymentStatus(ctx context.Context, db *gorm.DB, id uint64, status string) error
 	SoftDelete(ctx context.Context, db *gorm.DB, id uint64) error
+	ListRefunded(ctx context.Context, db *gorm.DB, search string, dateFrom string, dateTo string, page, perPage int) ([]Booking, int64, error)
 }
 
 // SlotRepository defines persistence for AvailableSlot aggregates.

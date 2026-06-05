@@ -104,6 +104,24 @@ func (h *AdminBookingHandler) Update(c *gin.Context) {
 	response.Success(c, http.StatusOK, "Booking updated.", b)
 }
 
+// ListRefunded returns paginated refunded bookings.
+func (h *AdminBookingHandler) ListRefunded(c *gin.Context) {
+	p := pagination.Parse(c)
+	search := c.Query("search")
+	dateFrom := c.Query("date_from")
+	dateTo := c.Query("date_to")
+
+	bookings, total, err := h.bookingRepo.ListRefunded(c.Request.Context(), h.db, search, dateFrom, dateTo, p.Page, p.PerPage)
+	if err != nil {
+		response.Error(c, http.StatusInternalServerError, "Failed to load refunded bookings.", nil)
+		return
+	}
+
+	meta := pagination.CalculateMeta(total, p, len(bookings))
+	links := pagination.BuildLinks(c, p, meta.LastPage)
+	adminPaginatedSuccess(c, "Refunded bookings retrieved.", bookings, meta, links)
+}
+
 // Delete soft-deletes a booking.
 func (h *AdminBookingHandler) Delete(c *gin.Context) {
 	id, ok := parseID(c, "id")

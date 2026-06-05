@@ -149,6 +149,42 @@ func (r *BookingRepo) SoftDelete(ctx context.Context, db *gorm.DB, id uint64) er
 	return db.WithContext(ctx).Delete(&booking.Booking{}, id).Error
 }
 
+func (r *BookingRepo) ListRefunded(ctx context.Context, db *gorm.DB, search string, dateFrom string, dateTo string, page, perPage int) ([]booking.Booking, int64, error) {
+	query := db.WithContext(ctx).Model(&booking.Booking{}).Where("payment_status = ?", "refunded")
+	if search != "" {
+		searchPattern := "%" + search + "%"
+		query = query.Where("booking_number ILIKE ?", searchPattern)
+	}
+	if dateFrom != "" {
+		query = query.Where("updated_at >= ?", dateFrom)
+	}
+	if dateTo != "" {
+		query = query.Where("updated_at <= ?", dateTo)
+	}
+
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if page < 1 {
+		page = 1
+	}
+	if perPage < 1 {
+		perPage = 25
+	}
+	if perPage > 100 {
+		perPage = 100
+	}
+
+	var results []booking.Booking
+	offset := (page - 1) * perPage
+	if err := query.Order("updated_at desc").Offset(offset).Limit(perPage).Find(&results).Error; err != nil {
+		return nil, 0, err
+	}
+	return results, total, nil
+}
+
 // SlotRepo implements booking.SlotRepository with GORM.
 type SlotRepo struct{}
 
