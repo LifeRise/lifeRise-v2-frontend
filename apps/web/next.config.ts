@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', 'recharts', 'framer-motion'],
   },
+  // Pin Turbopack's workspace root to apps/web/ to silence the "multiple
+  // lockfiles" warning that fires because the monorepo root also has a
+  // package-lock.json.
+  turbopack: {
+    root: __dirname,
+  },
 };
 
 export default nextConfig;

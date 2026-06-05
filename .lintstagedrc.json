@@ -1,4 +1,0 @@
-{
-  "apps/web/**/*.{ts,tsx,js,jsx}": ["npx prettier --write", "npm run lint:web"],
-  "apps/api/**/*.go": "npm run lint:api"
-}
