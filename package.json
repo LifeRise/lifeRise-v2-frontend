@@ -3,11 +3,22 @@
   "version": "1.0.0",
   "private": true,
   "description": "LifeRise Enterprise monorepo — root orchestration and pre-commit enforcement",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
   "scripts": {
-    "prepare": "husky"
+    "prepare": "husky",
+    "lint:web": "bash -c \"cd apps/web && npm run lint\" ",
+    "lint:api": "bash -c \"cd apps/api && make fmt-check && make lint\" ",
+    "build:web": "bash -c \"cd apps/web && npm run build\" ",
+    "build:api": "bash -c \"cd apps/api && make build\" "
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.0.2",
+    "@commitlint/config-conventional": "^21.0.2",
     "husky": "^9.1.7",
-    "lint-staged": "^15.5.2"
+    "lint-staged": "^15.5.2",
+    "prettier": "^3.8.3"
   }
 }
