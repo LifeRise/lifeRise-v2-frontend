@@ -19,6 +19,7 @@ type Feedback struct {
 	Rating            *decimal.Decimal `gorm:"column:rating;type:decimal(3,2)"`
 	Review            *string          `gorm:"column:review;type:text"`
 	Images            datatypes.JSON   `gorm:"column:images;type:jsonb"`
+	FlaggedAt         *time.Time       `gorm:"column:flagged_at"`
 	CreatedAt         time.Time        `gorm:"column:created_at;autoCreateTime"`
 	UpdatedAt         time.Time        `gorm:"column:updated_at;autoUpdateTime"`
 }
