@@ -42,3 +42,8 @@ export const kpiColorClasses: Record<string, { text: string; bg: string }> = {
 export function cssVarColor(name: string): string {
   return `var(--color-${name})`;
 }
+
+/** Clamp a number between min and max (inclusive) */
+export function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
