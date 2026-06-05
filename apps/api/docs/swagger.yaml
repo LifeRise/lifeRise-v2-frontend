@@ -25,6 +25,8 @@ tags:
     description: Customer favorites
   - name: Notifications
     description: Push and email notifications
+  - name: Admin
+    description: Admin dashboard and operations
 
 paths:
   /health:
@@ -622,6 +624,40 @@ paths:
         '202':
           description: Confirmation notifications sent
 
+  /admin/dashboard/overview:
+    get:
+      tags: [Admin]
+      summary: Admin dashboard overview
+      description: |
+        Returns every KPI and ranked list required to render the admin dashboard.
+        Global roles (admin, sales, pmo) may optionally filter by `?company_id`.
+        Complex managers are automatically scoped to their assigned company.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: company_id
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Optional company scope for global roles.
+      responses:
+        '200':
+          description: Dashboard overview
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/DashboardOverview'
+        '403':
+          description: Forbidden — complex_manager without company assignment.
+
 components:
   securitySchemes:
     BearerAuth:
@@ -788,6 +824,162 @@ components:
               type: integer
             total:
               type: integer
+
+    DashboardOverview:
+      type: object
+      properties:
+        kpis:
+          $ref: '#/components/schemas/KPISet'
+        vendor_booking_stats:
+          $ref: '#/components/schemas/VendorBookingStatusBreakdown'
+        event_booking_stats:
+          $ref: '#/components/schemas/EventBookingStatusBreakdown'
+        popular_services:
+          type: array
+          items:
+            $ref: '#/components/schemas/PopularService'
+        most_booked_vendors:
+          type: array
+          items:
+            $ref: '#/components/schemas/MostBookedVendor'
+        upcoming_events:
+          type: array
+          items:
+            $ref: '#/components/schemas/UpcomingEvent'
+        top_locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/TopLocation'
+        generated_at:
+          type: string
+          format: date-time
+
+    KPISet:
+      type: object
+      properties:
+        total_complex_managers:
+          type: integer
+          example: 5
+        active_customers:
+          type: integer
+          example: 15
+        total_service_providers:
+          type: integer
+          example: 13
+        total_bookings:
+          type: integer
+          example: 30
+        total_complex_companies:
+          type: integer
+          example: 2
+        total_vendor_companies:
+          type: integer
+          example: 4
+
+    VendorBookingStatusBreakdown:
+      type: object
+      properties:
+        pending:
+          type: integer
+          example: 3
+        accepted:
+          type: integer
+          example: 5
+        active:
+          type: integer
+          example: 2
+        completed:
+          type: integer
+          example: 15
+        cancelled:
+          type: integer
+          example: 3
+        rejected:
+          type: integer
+          example: 2
+
+    EventBookingStatusBreakdown:
+      type: object
+      properties:
+        pending:
+          type: integer
+          example: 2
+        accepted:
+          type: integer
+          example: 4
+        active:
+          type: integer
+          example: 1
+        cancelled:
+          type: integer
+          example: 3
+        rejected:
+          type: integer
+          example: 2
+
+    PopularService:
+      type: object
+      properties:
+        service_id:
+          type: integer
+          example: 1
+        service_name:
+          type: string
+          example: Deep Tissue Massage
+        booking_count:
+          type: integer
+          example: 12
+
+    MostBookedVendor:
+      type: object
+      properties:
+        vendor_id:
+          type: integer
+          example: 10
+        vendor_name:
+          type: string
+          example: Alice S.
+        company_id:
+          type: integer
+          nullable: true
+          example: 100
+        company_name:
+          type: string
+          nullable: true
+          example: Vendor A
+        booking_count:
+          type: integer
+          example: 15
+
+    UpcomingEvent:
+      type: object
+      properties:
+        event_id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: Yoga Morning
+        start_at:
+          type: string
+          format: date-time
+        location:
+          type: string
+          nullable: true
+          example: Pool Deck
+        responses:
+          type: integer
+          example: 12
+
+    TopLocation:
+      type: object
+      properties:
+        label:
+          type: string
+          example: Jersey City, NJ
+        booking_count:
+          type: integer
+          example: 18
 
     CreateBookingRequest:
       type: object

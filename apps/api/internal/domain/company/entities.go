@@ -7,6 +7,24 @@ import (
 	"gorm.io/gorm"
 )
 
+// CompanyType discriminates company records.
+type CompanyType string
+
+const (
+	CompanyTypeComplex   CompanyType = "complex"
+	CompanyTypeVendor    CompanyType = "vendor"
+	CompanyTypeAffiliate CompanyType = "affiliate"
+)
+
+// Valid returns true for known company types.
+func (t CompanyType) Valid() bool {
+	switch t {
+	case CompanyTypeComplex, CompanyTypeVendor, CompanyTypeAffiliate:
+		return true
+	}
+	return false
+}
+
 // Company represents a business entity (complex, vendor organization, etc.).
 type Company struct {
 	ID          uint64         `gorm:"column:id;primaryKey"`
@@ -20,6 +38,7 @@ type Company struct {
 	Description *string        `gorm:"column:description;type:text"`
 	Address     datatypes.JSON `gorm:"column:address;type:jsonb"`
 	Status      string         `gorm:"column:status;size:50;default:'active'"` // "active", "pending", "suspended", "inactive"
+	Type        CompanyType    `gorm:"column:type;size:50;default:'complex'"`
 	Settings    datatypes.JSON `gorm:"column:settings;type:jsonb"`
 	Timezone    string         `gorm:"column:timezone;size:100;default:'UTC'"`
 	Currency    string         `gorm:"column:currency;size:3;default:'USD'"`

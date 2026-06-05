@@ -16,6 +16,7 @@ import (
 	"github.com/liferise/backend/internal/adapters/http/middleware"
 	stripeAdapter "github.com/liferise/backend/internal/adapters/stripe"
 	appbooking "github.com/liferise/backend/internal/application/booking"
+	appdashboard "github.com/liferise/backend/internal/application/dashboard"
 	apppayment "github.com/liferise/backend/internal/application/payment"
 	appservice "github.com/liferise/backend/internal/application/service"
 	appuser "github.com/liferise/backend/internal/application/user"
@@ -74,10 +75,14 @@ func main() {
 	slotRepo := persistence.NewSlotRepo()
 	bookingUC := appbooking.NewUseCase(db, bookingRepo, slotRepo, serviceRepo)
 
+	dashboardRepo := persistence.NewDashboardRepo()
+	dashboardUC := appdashboard.NewOverviewUseCase(db, dashboardRepo)
+
 	authHandler := handlers.NewAuthHandler(authUC, cfg.App.URL)
 	bookingHandler := handlers.NewBookingHandler(bookingUC)
 	paymentHandler := handlers.NewPaymentHandler(stripeUC, cfg.Stripe.WebhookSecret)
 	serviceHandler := handlers.NewServiceHandler(serviceUC)
+	adminDashHandler := handlers.NewAdminDashboardHandler(dashboardUC)
 
 	r := gin.New()
 	r.Use(middleware.Recovery(logger))
@@ -106,6 +111,7 @@ func main() {
 			string(auth.RoleSuperAdmin),
 			string(auth.RoleSales),
 			string(auth.RolePMO),
+			string(auth.RoleComplexManager),
 		))
 		{
 			authRequired.GET("/profile", authHandler.Profile)
@@ -122,6 +128,8 @@ func main() {
 
 			authRequired.GET("/payments/:id", paymentHandler.GetPayment)
 			authRequired.POST("/payments/:id/refund", paymentHandler.Refund)
+
+			authRequired.GET("/admin/dashboard/overview", adminDashHandler.Overview)
 		}
 	}
 
