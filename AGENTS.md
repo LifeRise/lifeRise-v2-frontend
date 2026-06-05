@@ -182,12 +182,36 @@ app/
     profile/page.tsx
   manager/
     layout.tsx
-    page.tsx                  # Manager dashboard
+    page.tsx                  # Manager dashboard (KPIs, booking stats, lists)
     analytics/page.tsx
     residents/page.tsx
     vendors/page.tsx
     announcements/page.tsx
     settings/page.tsx
+    calendar/page.tsx
+    roles/page.tsx
+    users/page.tsx
+    companies/page.tsx
+    companies/vendor/page.tsx
+    companies/affiliate/page.tsx
+    complex-managers/page.tsx
+    service-providers/page.tsx
+    customers/page.tsx
+    locations/regions/page.tsx
+    locations/cities/page.tsx
+    locations/neighborhoods/page.tsx
+    banners/page.tsx
+    events/page.tsx
+    events/responses/page.tsx
+    events/bookings/page.tsx
+    waitlists/page.tsx
+    bookings/page.tsx
+    bookings/refunded/page.tsx
+    feedbacks/page.tsx
+    services/page.tsx
+    services/categories/page.tsx
+    faqs/page.tsx
+    support/page.tsx
     error.tsx
     loading.tsx
     [...slug]/page.tsx        # 404 catch-all
@@ -213,6 +237,7 @@ components/
     VendorModal.tsx           # Vendor-specific modal flows
     ManagerModal.tsx          # Manager-specific modal flows
   manager/
+    DonutStat.tsx             # Recharts PieChart donut gauge
     EngagementChart.tsx
     PropertyMap.tsx
   pwa/
@@ -230,9 +255,10 @@ lib/
     bookings.ts               # Bookings CRUD endpoints
     services.ts               # Services CRUD endpoints + availability slots
     favorites.ts              # Favorites list / toggle / delete endpoints
-    hooks.ts                  # React hooks wrapping API calls (useServices, useBookings, useFavorites)
+    hooks.ts                  # React hooks wrapping API calls (useServices, useBookings, useFavorites, useDashboardOverview)
     adapters.ts               # Transforms backend shapes → frontend UI types
-    types.ts                  # Backend response types (BackendProfile, TokenPair, ApiError, etc.)
+    types.ts                  # Backend response types (BackendProfile, TokenPair, ApiError, DashboardOverview, etc.)
+    admin.ts                  # Admin dashboard API client
     jwt.ts                    # Client-side JWT payload decoder + expiry checker
   supabase/
     client.ts                 # Browser Supabase client (real or mock)
