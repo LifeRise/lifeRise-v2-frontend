@@ -1,6 +1,6 @@
 # LifeRise — Production Deployment Guide
 
-> **Last Updated:** 2026-06-01
+> **Last Updated:** 2026-06-05
 
 This document explains how to wire the **Vercel frontend** and **Railway backend** so they communicate correctly.
 
@@ -22,7 +22,17 @@ All three HTTP services are independent. You can deploy them as **separate Railw
 
 ## 1. Backend (Railway)
 
-### 1.1 Create Services
+### 1.1 Monorepo Root Directory
+
+Because the Go backend lives in `apps/api/` (not at the repo root), every Railway service must be told where to look:
+
+1. Open the service in Railway → **Settings → Source**.
+2. Set **Root Directory** to `apps/api`.
+3. Set **Dockerfile Path** to the appropriate file (e.g. `Dockerfile.api`).
+
+> **Why this matters:** If Root Directory is left blank, Railway tries to build from the repo root where there is no `go.mod`, and the build will fail immediately.
+
+### 1.2 Create Services
 
 Create one Railway service for each binary you want to run:
 
@@ -49,11 +59,12 @@ If you are using **Railway's Nixpacks** (auto-detect) instead of Docker, set the
 ./worker
 ```
 
-### 1.2 Required Environment Variables
+### 1.3 Required Environment Variables
 
 Set these in each Railway service dashboard (**Variables** tab).
 
 #### All HTTP Services (api, vendor-api, admin-api)
+
 
 | Variable | Example Value | Description |
 |----------|---------------|-------------|
@@ -81,7 +92,7 @@ Set these in each Railway service dashboard (**Variables** tab).
 
 > **Note on `PORT`:** Railway automatically injects a `PORT` environment variable. The backend now respects this variable (see `config.go`), so **do not** manually set `LIFERISE_SERVER_PORT` unless you need to override the platform port.
 
-### 1.3 CORS Checklist
+### 1.4 CORS Checklist
 
 The frontend makes cross-origin `fetch` requests with:
 - `Authorization: Bearer <token>` header
@@ -104,7 +115,28 @@ LIFERISE_CORS_ALLOW_ORIGINS=https://*.vercel.app,https://app.liferise.com
 
 ## 2. Frontend (Vercel)
 
-### 2.1 Environment Variables
+### 2.1 Monorepo Root Directory
+
+Because the Next.js app lives in `apps/web/` (not at the repo root), Vercel must be told where to find it. This is a **project-level setting** — it cannot be set inside `vercel.json`.
+
+**One-time setup (already done for this project):**
+1. Go to **Vercel Dashboard → Project → Settings → General → Root Directory**.
+2. Set it to `apps/web`.
+3. Save. The next deployment will build from `apps/web/`.
+
+Alternatively, update it via the Vercel API:
+```bash
+# Uses the CLI token — token value is never printed
+$auth = Get-Content "$env:APPDATA\com.vercel.cli\Data\auth.json" | ConvertFrom-Json
+Invoke-RestMethod -Method Patch `
+  -Uri "https://api.vercel.com/v9/projects/<projectId>?teamId=<teamId>" `
+  -Headers @{Authorization="Bearer $($auth.token)"; "Content-Type"="application/json"} `
+  -Body '{"rootDirectory":"apps/web"}'
+```
+
+> **Why this matters:** If Root Directory is left blank, Vercel builds from the repo root where there is no `package.json`, and the deployment errors immediately with no useful build logs.
+
+### 2.2 Environment Variables
 
 Go to **Vercel Dashboard → Project Settings → Environment Variables** and add:
 
@@ -116,7 +148,7 @@ Go to **Vercel Dashboard → Project Settings → Environment Variables** and ad
 
 > **Important:** Variables prefixed with `NEXT_PUBLIC_` are baked into the JavaScript bundle at **build time**. If you change them, you must trigger a new Vercel deployment.
 
-### 2.2 Local Development
+### 2.3 Local Development
 
 For local development, keep `.env.local` pointing to localhost:
 
@@ -183,18 +215,20 @@ curl -i -X OPTIONS \
 
 The following changes were made to support Railway / Vercel out of the box:
 
-1. **`lifeRise-go-backend/internal/infrastructure/config/config.go`**
+1. **`apps/api/internal/infrastructure/config/config.go`**
    - Reads `PORT` env var (injected by Railway) and overrides `cfg.Server.Port`.
    - Parses comma-separated `LIFERISE_CORS_ALLOW_ORIGINS` into a string slice.
 
-2. **`lifeRise-go-backend/cmd/vendor-api/main.go`**
+2. **`apps/api/cmd/vendor-api/main.go`**
    - Only overrides port to `8081` when `PORT` is **not** set by the platform.
 
-3. **`lifeRise-go-backend/cmd/admin-api/main.go`**
+3. **`apps/api/cmd/admin-api/main.go`**
    - Only overrides port to `8082` when `PORT` is **not** set by the platform.
 
-4. **`lifeRise-go-backend/Dockerfile.vendor`** — New
-5. **`lifeRise-go-backend/Dockerfile.admin`** — New
-6. **`lifeRise-go-backend/Dockerfile.worker`** — New
-7. **`lifeRise-go-backend/Makefile`** — Updated `docker-build` target to build all images.
-8. **`lifeRise-v2-frontend/.env.local`** — Updated with production template and documentation.
+4. **`apps/api/Dockerfile.vendor`** — New
+5. **`apps/api/Dockerfile.admin`** — New
+6. **`apps/api/Dockerfile.worker`** — New
+7. **`apps/api/railway.toml`** — New: declares Dockerfile path and restart policy for Railway.
+8. **`apps/web/Dockerfile`** — New: Next.js standalone production container.
+9. **`apps/web/.env.local.example`** — Template with all supported env vars documented.
+10. **`vercel.json`** (repo root) — Declares framework, build, install, and dev commands for Vercel. Root Directory is set via the Vercel project API, not this file.
