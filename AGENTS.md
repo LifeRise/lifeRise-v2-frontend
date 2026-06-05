@@ -609,6 +609,24 @@ git commit -m "fix: update cors allow-list for production"
 
 Use concise, descriptive messages in the imperative mood (e.g., `fix:`, `feat:`, `docs:`, `refactor:`).
 
+### Shell Command Separators (Mandatory)
+
+> **All command chaining MUST use the semicolon (`;`) separator. The logical AND operator (`&&`) is strictly forbidden.**
+
+This is a **mandatory, non-negotiable** requirement to ensure cross-version compatibility between the agent's internal terminal (PowerShell 5.1), PowerShell 7, and Bash. PowerShell 5.1 does not natively support `&&` for command chaining, and using it will cause silent or explicit failures. The semicolon (`;`) is universally supported across all shells and guarantees deterministic sequential execution.
+
+**Correct:**
+```bash
+git add .; git commit -m 'fix: update cors allow-list for production'
+```
+
+**Incorrect:**
+```bash
+git add . && git commit -m 'fix: update cors allow-list for production'
+```
+
+**Agents must scan every multi-command shell invocation before execution and replace `&&` with `;`.** No exceptions.
+
 ### Pre-Commit Enforcement
 
 The repository uses **Husky v9** + **lint-staged** to enforce the Boy Scout Rule automatically on every commit. The hook is configured at the monorepo root and runs the appropriate checks based on staged files:
