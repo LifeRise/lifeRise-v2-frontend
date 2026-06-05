@@ -1,7 +1,67 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { createAdminClient, type ListParams, type Paginated } from './_factory';
+import { fetchDashboardOverview } from '../admin';
+import type { DashboardOverview } from '../types';
+
+const DASHBOARD_POLL_MS = 30_000;
+
+/**
+ * Fetches the admin dashboard overview and auto-refreshes every 30 seconds.
+ * Manual refresh is also exposed via `refresh()`.
+ */
+export function useDashboardOverview(companyId?: number) {
+  const [data, setData] = useState<DashboardOverview | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const abortRef = useRef<AbortController | null>(null);
+
+  const refresh = useCallback(() => setRefreshKey((k) => k + 1), []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      // Cancel any in-flight request from a previous render.
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      setIsLoading(true);
+      setError(null);
+      try {
+        const overview = await fetchDashboardOverview({
+          companyId,
+          signal: controller.signal,
+        });
+        if (!cancelled) {
+          setData(overview);
+        }
+      } catch (err: unknown) {
+        if (!cancelled && err instanceof Error && err.name !== 'AbortError') {
+          setError(err.message || 'Failed to load dashboard');
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    }
+
+    load();
+
+    // Auto-refresh every 30 s (replaces SSE for this phase).
+    const timer = setInterval(load, DASHBOARD_POLL_MS);
+
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+      abortRef.current?.abort();
+    };
+  }, [companyId, refreshKey]);
+
+  return { data, isLoading, error, refresh };
+}
 
 export function useAdminList<T>(resource: string, params: ListParams) {
   const [data, setData] = useState<T[] | null>(null);
