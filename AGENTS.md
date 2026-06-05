@@ -647,6 +647,8 @@ To improve maintainability, monorepo-wide commands are exposed from the root `pa
 | `npm run build:web` | Next.js production build |
 | `npm run build:api` | Go binary build |
 
+> **Windows note:** `lint:web` and `build:web` work from any shell (PowerShell, cmd, Git Bash). `lint:api` and `build:api` require **Git Bash** on Windows because the backend `Makefile` recipes use POSIX shell syntax (`$$()`, `[ -n ]`, `mkdir -p`). The pre-commit hook handles this automatically — Git runs hooks through its bundled `sh.exe`.
+
 ### Node Version Enforcement
 
 The root `package.json` specifies `"engines": { "node": ">=20.0.0", "npm": ">=10.0.0" }`, and `.nvmrc` pins `v20`. Ensure your local environment meets these requirements before running root-level scripts.
@@ -666,5 +668,5 @@ The root `package.json` specifies `"engines": { "node": ">=20.0.0", "npm": ">=10
 9. **The mock auth stores data in localStorage.** Clearing browser data will reset demo accounts.
 10. **`globalInitStarted` flag** in `lib/auth/hooks.ts` prevents double-init. It is reset on sign-out. Do not call `init()` directly.
 11. **`.env.local` must be in `apps/web/`**, not the repo root. Next.js only reads env files from its own directory.
-12. **Root `npm install` is required.** The repo now has a root `package.json` for monorepo-level tooling (Husky, lint-staged, commitlint, Prettier). Run `npm install` at the root first, then `cd apps/web && npm install` for frontend dependencies.
+12. **Root `npm install` is required.** The repo now has a root `package.json` for monorepo-level tooling (Husky, lint-staged, commitlint, Prettier). Run `npm install` at the root first, then `cd apps/web && npm install` for frontend dependencies, and `cd apps/api && make deps` (or `go mod download`) for backend Go modules.
 13. **`rootDirectory` for Vercel is a project-level setting**, not a `vercel.json` field. It is already set to `apps/web` via the Vercel API.
