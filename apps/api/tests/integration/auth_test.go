@@ -200,6 +200,40 @@ func (r *fakeUserRepo) DeletePasswordResetsByEmail(_ context.Context, _ *gorm.DB
 	return nil
 }
 
+func (r *fakeUserRepo) List(_ context.Context, _ *gorm.DB, _ string, _ string, _ string, _, _ int) ([]user.User, int64, error) {
+	return nil, 0, nil
+}
+
+func (r *fakeUserRepo) ListRoleAssignmentsByUserID(_ context.Context, _ *gorm.DB, userID uint64) ([]user.UserRoleAssignment, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	return r.assignments[userID], nil
+}
+
+func (r *fakeUserRepo) ListRoles(_ context.Context, _ *gorm.DB, _ string, _, _ int) ([]user.Role, int64, error) {
+	return nil, 0, nil
+}
+
+func (r *fakeUserRepo) GetRoleByID(_ context.Context, _ *gorm.DB, _ uint64) (*user.Role, error) {
+	return nil, assert.AnError
+}
+
+func (r *fakeUserRepo) UpdateRole(_ context.Context, _ *gorm.DB, _ *user.Role) error {
+	return nil
+}
+
+func (r *fakeUserRepo) DeleteRole(_ context.Context, _ *gorm.DB, _ uint64) error {
+	return nil
+}
+
+func (r *fakeUserRepo) SetRolePermissions(_ context.Context, _ *gorm.DB, _ uint64, _ []uint64) error {
+	return nil
+}
+
+func (r *fakeUserRepo) ListPermissions(_ context.Context, _ *gorm.DB) ([]user.Permission, error) {
+	return nil, nil
+}
+
 func setupAuthUC(t *testing.T) (*appuser.AuthUseCase, *fakeCustomerRepo, *fakeUserRepo) {
 	jwtService := auth.NewService(auth.Config{
 		Secret:       "test-secret-that-is-32-bytes-long!!",

@@ -110,3 +110,108 @@ func (r *UserRepo) GetPasswordResetByToken(ctx context.Context, db *gorm.DB, tok
 func (r *UserRepo) DeletePasswordResetsByEmail(ctx context.Context, db *gorm.DB, email string) error {
 	return db.WithContext(ctx).Where("email = ?", email).Delete(&user.PasswordReset{}).Error
 }
+
+// List retrieves users with filters and pagination.
+func (r *UserRepo) List(ctx context.Context, db *gorm.DB, role string, status string, search string, page, perPage int) ([]user.User, int64, error) {
+	var users []user.User
+	var total int64
+
+	query := db.WithContext(ctx).Model(&user.User{}).Where("users.deleted_at IS NULL")
+	if role != "" {
+		query = query.Joins("JOIN user_role_assignments ON user_role_assignments.user_id = users.id").
+			Joins("JOIN roles ON roles.id = user_role_assignments.role_id").
+			Where("roles.slug = ?", role)
+	}
+	if status != "" {
+		query = query.Where("users.status = ?", status)
+	}
+	if search != "" {
+		query = query.Where("users.first_name ILIKE ? OR users.last_name ILIKE ? OR users.email ILIKE ?", "%"+search+"%", "%"+search+"%", "%"+search+"%")
+	}
+
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	offset := (page - 1) * perPage
+	if err := query.Order("users.created_at DESC").Limit(perPage).Offset(offset).Find(&users).Error; err != nil {
+		return nil, 0, err
+	}
+	return users, total, nil
+}
+
+// ListRoleAssignmentsByUserID returns role assignments for a user.
+func (r *UserRepo) ListRoleAssignmentsByUserID(ctx context.Context, db *gorm.DB, userID uint64) ([]user.UserRoleAssignment, error) {
+	var assignments []user.UserRoleAssignment
+	if err := db.WithContext(ctx).Where("user_id = ?", userID).Preload("Role").Find(&assignments).Error; err != nil {
+		return nil, err
+	}
+	return assignments, nil
+}
+
+// ListRoles retrieves all roles.
+func (r *UserRepo) ListRoles(ctx context.Context, db *gorm.DB, search string, page, perPage int) ([]user.Role, int64, error) {
+	var roles []user.Role
+	var total int64
+
+	query := db.WithContext(ctx).Model(&user.Role{}).Where("deleted_at IS NULL")
+	if search != "" {
+		query = query.Where("name ILIKE ? OR slug ILIKE ?", "%"+search+"%", "%"+search+"%")
+	}
+
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	offset := (page - 1) * perPage
+	if err := query.Order("level DESC, name ASC").Limit(perPage).Offset(offset).Find(&roles).Error; err != nil {
+		return nil, 0, err
+	}
+	return roles, total, nil
+}
+
+// GetRoleByID retrieves a role by ID.
+func (r *UserRepo) GetRoleByID(ctx context.Context, db *gorm.DB, id uint64) (*user.Role, error) {
+	var role user.Role
+	if err := db.WithContext(ctx).Preload("Permissions").First(&role, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperrors.ErrNotFound
+		}
+		return nil, err
+	}
+	return &role, nil
+}
+
+// UpdateRole persists changes to a role.
+func (r *UserRepo) UpdateRole(ctx context.Context, db *gorm.DB, role *user.Role) error {
+	return db.WithContext(ctx).Save(role).Error
+}
+
+// DeleteRole soft-deletes a role.
+func (r *UserRepo) DeleteRole(ctx context.Context, db *gorm.DB, id uint64) error {
+	return db.WithContext(ctx).Delete(&user.Role{}, id).Error
+}
+
+// SetRolePermissions replaces a role's permissions.
+func (r *UserRepo) SetRolePermissions(ctx context.Context, db *gorm.DB, roleID uint64, permissionIDs []uint64) error {
+	return db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("role_id = ?", roleID).Delete(&user.RolePermission{}).Error; err != nil {
+			return err
+		}
+		for _, pid := range permissionIDs {
+			if err := tx.Create(&user.RolePermission{RoleID: roleID, PermissionID: pid}).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
+// ListPermissions retrieves all permissions.
+func (r *UserRepo) ListPermissions(ctx context.Context, db *gorm.DB) ([]user.Permission, error) {
+	var permissions []user.Permission
+	if err := db.WithContext(ctx).Where("deleted_at IS NULL").Order("module ASC, name ASC").Find(&permissions).Error; err != nil {
+		return nil, err
+	}
+	return permissions, nil
+}

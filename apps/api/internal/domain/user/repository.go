@@ -27,4 +27,14 @@ type Repository interface {
 	CreatePasswordReset(ctx context.Context, db *gorm.DB, pr *PasswordReset) error
 	GetPasswordResetByToken(ctx context.Context, db *gorm.DB, token string) (*PasswordReset, error)
 	DeletePasswordResetsByEmail(ctx context.Context, db *gorm.DB, email string) error
+
+	// Admin CRUD extensions
+	List(ctx context.Context, db *gorm.DB, role string, status string, search string, page, perPage int) ([]User, int64, error)
+	ListRoleAssignmentsByUserID(ctx context.Context, db *gorm.DB, userID uint64) ([]UserRoleAssignment, error)
+	ListRoles(ctx context.Context, db *gorm.DB, search string, page, perPage int) ([]Role, int64, error)
+	GetRoleByID(ctx context.Context, db *gorm.DB, id uint64) (*Role, error)
+	UpdateRole(ctx context.Context, db *gorm.DB, role *Role) error
+	DeleteRole(ctx context.Context, db *gorm.DB, id uint64) error
+	SetRolePermissions(ctx context.Context, db *gorm.DB, roleID uint64, permissionIDs []uint64) error
+	ListPermissions(ctx context.Context, db *gorm.DB) ([]Permission, error)
 }

@@ -15,6 +15,7 @@ import (
 	handlers "github.com/liferise/backend/internal/adapters/http/handlers"
 	"github.com/liferise/backend/internal/adapters/http/middleware"
 	stripeAdapter "github.com/liferise/backend/internal/adapters/stripe"
+	appaudit "github.com/liferise/backend/internal/application/audit"
 	appbooking "github.com/liferise/backend/internal/application/booking"
 	appdashboard "github.com/liferise/backend/internal/application/dashboard"
 	apppayment "github.com/liferise/backend/internal/application/payment"
@@ -78,11 +79,18 @@ func main() {
 	dashboardRepo := persistence.NewDashboardRepo()
 	dashboardUC := appdashboard.NewOverviewUseCase(db, dashboardRepo)
 
+	auditRepo := persistence.NewAuditRepo()
+	auditLogger := appaudit.NewLogger(db, auditRepo)
+	companyRepo := persistence.NewCompanyRepo()
+
 	authHandler := handlers.NewAuthHandler(authUC, cfg.App.URL)
 	bookingHandler := handlers.NewBookingHandler(bookingUC)
 	paymentHandler := handlers.NewPaymentHandler(stripeUC, cfg.Stripe.WebhookSecret)
 	serviceHandler := handlers.NewServiceHandler(serviceUC)
 	adminDashHandler := handlers.NewAdminDashboardHandler(dashboardUC)
+	adminUserHandler := handlers.NewAdminUserHandler(db, userRepo, auditLogger, jwtService)
+	adminCompanyHandler := handlers.NewAdminCompanyHandler(db, companyRepo, auditLogger)
+	adminRoleHandler := handlers.NewAdminRoleHandler(db, userRepo, auditLogger)
 
 	r := gin.New()
 	r.Use(middleware.Recovery(logger))
@@ -130,6 +138,30 @@ func main() {
 			authRequired.POST("/payments/:id/refund", paymentHandler.Refund)
 
 			authRequired.GET("/admin/dashboard/overview", adminDashHandler.Overview)
+
+			// Admin CRUD routes
+			authRequired.GET("/admin/users", adminUserHandler.List)
+			authRequired.GET("/admin/users/:id", adminUserHandler.Get)
+			authRequired.POST("/admin/users", adminUserHandler.Create)
+			authRequired.PATCH("/admin/users/:id", adminUserHandler.Update)
+			authRequired.DELETE("/admin/users/:id", adminUserHandler.Delete)
+			authRequired.POST("/admin/users/:id/reset-password", adminUserHandler.ResetPassword)
+			authRequired.POST("/admin/users/:id/impersonate", adminUserHandler.Impersonate)
+
+			authRequired.GET("/admin/companies", adminCompanyHandler.List)
+			authRequired.GET("/admin/companies/:id", adminCompanyHandler.Get)
+			authRequired.POST("/admin/companies", adminCompanyHandler.Create)
+			authRequired.PATCH("/admin/companies/:id", adminCompanyHandler.Update)
+			authRequired.DELETE("/admin/companies/:id", adminCompanyHandler.Delete)
+			authRequired.POST("/admin/companies/:id/verify", adminCompanyHandler.Verify)
+
+			authRequired.GET("/admin/roles", adminRoleHandler.List)
+			authRequired.GET("/admin/roles/:id", adminRoleHandler.Get)
+			authRequired.POST("/admin/roles", adminRoleHandler.Create)
+			authRequired.PATCH("/admin/roles/:id", adminRoleHandler.Update)
+			authRequired.DELETE("/admin/roles/:id", adminRoleHandler.Delete)
+			authRequired.GET("/admin/roles/:id/permissions", adminRoleHandler.GetPermissions)
+			authRequired.PUT("/admin/roles/:id/permissions", adminRoleHandler.UpdatePermissions)
 		}
 	}
 
