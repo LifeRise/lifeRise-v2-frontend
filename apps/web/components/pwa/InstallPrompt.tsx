@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
-import { X, Download, Smartphone } from "lucide-react";
-import { usePWA } from "./PWAProvider";
+import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
+import { X, Download, Smartphone } from 'lucide-react';
+import { usePWA } from './PWAProvider';
 
 export function InstallPrompt() {
   const { canShowInstall, triggerInstall, dismissInstall } = usePWA();
@@ -27,7 +27,7 @@ export function InstallPrompt() {
             initial={{ opacity: 0, y: 120, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 120, scale: 0.96 }}
-            transition={{ type: "spring", stiffness: 350, damping: 30 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 30 }}
             className="fixed bottom-0 left-0 right-0 sm:bottom-6 sm:left-auto sm:right-6 sm:w-95 z-70"
           >
             <div className="glass-dark rounded-t-3xl sm:rounded-3xl border border-white/8 shadow-2xl overflow-hidden">
@@ -40,7 +40,7 @@ export function InstallPrompt() {
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.15, type: "spring", stiffness: 400, damping: 25 }}
+                    transition={{ delay: 0.15, type: 'spring', stiffness: 400, damping: 25 }}
                     className="w-14 h-14 rounded-2xl bg-linear-to-br from-teal/20 to-gold/20 flex items-center justify-center shrink-0 border border-white/8"
                   >
                     <Image
@@ -56,7 +56,8 @@ export function InstallPrompt() {
                       Install LifeRise
                     </h3>
                     <p className="text-muted text-xs mt-1 leading-relaxed">
-                      Add to your home screen for instant access to your portal, offline support, and a native app experience.
+                      Add to your home screen for instant access to your portal, offline support,
+                      and a native app experience.
                     </p>
                   </div>
                   <button
@@ -71,7 +72,7 @@ export function InstallPrompt() {
 
                 {/* Feature pills */}
                 <div className="flex flex-wrap gap-2 mb-5">
-                  {["Offline Access", "Native Feel", "Instant Launch"].map((feat, i) => (
+                  {['Offline Access', 'Native Feel', 'Instant Launch'].map((feat, i) => (
                     <motion.span
                       key={feat}
                       initial={{ opacity: 0, x: -8 }}

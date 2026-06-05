@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import {
   isStandalone,
   canInstall,
   skipWaiting,
   wasInstallPromptDismissedRecently,
-} from "@/lib/pwa";
+} from '@/lib/pwa';
 
 interface PWAContextValue {
   /** The deferred beforeinstallprompt event, if captured */
@@ -29,7 +29,7 @@ const PWAContext = createContext<PWAContextValue | null>(null);
 
 export function usePWA() {
   const ctx = useContext(PWAContext);
-  if (!ctx) throw new Error("usePWA must be used within PWAProvider");
+  if (!ctx) throw new Error('usePWA must be used within PWAProvider');
   return ctx;
 }
 
@@ -42,10 +42,10 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
 
   /* ── Detect installed state ─────────────────────────────────── */
   useEffect(() => {
-    const mql = window.matchMedia("(display-mode: standalone)");
+    const mql = window.matchMedia('(display-mode: standalone)');
     const handler = (e: MediaQueryListEvent) => setIsInstalled(e.matches);
-    mql.addEventListener("change", handler);
-    return () => mql.removeEventListener("change", handler);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
   }, []);
 
   /* ── Capture beforeinstallprompt ────────────────────────────── */
@@ -62,23 +62,22 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
       setIsInstalled(true);
     };
 
-    window.addEventListener("beforeinstallprompt", onBeforeInstall);
-    window.addEventListener("appinstalled", onAppInstalled);
+    window.addEventListener('beforeinstallprompt', onBeforeInstall);
+    window.addEventListener('appinstalled', onAppInstalled);
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", onBeforeInstall);
-      window.removeEventListener("appinstalled", onAppInstalled);
+      window.removeEventListener('beforeinstallprompt', onBeforeInstall);
+      window.removeEventListener('appinstalled', onAppInstalled);
     };
   }, []);
 
   /* ── Service Worker registration & update detection ─────────── */
   useEffect(() => {
-    if (!("serviceWorker" in navigator)) return;
+    if (!('serviceWorker' in navigator)) return;
 
     // Skip service worker in development to avoid cache issues and slow loads
     const isDev =
-      window.location.hostname === "localhost" ||
-      window.location.hostname === "127.0.0.1";
+      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     if (isDev) return;
 
     let registration: ServiceWorkerRegistration | null = null;
@@ -104,12 +103,12 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Listen for new installations that go into waiting
-      reg.addEventListener("updatefound", () => {
+      reg.addEventListener('updatefound', () => {
         const newWorker = reg.installing;
         if (!newWorker) return;
 
-        newWorker.addEventListener("statechange", () => {
-          if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
             // New version waiting
             waitingWorkerRef.current = newWorker;
             setUpdateAvailable(true);
@@ -119,24 +118,24 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
     };
 
     navigator.serviceWorker
-      .register("/sw.js")
+      .register('/sw.js')
       .then((reg) => {
         registration = reg;
         listenForWaiting(reg);
 
         // Check for updates on load and when navigating
         checkForUpdates();
-        window.addEventListener("focus", checkForUpdates);
+        window.addEventListener('focus', checkForUpdates);
       })
       .catch(() => {
         // SW registration failed (e.g. in dev mode without HTTPS)
       });
 
-    navigator.serviceWorker.addEventListener("controllerchange", onControllerChange);
+    navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
 
     return () => {
-      navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange);
-      window.removeEventListener("focus", checkForUpdates);
+      navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
+      window.removeEventListener('focus', checkForUpdates);
     };
   }, []);
 
@@ -147,7 +146,7 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
     // @ts-expect-error BeforeInstallPromptEvent API not in TS lib
     const { outcome } = await deferredPrompt.prompt();
     setDeferredPrompt(null);
-    if (outcome === "accepted") {
+    if (outcome === 'accepted') {
       setIsInstalled(true);
     }
   }, [deferredPrompt]);
@@ -155,7 +154,7 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
   const dismissInstall = useCallback(() => {
     setDeferredPrompt(null);
     setDismissed(true);
-    import("@/lib/pwa").then(({ dismissInstallPrompt }) => dismissInstallPrompt());
+    import('@/lib/pwa').then(({ dismissInstallPrompt }) => dismissInstallPrompt());
   }, []);
 
   const acceptUpdate = useCallback(() => {
@@ -166,11 +165,7 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
     window.location.reload();
   }, []);
 
-  const canShowInstall =
-    Boolean(deferredPrompt) &&
-    !isInstalled &&
-    !dismissed &&
-    canInstall();
+  const canShowInstall = Boolean(deferredPrompt) && !isInstalled && !dismissed && canInstall();
 
   return (
     <PWAContext.Provider

@@ -1,30 +1,30 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import Image from "next/image";
-import Link from "next/link";
-import { Mail, ArrowRight, CheckCircle, ChevronLeft } from "lucide-react";
-import { authService } from "@/lib/auth/auth-service";
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Mail, ArrowRight, CheckCircle, ChevronLeft } from 'lucide-react';
+import { authService } from '@/lib/auth/auth-service';
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
 
     if (!email) {
-      setError("Please enter your email address");
+      setError('Please enter your email address');
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setError("Please enter a valid email address");
+      setError('Please enter a valid email address');
       return;
     }
 
@@ -34,7 +34,7 @@ export default function ForgotPasswordPage() {
       await authService.resetPassword(email);
       setSuccess(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to send reset email");
+      setError(err instanceof Error ? err.message : 'Failed to send reset email');
     } finally {
       setIsLoading(false);
     }
@@ -78,7 +78,8 @@ export default function ForgotPasswordPage() {
               <CheckCircle size={48} className="text-teal mx-auto" />
               <h3 className="text-lr-white font-semibold text-lg">Check your email</h3>
               <p className="text-muted text-sm">
-                We&apos;ve sent a password reset link to <span className="text-lr-white">{email}</span>
+                We&apos;ve sent a password reset link to{' '}
+                <span className="text-lr-white">{email}</span>
               </p>
               <Link
                 href="/login"

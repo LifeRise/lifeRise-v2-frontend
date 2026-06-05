@@ -1,38 +1,46 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Building2, Bell, CreditCard, AlertTriangle, RotateCcw, Check } from "lucide-react";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { staggerContainerResponsive, fadeUpItem } from "@/lib/animations";
-import { cn } from "@/lib/utils";
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Building2, Bell, CreditCard, AlertTriangle, RotateCcw, Check } from 'lucide-react';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { SectionHeader } from '@/components/ui/SectionHeader';
+import { staggerContainerResponsive, fadeUpItem } from '@/lib/animations';
+import { cn } from '@/lib/utils';
 
-function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label?: string }) {
+function Toggle({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  label?: string;
+}) {
   return (
     <button
       type="button"
-      aria-label={label ? `Toggle ${label}` : "Toggle"}
-      aria-pressed={checked ? "true" : "false"}
+      aria-label={label ? `Toggle ${label}` : 'Toggle'}
+      aria-pressed={checked ? 'true' : 'false'}
       onClick={() => onChange(!checked)}
       className={cn(
-        "relative h-6 w-11 rounded-full transition-colors",
-        checked ? "bg-purple-accent" : "bg-slate-light"
+        'relative h-6 w-11 rounded-full transition-colors',
+        checked ? 'bg-purple-accent' : 'bg-slate-light'
       )}
     >
       <motion.div
         className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow"
         animate={{ x: checked ? 20 : 0 }}
-        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
       />
     </button>
   );
 }
 
 export default function SettingsPage() {
-  const [complexName, setComplexName] = useState("Riverside Commons");
-  const [address, setAddress] = useState("123 Harbor Blvd, Jersey City, NJ 07302");
-  const [contact, setContact] = useState("Jennifer Torres · j.torres@propmgmt.com");
+  const [complexName, setComplexName] = useState('Riverside Commons');
+  const [address, setAddress] = useState('123 Harbor Blvd, Jersey City, NJ 07302');
+  const [contact, setContact] = useState('Jennifer Torres · j.torres@propmgmt.com');
   const [toggles, setToggles] = useState({
     emailDigests: true,
     vendorAlerts: true,
@@ -49,7 +57,13 @@ export default function SettingsPage() {
     <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-2xl mx-auto pb-24 lg:pb-8">
       <SectionHeader title="Settings" />
 
-      <motion.div variants={staggerContainerResponsive(0.06)} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} className="space-y-5">
+      <motion.div
+        variants={staggerContainerResponsive(0.06)}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, amount: 0.1 }}
+        className="space-y-5"
+      >
         {/* Complex Info */}
         <motion.div variants={fadeUpItem}>
           <GlassCard className="p-5 border-l-2 border-l-purple-accent">
@@ -76,7 +90,9 @@ export default function SettingsPage() {
                 />
               </div>
               <div>
-                <p className="text-[10px] text-muted uppercase tracking-wider mb-1">Manager Contact</p>
+                <p className="text-[10px] text-muted uppercase tracking-wider mb-1">
+                  Manager Contact
+                </p>
                 <input
                   aria-label="Manager contact"
                   value={contact}
@@ -97,19 +113,19 @@ export default function SettingsPage() {
             <div className="space-y-4">
               {[
                 {
-                  key: "emailDigests" as const,
-                  label: "Daily Email Digests",
-                  desc: "Receive a summary of daily activity",
+                  key: 'emailDigests' as const,
+                  label: 'Daily Email Digests',
+                  desc: 'Receive a summary of daily activity',
                 },
                 {
-                  key: "vendorAlerts" as const,
-                  label: "Vendor Alerts",
-                  desc: "Get notified about new vendor applications",
+                  key: 'vendorAlerts' as const,
+                  label: 'Vendor Alerts',
+                  desc: 'Get notified about new vendor applications',
                 },
                 {
-                  key: "residentComplaints" as const,
-                  label: "Resident Complaints",
-                  desc: "Immediate alert for urgent resident issues",
+                  key: 'residentComplaints' as const,
+                  label: 'Resident Complaints',
+                  desc: 'Immediate alert for urgent resident issues',
                 },
               ].map((rule) => (
                 <div key={rule.key} className="flex items-center justify-between">
@@ -137,7 +153,9 @@ export default function SettingsPage() {
             <div className="p-3 rounded-xl bg-midnight/40 border border-white/5 mb-3">
               <div className="flex items-center justify-between mb-1">
                 <p className="text-sm text-lr-white font-medium">LifeRise Manager Pro</p>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal/10 text-teal">Active</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal/10 text-teal">
+                  Active
+                </span>
               </div>
               <p className="text-muted text-xs">Next invoice: June 1, 2026</p>
             </div>
@@ -169,14 +187,14 @@ export default function SettingsPage() {
               onClick={handleReset}
               disabled={resetting}
               className={cn(
-                "w-full py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2",
+                'w-full py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2',
                 resetting
-                  ? "bg-teal/15 text-teal"
-                  : "bg-red-400/10 text-red-400 hover:bg-red-400/20 border border-red-400/20"
+                  ? 'bg-teal/15 text-teal'
+                  : 'bg-red-400/10 text-red-400 hover:bg-red-400/20 border border-red-400/20'
               )}
             >
               {resetting ? <Check size={14} /> : <RotateCcw size={14} />}
-              {resetting ? "Demo data reset!" : "Reset Demo Data"}
+              {resetting ? 'Demo data reset!' : 'Reset Demo Data'}
             </button>
             <p className="text-muted text-[10px] mt-2 text-center">
               This will restore all mock data to its original state.

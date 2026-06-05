@@ -1,14 +1,14 @@
-import type { Variants, Transition } from "framer-motion";
+import type { Variants, Transition } from 'framer-motion';
 
 // ─── Spring Presets ─────────────────────────────────────────────
 export const layoutSpring: Transition = {
-  type: "spring",
+  type: 'spring',
   stiffness: 300,
   damping: 30,
 };
 
 export const gentleSpring: Transition = {
-  type: "spring",
+  type: 'spring',
   stiffness: 200,
   damping: 25,
 };
@@ -29,7 +29,7 @@ export function staggerContainer(delay = 0.07): Variants {
 
 /** Responsive stagger: half delay on mobile to reduce concurrent layout cost */
 export function staggerContainerResponsive(baseDelay = 0.06): Variants {
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
   return staggerContainer(isMobile ? baseDelay / 2 : baseDelay);
 }
 
@@ -38,7 +38,7 @@ export const fadeUpItem: Variants = {
   show: {
     opacity: 1,
     y: 0,
-    transition: { type: "spring", stiffness: 350, damping: 28 },
+    transition: { type: 'spring', stiffness: 350, damping: 28 },
   },
 };
 
@@ -55,7 +55,7 @@ export const scaleInItem: Variants = {
   show: {
     opacity: 1,
     scale: 1,
-    transition: { type: "spring", stiffness: 350, damping: 28 },
+    transition: { type: 'spring', stiffness: 350, damping: 28 },
   },
 };
 
@@ -79,7 +79,7 @@ export const cardHover = {
   rest: { scale: 1 },
   hover: {
     scale: 1.015,
-    transition: { type: "spring", stiffness: 400, damping: 25 },
+    transition: { type: 'spring', stiffness: 400, damping: 25 },
   },
 };
 
@@ -95,7 +95,7 @@ export const modalContent: Variants = {
     opacity: 1,
     scale: 1,
     y: 0,
-    transition: { type: "spring", stiffness: 350, damping: 28 },
+    transition: { type: 'spring', stiffness: 350, damping: 28 },
   },
   exit: {
     opacity: 0,
@@ -119,7 +119,7 @@ export const listItem: Variants = {
   show: {
     opacity: 1,
     x: 0,
-    transition: { type: "spring", stiffness: 400, damping: 30 },
+    transition: { type: 'spring', stiffness: 400, damping: 30 },
   },
   exit: {
     opacity: 0,
@@ -135,7 +135,7 @@ export const tabUnderline: Variants = {
   active: {
     scaleX: 1,
     opacity: 1,
-    transition: { type: "spring", stiffness: 400, damping: 30 },
+    transition: { type: 'spring', stiffness: 400, damping: 30 },
   },
 };
 
@@ -144,7 +144,7 @@ export const slideInFromRight: Variants = {
   show: {
     opacity: 1,
     x: 0,
-    transition: { type: "spring", stiffness: 300, damping: 28 },
+    transition: { type: 'spring', stiffness: 300, damping: 28 },
   },
   exit: {
     opacity: 0,
@@ -158,7 +158,7 @@ export const slideInFromLeft: Variants = {
   show: {
     opacity: 1,
     x: 0,
-    transition: { type: "spring", stiffness: 300, damping: 28 },
+    transition: { type: 'spring', stiffness: 300, damping: 28 },
   },
   exit: {
     opacity: 0,

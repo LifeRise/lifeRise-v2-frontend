@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
-import { Lock, Eye, EyeOff, ArrowRight, CheckCircle } from "lucide-react";
-import { authService } from "@/lib/auth/auth-service";
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Lock, Eye, EyeOff, ArrowRight, CheckCircle } from 'lucide-react';
+import { authService } from '@/lib/auth/auth-service';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isVerifying, setIsVerifying] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
   // Verify we're in a valid password-reset context
@@ -25,13 +25,13 @@ export default function ResetPasswordPage() {
       try {
         const session = await authService.exchangeRecoverySession();
         if (!session) {
-          setError("Invalid or expired reset link. Please request a new one.");
+          setError('Invalid or expired reset link. Please request a new one.');
         }
       } catch (err: unknown) {
         setError(
           err instanceof Error
             ? err.message
-            : "Invalid or expired reset link. Please request a new one."
+            : 'Invalid or expired reset link. Please request a new one.'
         );
       } finally {
         setIsVerifying(false);
@@ -43,18 +43,18 @@ export default function ResetPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
 
     if (!password || !confirmPassword) {
-      setError("Please fill in both fields");
+      setError('Please fill in both fields');
       return;
     }
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError('Passwords do not match');
       return;
     }
     if (password.length < 8) {
-      setError("Password must be at least 8 characters");
+      setError('Password must be at least 8 characters');
       return;
     }
 
@@ -63,10 +63,10 @@ export default function ResetPasswordPage() {
       await authService.updatePassword(password);
       setSuccess(true);
       setTimeout(() => {
-        router.push("/login");
+        router.push('/login');
       }, 2000);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to update password");
+      setError(err instanceof Error ? err.message : 'Failed to update password');
     } finally {
       setIsLoading(false);
     }
@@ -129,7 +129,7 @@ export default function ResetPasswordPage() {
               <div className="relative">
                 <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
                 <input
-                  type={showPass ? "text" : "password"}
+                  type={showPass ? 'text' : 'password'}
                   placeholder="New password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -147,7 +147,7 @@ export default function ResetPasswordPage() {
               <div className="relative">
                 <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
                 <input
-                  type={showConfirmPass ? "text" : "password"}
+                  type={showConfirmPass ? 'text' : 'password'}
                   placeholder="Confirm new password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -180,7 +180,7 @@ export default function ResetPasswordPage() {
         </div>
 
         <p className="text-center text-muted text-xs">
-          Remember your password?{" "}
+          Remember your password?{' '}
           <Link href="/login" className="text-teal hover:opacity-80 transition-opacity font-medium">
             Sign in
           </Link>

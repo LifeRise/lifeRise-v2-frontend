@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 /**
  * Simple JWT payload decoder for client-side use.
@@ -7,7 +7,7 @@
 
 export interface JwtPayload {
   sub?: string | number; // UserID
-  type?: "customer" | "user";
+  type?: 'customer' | 'user';
   roles?: string[];
   exp?: number;
   iat?: number;
@@ -16,11 +16,11 @@ export interface JwtPayload {
 
 export function decodeJwtPayload(token: string): JwtPayload | null {
   try {
-    const parts = token.split(".");
+    const parts = token.split('.');
     if (parts.length !== 3) return null;
 
-    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
-    const json = atob(base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "="));
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const json = atob(base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '='));
     return JSON.parse(json) as JwtPayload;
   } catch {
     return null;

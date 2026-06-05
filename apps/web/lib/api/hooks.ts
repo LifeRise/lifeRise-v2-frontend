@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 /**
  * React hooks that wrap the API layer.
@@ -6,21 +6,24 @@
  * and gracefully fall back to mock data when the backend is unavailable.
  */
 
-import { useEffect, useState, useCallback } from "react";
-import { useAuth } from "@/lib/auth/hooks";
-import * as servicesApi from "./services";
-import * as bookingsApi from "./bookings";
-import * as favoritesApi from "./favorites";
-import type { Service } from "./services";
-import type { Booking } from "./bookings";
-import type { Favorite } from "./favorites";
-import { adaptServiceToVendor, adaptServiceToDetail, adaptBookingToResidentBooking } from "./adapters";
+import { useEffect, useState, useCallback } from 'react';
+import { useAuth } from '@/lib/auth/hooks';
+import * as servicesApi from './services';
+import * as bookingsApi from './bookings';
+import * as favoritesApi from './favorites';
+import type { Service } from './services';
+import type { Booking } from './bookings';
+import type { Favorite } from './favorites';
+import {
+  adaptServiceToVendor,
+  adaptServiceToDetail,
+  adaptBookingToResidentBooking,
+} from './adapters';
 import {
   apiBookings as mockVendorBookings,
   apiResidentBookings as mockResidentBookings,
   apiServices as mockServices,
-} from "@/lib/mock-data";
-
+} from '@/lib/mock-data';
 
 // --- Services ---
 
@@ -36,7 +39,7 @@ export function useServices() {
     servicesApi
       .listServices(profile.role)
       .then((res) => {
-        const list = Array.isArray(res) ? res : res.services ?? [];
+        const list = Array.isArray(res) ? res : (res.services ?? []);
         setServices(list.length > 0 ? list : mockServices);
       })
       .catch((err) => {
@@ -68,11 +71,11 @@ export function useBookings() {
   const refresh = useCallback(() => {
     if (!profile) return;
     setIsLoading(true);
-    const fallback = profile.role === "resident" ? mockResidentBookings : mockVendorBookings;
+    const fallback = profile.role === 'resident' ? mockResidentBookings : mockVendorBookings;
     bookingsApi
       .listBookings(profile.role)
       .then((res) => {
-        const list = Array.isArray(res) ? res : res.bookings ?? [];
+        const list = Array.isArray(res) ? res : (res.bookings ?? []);
         setBookings(list.length > 0 ? list : fallback);
       })
       .catch((err) => {
@@ -107,7 +110,7 @@ export function useFavorites() {
     favoritesApi
       .listFavorites()
       .then((res) => {
-        const list = Array.isArray(res) ? res : res.favorites ?? [];
+        const list = Array.isArray(res) ? res : (res.favorites ?? []);
         setFavorites(list);
       })
       .catch((err) => setError(err.message))
@@ -125,7 +128,7 @@ export function useFavorites() {
         await favoritesApi.toggleFavorite(serviceId);
         refresh();
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : "Failed to toggle favorite");
+        setError(err instanceof Error ? err.message : 'Failed to toggle favorite');
       }
     },
     [refresh]

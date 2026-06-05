@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { apiGet, apiPost, apiPatch } from "./client";
-import { getApiBaseUrl, type FrontendRole } from "./config";
+import { apiGet, apiPost, apiPatch } from './client';
+import { getApiBaseUrl, type FrontendRole } from './config';
 
 export interface Booking {
   id: number;
@@ -36,9 +36,9 @@ export interface CreateBookingData {
   notes?: string;
 }
 
-export function listBookings(role: FrontendRole = "resident") {
+export function listBookings(role: FrontendRole = 'resident') {
   const baseUrl = getApiBaseUrl(role);
-  return apiGet<{ bookings: Booking[] }>(baseUrl, "/api/bookings");
+  return apiGet<{ bookings: Booking[] }>(baseUrl, '/api/bookings');
 }
 
 export function getBooking(role: FrontendRole, id: number) {
@@ -46,9 +46,9 @@ export function getBooking(role: FrontendRole, id: number) {
   return apiGet<{ booking: Booking }>(baseUrl, `/api/bookings/${id}`);
 }
 
-export function createBooking(role: FrontendRole = "resident", data: CreateBookingData) {
+export function createBooking(role: FrontendRole = 'resident', data: CreateBookingData) {
   const baseUrl = getApiBaseUrl(role);
-  return apiPost<{ booking: Booking }>(baseUrl, "/api/bookings", data);
+  return apiPost<{ booking: Booking }>(baseUrl, '/api/bookings', data);
 }
 
 export function updateBookingStatus(role: FrontendRole, id: number, status: string) {
@@ -56,12 +56,16 @@ export function updateBookingStatus(role: FrontendRole, id: number, status: stri
   return apiPatch<{ booking: Booking }>(baseUrl, `/api/bookings/${id}/status`, { status });
 }
 
-export function rescheduleBooking(role: FrontendRole, id: number, data: {
-  booking_date: string;
-  start_time: string;
-  end_time: string;
-  reason?: string;
-}) {
+export function rescheduleBooking(
+  role: FrontendRole,
+  id: number,
+  data: {
+    booking_date: string;
+    start_time: string;
+    end_time: string;
+    reason?: string;
+  }
+) {
   const baseUrl = getApiBaseUrl(role);
   return apiPost<{ booking: Booking }>(baseUrl, `/api/bookings/${id}/reschedule`, data);
 }

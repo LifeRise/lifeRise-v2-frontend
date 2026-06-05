@@ -1,15 +1,15 @@
 // ─── Base ───────────────────────────────────────────────────────
-export type Role = "resident" | "vendor" | "manager" | null;
+export type Role = 'resident' | 'vendor' | 'manager' | null;
 
-export type BookingStatus = "confirmed" | "pending" | "completed" | "cancelled";
-export type KanbanColumn = "new" | "accepted" | "inProgress";
-export type ScheduleStatus = "in-progress" | "upcoming" | "available" | "booked" | "blocked";
-export type Trend = "up" | "down" | "stable";
-export type NotificationType = "booking" | "promo" | "system" | "alert";
-export type PaymentCardType = "visa" | "mastercard" | "amex";
-export type VendorAppStatus = "pending" | "approved" | "rejected";
-export type ResidentStatus = "active" | "inactive";
-export type EarningStatus = "paid" | "pending";
+export type BookingStatus = 'confirmed' | 'pending' | 'completed' | 'cancelled';
+export type KanbanColumn = 'new' | 'accepted' | 'inProgress';
+export type ScheduleStatus = 'in-progress' | 'upcoming' | 'available' | 'booked' | 'blocked';
+export type Trend = 'up' | 'down' | 'stable';
+export type NotificationType = 'booking' | 'promo' | 'system' | 'alert';
+export type PaymentCardType = 'visa' | 'mastercard' | 'amex';
+export type VendorAppStatus = 'pending' | 'approved' | 'rejected';
+export type ResidentStatus = 'active' | 'inactive';
+export type EarningStatus = 'paid' | 'pending';
 
 // ─── Vendor / Service ────────────────────────────────────────────
 export interface Vendor {
@@ -138,7 +138,7 @@ export interface VendorScheduleItem {
   service: string;
   time: string;
   duration: string;
-  status: "in-progress" | "upcoming";
+  status: 'in-progress' | 'upcoming';
 }
 
 export interface CalendarSlot {

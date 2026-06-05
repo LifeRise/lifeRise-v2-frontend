@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 /**
  * HTTP client for the Go backend.
@@ -6,29 +6,29 @@
  * and Laravel-style response parsing.
  */
 
-import { ApiError, type ApiResponse } from "./types";
+import { ApiError, type ApiResponse } from './types';
 
-const TOKEN_KEY = "liferise_access_token";
-const REFRESH_KEY = "liferise_refresh_token";
+const TOKEN_KEY = 'liferise_access_token';
+const REFRESH_KEY = 'liferise_refresh_token';
 
 export function getAccessToken(): string | null {
-  if (typeof window === "undefined") return null;
+  if (typeof window === 'undefined') return null;
   return localStorage.getItem(TOKEN_KEY);
 }
 
 export function getRefreshToken(): string | null {
-  if (typeof window === "undefined") return null;
+  if (typeof window === 'undefined') return null;
   return localStorage.getItem(REFRESH_KEY);
 }
 
 export function setTokens(access: string, refresh: string): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   localStorage.setItem(TOKEN_KEY, access);
   localStorage.setItem(REFRESH_KEY, refresh);
 }
 
 export function clearTokens(): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(REFRESH_KEY);
 }
@@ -42,8 +42,8 @@ async function doRefresh(baseUrl: string): Promise<string | null> {
 
   try {
     const res = await fetch(`${baseUrl}/api/refresh-token`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refresh_token: refreshToken }),
     });
 
@@ -57,10 +57,7 @@ async function doRefresh(baseUrl: string): Promise<string | null> {
     }> = await res.json();
 
     if (json.status && json.data?.access_token) {
-      setTokens(
-        json.data.access_token,
-        json.data.refresh_token ?? refreshToken
-      );
+      setTokens(json.data.access_token, json.data.refresh_token ?? refreshToken);
       return json.data.access_token;
     }
   } catch {
@@ -75,11 +72,10 @@ async function refreshAccessToken(baseUrl: string): Promise<string | null> {
   }
 
   isRefreshing = true;
-  refreshPromise = doRefresh(baseUrl)
-    .finally(() => {
-      isRefreshing = false;
-      refreshPromise = null;
-    });
+  refreshPromise = doRefresh(baseUrl).finally(() => {
+    isRefreshing = false;
+    refreshPromise = null;
+  });
 
   return refreshPromise;
 }
@@ -97,19 +93,19 @@ export async function apiRequest<T>(
   const { skipAuth, ...fetchOptions } = options;
 
   const headers = new Headers(fetchOptions.headers);
-  headers.set("Accept", "application/json");
+  headers.set('Accept', 'application/json');
 
-  if (fetchOptions.body && typeof fetchOptions.body === "string") {
-    headers.set("Content-Type", "application/json");
+  if (fetchOptions.body && typeof fetchOptions.body === 'string') {
+    headers.set('Content-Type', 'application/json');
   }
 
   if (!skipAuth) {
     const token = getAccessToken();
     if (token) {
-      headers.set("Authorization", `Bearer ${token}`);
-      console.log("[apiRequest] Sending with token:", token.substring(0, 20) + "...");
+      headers.set('Authorization', `Bearer ${token}`);
+      console.log('[apiRequest] Sending with token:', token.substring(0, 20) + '...');
     } else {
-      console.warn("[apiRequest] No access token found in localStorage");
+      console.warn('[apiRequest] No access token found in localStorage');
     }
   }
 
@@ -119,14 +115,14 @@ export async function apiRequest<T>(
   if (res.status === 401 && !skipAuth) {
     const newToken = await refreshAccessToken(baseUrl);
     if (newToken) {
-      headers.set("Authorization", `Bearer ${newToken}`);
+      headers.set('Authorization', `Bearer ${newToken}`);
       res = await fetch(url, { ...fetchOptions, headers });
     }
   }
 
   const json: ApiResponse<T> = await res.json().catch(() => ({
     status: false,
-    message: "Invalid JSON response",
+    message: 'Invalid JSON response',
     data: {} as T,
   }));
 
@@ -143,25 +139,35 @@ export async function apiRequest<T>(
 
 // Convenience wrappers
 export function apiGet<T>(baseUrl: string, endpoint: string, opts?: RequestOptions) {
-  return apiRequest<T>(baseUrl, endpoint, { ...opts, method: "GET" });
+  return apiRequest<T>(baseUrl, endpoint, { ...opts, method: 'GET' });
 }
 
-export function apiPost<T>(baseUrl: string, endpoint: string, body: unknown, opts?: RequestOptions) {
+export function apiPost<T>(
+  baseUrl: string,
+  endpoint: string,
+  body: unknown,
+  opts?: RequestOptions
+) {
   return apiRequest<T>(baseUrl, endpoint, {
     ...opts,
-    method: "POST",
+    method: 'POST',
     body: JSON.stringify(body),
   });
 }
 
-export function apiPatch<T>(baseUrl: string, endpoint: string, body: unknown, opts?: RequestOptions) {
+export function apiPatch<T>(
+  baseUrl: string,
+  endpoint: string,
+  body: unknown,
+  opts?: RequestOptions
+) {
   return apiRequest<T>(baseUrl, endpoint, {
     ...opts,
-    method: "PATCH",
+    method: 'PATCH',
     body: JSON.stringify(body),
   });
 }
 
 export function apiDelete<T>(baseUrl: string, endpoint: string, opts?: RequestOptions) {
-  return apiRequest<T>(baseUrl, endpoint, { ...opts, method: "DELETE" });
+  return apiRequest<T>(baseUrl, endpoint, { ...opts, method: 'DELETE' });
 }

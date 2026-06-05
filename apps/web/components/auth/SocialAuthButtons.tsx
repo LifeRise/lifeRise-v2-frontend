@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { GoogleButton } from "./GoogleButton";
-import { FacebookButton } from "./FacebookButton";
+import { GoogleButton } from './GoogleButton';
+import { FacebookButton } from './FacebookButton';
 
 export function SocialAuthButtons() {
   return (

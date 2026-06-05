@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { Hourglass, LogOut } from "lucide-react";
-import { useAuth } from "@/lib/auth/hooks";
+import { useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { Hourglass, LogOut } from 'lucide-react';
+import { useAuth } from '@/lib/auth/hooks';
 
 export default function PendingApprovalPage() {
   const router = useRouter();
@@ -22,7 +22,7 @@ export default function PendingApprovalPage() {
 
   const handleLogout = async () => {
     await signOut();
-    router.push("/login");
+    router.push('/login');
   };
 
   return (
@@ -53,13 +53,10 @@ export default function PendingApprovalPage() {
           </div>
 
           <div>
-            <h1 className="font-heading font-bold text-lr-white text-2xl mb-3">
-              Pending Approval
-            </h1>
+            <h1 className="font-heading font-bold text-lr-white text-2xl mb-3">Pending Approval</h1>
             <p className="text-muted text-sm leading-relaxed">
-              In order to access our service you have to wait for the onboarding.
-              Your profile is being reviewed and we&apos;ll send you a notification
-              once your profile is approved.
+              In order to access our service you have to wait for the onboarding. Your profile is
+              being reviewed and we&apos;ll send you a notification once your profile is approved.
             </p>
           </div>
 

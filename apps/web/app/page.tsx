@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import Image from "next/image";
-import Link from "next/link";
-import { VendorModal } from "@/components/modals/VendorModal";
-import { ResidentModal } from "@/components/modals/ResidentModal";
-import { ManagerModal } from "@/components/modals/ManagerModal";
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import Link from 'next/link';
+import { VendorModal } from '@/components/modals/VendorModal';
+import { ResidentModal } from '@/components/modals/ResidentModal';
+import { ManagerModal } from '@/components/modals/ManagerModal';
 import {
   ArrowRight,
   TrendingUp,
@@ -26,10 +26,18 @@ import {
   Zap,
   LogIn,
   UserPlus,
-} from "lucide-react";
-import { earningsData, vendorSchedule, vendors, categories, residentBookings, vendorLeaderboard, engagementData } from "@/lib/mock-data";
-import { cn } from "@/lib/utils";
-import { useAuth } from "@/lib/auth/hooks";
+} from 'lucide-react';
+import {
+  earningsData,
+  vendorSchedule,
+  vendors,
+  categories,
+  residentBookings,
+  vendorLeaderboard,
+  engagementData,
+} from '@/lib/mock-data';
+import { cn } from '@/lib/utils';
+import { useAuth } from '@/lib/auth/hooks';
 
 /* ─── Animation Variants ───────────────────────────────────────── */
 const sectionVariants = {
@@ -77,7 +85,9 @@ function VendorPreview() {
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-white/5">
           <div>
             <p className="text-[10px] text-muted uppercase tracking-wider">May 21, 2026</p>
-            <p className="text-xs font-semibold text-lr-white font-heading">Good morning, Marcus ✦</p>
+            <p className="text-xs font-semibold text-lr-white font-heading">
+              Good morning, Marcus ✦
+            </p>
           </div>
           <div className="flex items-center gap-1.5 glass rounded-lg px-2 py-1 border border-white/6">
             <div className="w-1.5 h-1.5 rounded-full bg-teal pulse-teal" />
@@ -89,13 +99,13 @@ function VendorPreview() {
           {/* KPIs */}
           <div className="grid grid-cols-4 gap-2">
             {[
-              { l: "Jobs", v: "4", c: "text-teal", i: Briefcase },
-              { l: "Week", v: "$1,167", c: "text-gold", i: DollarSign },
-              { l: "Rating", v: "4.9★", c: "text-purple-accent", i: Star },
-              { l: "Done", v: "98%", c: "text-emerald", i: TrendingUp },
+              { l: 'Jobs', v: '4', c: 'text-teal', i: Briefcase },
+              { l: 'Week', v: '$1,167', c: 'text-gold', i: DollarSign },
+              { l: 'Rating', v: '4.9★', c: 'text-purple-accent', i: Star },
+              { l: 'Done', v: '98%', c: 'text-emerald', i: TrendingUp },
             ].map((s) => (
               <div key={s.l} className="glass-dark rounded-xl p-2.5 text-center">
-                <s.i size={12} className={cn("mx-auto mb-1", s.c)} />
+                <s.i size={12} className={cn('mx-auto mb-1', s.c)} />
                 <p className="text-[11px] font-bold text-lr-white font-heading">{s.v}</p>
                 <p className="text-[9px] text-muted mt-0.5">{s.l}</p>
               </div>
@@ -104,19 +114,33 @@ function VendorPreview() {
 
           {/* Schedule */}
           <div className="space-y-1.5">
-            <p className="text-[10px] text-muted uppercase tracking-wider font-semibold">Today&apos;s Schedule</p>
+            <p className="text-[10px] text-muted uppercase tracking-wider font-semibold">
+              Today&apos;s Schedule
+            </p>
             {vendorSchedule.slice(0, 3).map((s) => (
-              <div key={s.id} className="flex items-center gap-2.5 glass-dark rounded-lg px-2.5 py-1.5">
+              <div
+                key={s.id}
+                className="flex items-center gap-2.5 glass-dark rounded-lg px-2.5 py-1.5"
+              >
                 <div className="text-center shrink-0 w-10">
                   <p className="text-teal text-[10px] font-bold">{s.time}</p>
                   <p className="text-muted text-[8px]">{s.duration}</p>
                 </div>
-                <div className={cn("w-px h-6 rounded-full", s.status === "in-progress" ? "bg-teal" : "bg-white/8")} />
+                <div
+                  className={cn(
+                    'w-px h-6 rounded-full',
+                    s.status === 'in-progress' ? 'bg-teal' : 'bg-white/8'
+                  )}
+                />
                 <div className="flex-1 min-w-0">
                   <p className="text-lr-white text-[10px] font-semibold truncate">{s.service}</p>
                   <p className="text-muted text-[9px]">{s.client}</p>
                 </div>
-                {s.status === "in-progress" && <span className="text-[8px] text-teal font-bold bg-teal/10 px-1.5 py-0.5 rounded-full">Active</span>}
+                {s.status === 'in-progress' && (
+                  <span className="text-[8px] text-teal font-bold bg-teal/10 px-1.5 py-0.5 rounded-full">
+                    Active
+                  </span>
+                )}
               </div>
             ))}
           </div>
@@ -124,13 +148,21 @@ function VendorPreview() {
           {/* Earnings Chart */}
           <div className="glass-dark rounded-xl p-3">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-[10px] text-muted uppercase tracking-wider font-semibold">Weekly Earnings</p>
+              <p className="text-[10px] text-muted uppercase tracking-wider font-semibold">
+                Weekly Earnings
+              </p>
               <p className="text-[10px] font-bold text-gold font-heading">$1,167</p>
             </div>
             <div className="flex items-end gap-1 h-14">
               {earningsData.map((d) => (
                 <div key={d.day} className="flex-1 flex flex-col items-center gap-1">
-                  <div className={cn("w-full rounded-sm min-h-1", d.barClass ?? "h-[8%]", d.day === "Sat" ? "bg-gold" : "bg-teal/70")} />
+                  <div
+                    className={cn(
+                      'w-full rounded-sm min-h-1',
+                      d.barClass ?? 'h-[8%]',
+                      d.day === 'Sat' ? 'bg-gold' : 'bg-teal/70'
+                    )}
+                  />
                   <span className="text-[8px] text-muted">{d.day}</span>
                 </div>
               ))}
@@ -145,9 +177,13 @@ function VendorPreview() {
 /* ─── Resident Dashboard Preview ───────────────────────────────── */
 function ResidentPreview() {
   const statusConfig = {
-    confirmed: { label: "Confirmed", avatarBg: "bg-teal", badgeCls: "bg-teal/12 text-teal" },
-    pending:   { label: "Pending",   avatarBg: "bg-gold", badgeCls: "bg-gold/12 text-gold" },
-    completed: { label: "Completed", avatarBg: "bg-purple-accent", badgeCls: "bg-purple-accent/12 text-purple-accent" },
+    confirmed: { label: 'Confirmed', avatarBg: 'bg-teal', badgeCls: 'bg-teal/12 text-teal' },
+    pending: { label: 'Pending', avatarBg: 'bg-gold', badgeCls: 'bg-gold/12 text-gold' },
+    completed: {
+      label: 'Completed',
+      avatarBg: 'bg-purple-accent',
+      badgeCls: 'bg-purple-accent/12 text-purple-accent',
+    },
   };
   return (
     <div className="relative">
@@ -163,13 +199,13 @@ function ResidentPreview() {
           {/* KPIs */}
           <div className="grid grid-cols-4 gap-2">
             {[
-              { l: "Active", v: "3", c: "text-teal", i: Activity },
-              { l: "Pending", v: "1", c: "text-gold", i: Clock },
-              { l: "Done", v: "12", c: "text-purple-accent", i: CheckSquare },
-              { l: "Spent", v: "$840", c: "text-rose", i: DollarSign },
+              { l: 'Active', v: '3', c: 'text-teal', i: Activity },
+              { l: 'Pending', v: '1', c: 'text-gold', i: Clock },
+              { l: 'Done', v: '12', c: 'text-purple-accent', i: CheckSquare },
+              { l: 'Spent', v: '$840', c: 'text-rose', i: DollarSign },
             ].map((s) => (
               <div key={s.l} className="glass-dark rounded-xl p-2.5 text-center">
-                <s.i size={12} className={cn("mx-auto mb-1", s.c)} />
+                <s.i size={12} className={cn('mx-auto mb-1', s.c)} />
                 <p className="text-[11px] font-bold text-lr-white font-heading">{s.v}</p>
                 <p className="text-[9px] text-muted mt-0.5">{s.l}</p>
               </div>
@@ -182,8 +218,8 @@ function ResidentPreview() {
               <span
                 key={cat}
                 className={cn(
-                  "shrink-0 px-2.5 py-1 rounded-full text-[9px] font-semibold",
-                  i === 0 ? "bg-teal text-midnight" : "bg-white/6 text-muted"
+                  'shrink-0 px-2.5 py-1 rounded-full text-[9px] font-semibold',
+                  i === 0 ? 'bg-teal text-midnight' : 'bg-white/6 text-muted'
                 )}
               >
                 {cat}
@@ -195,12 +231,22 @@ function ResidentPreview() {
           <div className="grid grid-cols-2 gap-2">
             {vendors.slice(0, 2).map((v) => (
               <div key={v.id} className="glass-dark rounded-xl overflow-hidden">
-                <div className={cn(
-                  "h-16 flex items-center justify-center relative bg-linear-to-br",
-                  v.category === "Wellness" ? "from-emerald-600 to-teal-900" : "from-amber-700 to-red-950"
-                )}>
-                  <span className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white font-heading">{v.initials}</span>
-                  {v.badge && <span className="absolute top-1.5 right-1.5 text-[8px] font-bold px-1.5 py-0.5 rounded-full bg-midnight/60 text-teal border border-teal/30">{v.badge}</span>}
+                <div
+                  className={cn(
+                    'h-16 flex items-center justify-center relative bg-linear-to-br',
+                    v.category === 'Wellness'
+                      ? 'from-emerald-600 to-teal-900'
+                      : 'from-amber-700 to-red-950'
+                  )}
+                >
+                  <span className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white font-heading">
+                    {v.initials}
+                  </span>
+                  {v.badge && (
+                    <span className="absolute top-1.5 right-1.5 text-[8px] font-bold px-1.5 py-0.5 rounded-full bg-midnight/60 text-teal border border-teal/30">
+                      {v.badge}
+                    </span>
+                  )}
                 </div>
                 <div className="p-2">
                   <div className="flex items-center justify-between mb-0.5">
@@ -209,7 +255,9 @@ function ResidentPreview() {
                       <Star size={8} fill="#F5A623" /> {v.rating}
                     </div>
                   </div>
-                  <p className="text-muted text-[8px] mb-1.5">{v.specialty} · <span className="text-teal">{v.price}</span></p>
+                  <p className="text-muted text-[8px] mb-1.5">
+                    {v.specialty} · <span className="text-teal">{v.price}</span>
+                  </p>
                   <div className="w-full py-1 rounded-md text-[9px] font-bold text-center bg-teal text-midnight">
                     Book Now
                   </div>
@@ -220,19 +268,35 @@ function ResidentPreview() {
 
           {/* Recent Booking */}
           <div className="glass-dark rounded-xl p-2.5">
-            <p className="text-[10px] text-muted uppercase tracking-wider font-semibold mb-1.5">Recent Booking</p>
+            <p className="text-[10px] text-muted uppercase tracking-wider font-semibold mb-1.5">
+              Recent Booking
+            </p>
             {residentBookings.slice(0, 1).map((b) => {
               const s = statusConfig[b.status as keyof typeof statusConfig] || statusConfig.pending;
               return (
                 <div key={b.id} className="flex items-center gap-2.5">
-                  <div className={cn("w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-midnight shrink-0", s.avatarBg)}>
+                  <div
+                    className={cn(
+                      'w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-midnight shrink-0',
+                      s.avatarBg
+                    )}
+                  >
                     {b.avatar}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-lr-white text-[10px] font-semibold">{b.service}</p>
-                    <p className="text-muted text-[8px]">{b.vendor} · {b.date}</p>
+                    <p className="text-muted text-[8px]">
+                      {b.vendor} · {b.date}
+                    </p>
                   </div>
-                  <span className={cn("text-[8px] font-semibold px-1.5 py-0.5 rounded-full shrink-0", s.badgeCls)}>{s.label}</span>
+                  <span
+                    className={cn(
+                      'text-[8px] font-semibold px-1.5 py-0.5 rounded-full shrink-0',
+                      s.badgeCls
+                    )}
+                  >
+                    {s.label}
+                  </span>
                 </div>
               );
             })}
@@ -267,15 +331,15 @@ function ManagerPreview() {
           {/* KPIs */}
           <div className="grid grid-cols-4 gap-2">
             {[
-              { l: "Residents", v: "247", c: "text-purple-accent", d: "+4" },
-              { l: "Vendors", v: "18", c: "text-teal", d: "+2" },
-              { l: "Bookings", v: "143", c: "text-gold", d: "+18%" },
-              { l: "Satisfaction", v: "94%", c: "text-emerald", d: "Top" },
+              { l: 'Residents', v: '247', c: 'text-purple-accent', d: '+4' },
+              { l: 'Vendors', v: '18', c: 'text-teal', d: '+2' },
+              { l: 'Bookings', v: '143', c: 'text-gold', d: '+18%' },
+              { l: 'Satisfaction', v: '94%', c: 'text-emerald', d: 'Top' },
             ].map((s) => (
               <div key={s.l} className="glass-dark rounded-xl p-2.5 text-center">
                 <p className="text-[11px] font-bold text-lr-white font-heading">{s.v}</p>
                 <p className="text-[8px] text-muted mt-0.5">{s.l}</p>
-                <p className={cn("text-[8px] font-semibold mt-0.5", s.c)}>{s.d}</p>
+                <p className={cn('text-[8px] font-semibold mt-0.5', s.c)}>{s.d}</p>
               </div>
             ))}
           </div>
@@ -284,7 +348,9 @@ function ManagerPreview() {
           <div className="grid grid-cols-5 gap-2">
             {/* Donut */}
             <div className="col-span-2 glass-dark rounded-xl p-3 flex flex-col items-center justify-center">
-              <p className="text-[10px] text-muted uppercase tracking-wider font-semibold mb-2 w-full">Engagement</p>
+              <p className="text-[10px] text-muted uppercase tracking-wider font-semibold mb-2 w-full">
+                Engagement
+              </p>
               {/* SVG donut — uses stroke presentation attributes, not CSS inline styles */}
               <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
                 {segments.map((s) => {
@@ -295,7 +361,9 @@ function ManagerPreview() {
                   return (
                     <circle
                       key={s.name}
-                      cx="32" cy="32" r={r}
+                      cx="32"
+                      cy="32"
+                      r={r}
                       fill="none"
                       stroke={s.color}
                       strokeWidth="10"
@@ -305,14 +373,22 @@ function ManagerPreview() {
                   );
                 })}
                 <circle cx="32" cy="32" r="19" fill="#1A2235" />
-                <text x="32" y="36" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#F8FAFC" fontFamily="sans-serif">
+                <text
+                  x="32"
+                  y="36"
+                  textAnchor="middle"
+                  fontSize="9"
+                  fontWeight="bold"
+                  fill="#F8FAFC"
+                  fontFamily="sans-serif"
+                >
                   {totalEngagement}%
                 </text>
               </svg>
               <div className="flex flex-wrap gap-1.5 mt-1 justify-center">
                 {engagementData.slice(0, 3).map((e) => (
                   <div key={e.name} className="flex items-center gap-1">
-                    <div className={cn("w-1.5 h-1.5 rounded-full", e.dotClass ?? "bg-muted")} />
+                    <div className={cn('w-1.5 h-1.5 rounded-full', e.dotClass ?? 'bg-muted')} />
                     <span className="text-[8px] text-muted">{e.name}</span>
                   </div>
                 ))}
@@ -321,12 +397,19 @@ function ManagerPreview() {
 
             {/* Leaderboard */}
             <div className="col-span-3 glass-dark rounded-xl p-3">
-              <p className="text-[10px] text-muted uppercase tracking-wider font-semibold mb-2">Top Vendors</p>
+              <p className="text-[10px] text-muted uppercase tracking-wider font-semibold mb-2">
+                Top Vendors
+              </p>
               <div className="space-y-1.5">
                 {vendorLeaderboard.slice(0, 3).map((v) => (
                   <div key={v.rank} className="flex items-center gap-2">
-                    <span className={cn("text-[10px] font-bold w-4 text-center", v.rank === 1 ? "text-gold" : "text-muted")}>
-                      {v.rank === 1 ? "🥇" : v.rank === 2 ? "🥈" : "🥉"}
+                    <span
+                      className={cn(
+                        'text-[10px] font-bold w-4 text-center',
+                        v.rank === 1 ? 'text-gold' : 'text-muted'
+                      )}
+                    >
+                      {v.rank === 1 ? '🥇' : v.rank === 2 ? '🥈' : '🥉'}
                     </span>
                     <div className="flex-1 min-w-0">
                       <p className="text-lr-white text-[10px] font-semibold truncate">{v.name}</p>
@@ -345,8 +428,12 @@ function ManagerPreview() {
               <Sparkles size={10} className="text-purple-accent" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-lr-white text-[10px] font-semibold">New Vendor: Healthy Bites Meal Prep</p>
-              <p className="text-muted text-[9px] mt-0.5 line-clamp-1">Carlos Rivera has joined LifeRise offering weekly meal prep packages.</p>
+              <p className="text-lr-white text-[10px] font-semibold">
+                New Vendor: Healthy Bites Meal Prep
+              </p>
+              <p className="text-muted text-[9px] mt-0.5 line-clamp-1">
+                Carlos Rivera has joined LifeRise offering weekly meal prep packages.
+              </p>
             </div>
             <span className="text-muted text-[8px] shrink-0">May 20</span>
           </div>
@@ -371,7 +458,7 @@ function FeatureItem({ icon: Icon, text }: { icon: React.ElementType; text: stri
 /* ─── Section Wrapper ──────────────────────────────────────────── */
 function Section({
   children,
-  className = "",
+  className = '',
   id,
 }: {
   children: React.ReactNode;
@@ -383,7 +470,7 @@ function Section({
       id={id}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, margin: "-80px" }}
+      viewport={{ once: true, margin: '-80px' }}
       variants={sectionVariants}
       className={`relative z-10 px-4 sm:px-6 lg:px-8 py-24 lg:py-32 ${className}`}
     >
@@ -397,9 +484,20 @@ function AuthButtons() {
   const { user, profile } = useAuth();
 
   if (user && profile) {
-    const dest = profile.role === "manager" ? "/manager" : profile.role === "vendor" ? "/vendor" : "/resident";
-    const label = profile.role === "manager" ? "Manager Portal" : profile.role === "vendor" ? "Vendor Portal" : "Resident Portal";
-    const accent = profile.role === "manager" ? "bg-purple-accent" : profile.role === "vendor" ? "bg-gold" : "bg-teal";
+    const dest =
+      profile.role === 'manager' ? '/manager' : profile.role === 'vendor' ? '/vendor' : '/resident';
+    const label =
+      profile.role === 'manager'
+        ? 'Manager Portal'
+        : profile.role === 'vendor'
+          ? 'Vendor Portal'
+          : 'Resident Portal';
+    const accent =
+      profile.role === 'manager'
+        ? 'bg-purple-accent'
+        : profile.role === 'vendor'
+          ? 'bg-gold'
+          : 'bg-teal';
     return (
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
         <Link
@@ -449,17 +547,17 @@ export default function LandingPage() {
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <motion.div
           animate={{ scale: [1, 1.1, 1], opacity: [0.15, 0.22, 0.15] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
           className="absolute -top-32 -left-32 w-150 h-150 rounded-full blur-[120px] orb-teal"
         />
         <motion.div
           animate={{ scale: [1, 1.15, 1], opacity: [0.1, 0.18, 0.1] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
           className="absolute top-1/3 -right-32 w-125 h-125 rounded-full blur-[100px] orb-gold"
         />
         <motion.div
           animate={{ scale: [1, 1.08, 1], opacity: [0.08, 0.14, 0.08] }}
-          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 4 }}
+          transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 4 }}
           className="absolute -bottom-32 left-1/4 w-150 h-150 rounded-full blur-[120px] orb-purple"
         />
       </div>
@@ -484,14 +582,15 @@ export default function LandingPage() {
               width={80}
               height={80}
               className="h-20 w-auto object-contain mx-auto mb-6"
-              style={{ width: "auto" }}
+              style={{ width: 'auto' }}
               priority
             />
             <h1 className="font-heading font-extrabold text-lr-white text-5xl sm:text-6xl lg:text-7xl leading-[1.05] tracking-tight mb-5">
               LifeRise <span className="text-teal">Solutions</span>
             </h1>
             <p className="text-muted text-lg sm:text-xl max-w-xl mx-auto leading-relaxed">
-              The unified service marketplace for modern properties. Connecting residents, vendors, and managers in one seamless ecosystem.
+              The unified service marketplace for modern properties. Connecting residents, vendors,
+              and managers in one seamless ecosystem.
             </p>
           </motion.div>
 
@@ -506,7 +605,7 @@ export default function LandingPage() {
           {/* Scroll Indicator */}
           <motion.div
             animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
             className="flex flex-col items-center gap-2"
           >
             <span className="text-muted text-xs uppercase tracking-widest">Scroll to explore</span>
@@ -519,16 +618,34 @@ export default function LandingPage() {
       <Section id="vendor">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }} className="order-1">
-              <motion.p variants={fadeUpItem} className="text-gold text-xs font-bold uppercase tracking-[0.2em] mb-4">
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="order-1"
+            >
+              <motion.p
+                variants={fadeUpItem}
+                className="text-gold text-xs font-bold uppercase tracking-[0.2em] mb-4"
+              >
                 For Service Providers
               </motion.p>
-              <motion.h2 variants={fadeUpItem} className="font-heading font-extrabold text-lr-white text-3xl sm:text-4xl lg:text-[2.75rem] leading-tight tracking-tight mb-6">
-                Maximize Your Revenue,<br />
+              <motion.h2
+                variants={fadeUpItem}
+                className="font-heading font-extrabold text-lr-white text-3xl sm:text-4xl lg:text-[2.75rem] leading-tight tracking-tight mb-6"
+              >
+                Maximize Your Revenue,
+                <br />
                 <span className="text-gold">Minimize Your Admin.</span>
               </motion.h2>
-              <motion.p variants={fadeUpItem} className="text-muted text-base sm:text-lg leading-relaxed mb-8 max-w-lg">
-                The all-in-one vendor portal designed for independent professionals. Track earnings in real-time, manage your booking queue with drag-and-drop simplicity, and build lasting client relationships.
+              <motion.p
+                variants={fadeUpItem}
+                className="text-muted text-base sm:text-lg leading-relaxed mb-8 max-w-lg"
+              >
+                The all-in-one vendor portal designed for independent professionals. Track earnings
+                in real-time, manage your booking queue with drag-and-drop simplicity, and build
+                lasting client relationships.
               </motion.p>
 
               <motion.div variants={staggerContainer} className="space-y-4 mb-10">
@@ -560,7 +677,13 @@ export default function LandingPage() {
               </motion.div>
             </motion.div>
 
-            <motion.div variants={scaleInItem} initial="hidden" whileInView="visible" viewport={{ once: true }} className="order-2">
+            <motion.div
+              variants={scaleInItem}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="order-2"
+            >
               <VendorPreview />
             </motion.div>
           </div>
@@ -571,20 +694,43 @@ export default function LandingPage() {
       <Section>
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            <motion.div variants={scaleInItem} initial="hidden" whileInView="visible" viewport={{ once: true }} className="order-2 lg:order-1">
+            <motion.div
+              variants={scaleInItem}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="order-2 lg:order-1"
+            >
               <ResidentPreview />
             </motion.div>
 
-            <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }} className="order-1 lg:order-2">
-              <motion.p variants={fadeUpItem} className="text-teal text-xs font-bold uppercase tracking-[0.2em] mb-4">
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="order-1 lg:order-2"
+            >
+              <motion.p
+                variants={fadeUpItem}
+                className="text-teal text-xs font-bold uppercase tracking-[0.2em] mb-4"
+              >
                 For Residents
               </motion.p>
-              <motion.h2 variants={fadeUpItem} className="font-heading font-extrabold text-lr-white text-3xl sm:text-4xl lg:text-[2.75rem] leading-tight tracking-tight mb-6">
-                Luxury Services at<br />
+              <motion.h2
+                variants={fadeUpItem}
+                className="font-heading font-extrabold text-lr-white text-3xl sm:text-4xl lg:text-[2.75rem] leading-tight tracking-tight mb-6"
+              >
+                Luxury Services at
+                <br />
                 <span className="text-teal">Your Fingertips.</span>
               </motion.h2>
-              <motion.p variants={fadeUpItem} className="text-muted text-base sm:text-lg leading-relaxed mb-8 max-w-lg">
-                Discover, book, and manage premium home services from verified providers. From wellness to maintenance, your concierge-ready marketplace is just a tap away.
+              <motion.p
+                variants={fadeUpItem}
+                className="text-muted text-base sm:text-lg leading-relaxed mb-8 max-w-lg"
+              >
+                Discover, book, and manage premium home services from verified providers. From
+                wellness to maintenance, your concierge-ready marketplace is just a tap away.
               </motion.p>
 
               <motion.div variants={staggerContainer} className="space-y-4 mb-10">
@@ -623,16 +769,34 @@ export default function LandingPage() {
       <Section>
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }} className="order-1">
-              <motion.p variants={fadeUpItem} className="text-purple-accent text-xs font-bold uppercase tracking-[0.2em] mb-4">
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="order-1"
+            >
+              <motion.p
+                variants={fadeUpItem}
+                className="text-purple-accent text-xs font-bold uppercase tracking-[0.2em] mb-4"
+              >
                 For Property Managers
               </motion.p>
-              <motion.h2 variants={fadeUpItem} className="font-heading font-extrabold text-lr-white text-3xl sm:text-4xl lg:text-[2.75rem] leading-tight tracking-tight mb-6">
-                Total Oversight.<br />
+              <motion.h2
+                variants={fadeUpItem}
+                className="font-heading font-extrabold text-lr-white text-3xl sm:text-4xl lg:text-[2.75rem] leading-tight tracking-tight mb-6"
+              >
+                Total Oversight.
+                <br />
                 <span className="text-purple-accent">Zero Friction.</span>
               </motion.h2>
-              <motion.p variants={fadeUpItem} className="text-muted text-base sm:text-lg leading-relaxed mb-8 max-w-lg">
-                The command center for modern property operations. Monitor vendor compliance, analyze facility performance, and keep residents informed — all from one intelligent dashboard.
+              <motion.p
+                variants={fadeUpItem}
+                className="text-muted text-base sm:text-lg leading-relaxed mb-8 max-w-lg"
+              >
+                The command center for modern property operations. Monitor vendor compliance,
+                analyze facility performance, and keep residents informed — all from one intelligent
+                dashboard.
               </motion.p>
 
               <motion.div variants={staggerContainer} className="space-y-4 mb-10">
@@ -664,7 +828,13 @@ export default function LandingPage() {
               </motion.div>
             </motion.div>
 
-            <motion.div variants={scaleInItem} initial="hidden" whileInView="visible" viewport={{ once: true }} className="order-2">
+            <motion.div
+              variants={scaleInItem}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="order-2"
+            >
               <ManagerPreview />
             </motion.div>
           </div>
@@ -674,57 +844,89 @@ export default function LandingPage() {
       {/* ═══ HOW IT WORKS ═══════════════════════════════════════════ */}
       <Section>
         <div className="max-w-7xl mx-auto">
-          <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-14">
-            <motion.p variants={fadeUpItem} className="text-teal text-xs font-bold uppercase tracking-[0.2em] mb-4">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="text-center mb-14"
+          >
+            <motion.p
+              variants={fadeUpItem}
+              className="text-teal text-xs font-bold uppercase tracking-[0.2em] mb-4"
+            >
               Simple & Intuitive
             </motion.p>
-            <motion.h2 variants={fadeUpItem} className="font-heading font-extrabold text-lr-white text-3xl sm:text-4xl lg:text-[2.75rem] leading-tight tracking-tight mb-4">
+            <motion.h2
+              variants={fadeUpItem}
+              className="font-heading font-extrabold text-lr-white text-3xl sm:text-4xl lg:text-[2.75rem] leading-tight tracking-tight mb-4"
+            >
               How It <span className="text-teal">Works</span>
             </motion.h2>
-            <motion.p variants={fadeUpItem} className="text-muted text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
+            <motion.p
+              variants={fadeUpItem}
+              className="text-muted text-base sm:text-lg leading-relaxed max-w-2xl mx-auto"
+            >
               Getting started takes less than a minute. Book, manage, and track — all in one place.
             </motion.p>
           </motion.div>
 
-          <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid sm:grid-cols-3 gap-6 lg:gap-8">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid sm:grid-cols-3 gap-6 lg:gap-8"
+          >
             {[
               {
-                step: "01",
+                step: '01',
                 icon: Search,
-                title: "Discover",
-                desc: "Browse verified services across wellness, maintenance, and lifestyle categories tailored to your property.",
-                color: "text-teal",
-                bg: "bg-teal/10",
-                border: "border-teal/20",
+                title: 'Discover',
+                desc: 'Browse verified services across wellness, maintenance, and lifestyle categories tailored to your property.',
+                color: 'text-teal',
+                bg: 'bg-teal/10',
+                border: 'border-teal/20',
               },
               {
-                step: "02",
+                step: '02',
                 icon: CalendarCheck,
-                title: "Book",
-                desc: "Schedule appointments in seconds with real-time availability, transparent pricing, and secure checkout.",
-                color: "text-gold",
-                bg: "bg-gold/10",
-                border: "border-gold/20",
+                title: 'Book',
+                desc: 'Schedule appointments in seconds with real-time availability, transparent pricing, and secure checkout.',
+                color: 'text-gold',
+                bg: 'bg-gold/10',
+                border: 'border-gold/20',
               },
               {
-                step: "03",
+                step: '03',
                 icon: Zap,
-                title: "Enjoy",
-                desc: "Track your service in real-time, communicate with providers, and rate your experience when complete.",
-                color: "text-purple-accent",
-                bg: "bg-purple-accent/10",
-                border: "border-purple-accent/20",
+                title: 'Enjoy',
+                desc: 'Track your service in real-time, communicate with providers, and rate your experience when complete.',
+                color: 'text-purple-accent',
+                bg: 'bg-purple-accent/10',
+                border: 'border-purple-accent/20',
               },
             ].map((item) => (
               <motion.div key={item.step} variants={fadeUpItem}>
                 <div className="glass rounded-2xl p-6 lg:p-8 border border-white/6 hover:border-white/10 transition-colors h-full">
                   <div className="flex items-center justify-between mb-6">
-                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", item.bg, item.border, "border")}>
+                    <div
+                      className={cn(
+                        'w-10 h-10 rounded-xl flex items-center justify-center',
+                        item.bg,
+                        item.border,
+                        'border'
+                      )}
+                    >
                       <item.icon size={18} className={item.color} />
                     </div>
-                    <span className="text-[10px] font-bold text-muted uppercase tracking-widest">{item.step}</span>
+                    <span className="text-[10px] font-bold text-muted uppercase tracking-widest">
+                      {item.step}
+                    </span>
                   </div>
-                  <h3 className="font-heading text-lg font-bold text-lr-white mb-2">{item.title}</h3>
+                  <h3 className="font-heading text-lg font-bold text-lr-white mb-2">
+                    {item.title}
+                  </h3>
                   <p className="text-sm text-muted leading-relaxed">{item.desc}</p>
                 </div>
               </motion.div>
@@ -737,19 +939,38 @@ export default function LandingPage() {
       <footer className="relative z-10 border-t border-white/6 px-4 sm:px-6 lg:px-8 py-12">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <Image src="/liferise_logo.png" alt="LifeRise" width={32} height={32} className="h-8 w-auto object-contain" style={{ width: "auto" }} />
+            <Image
+              src="/liferise_logo.png"
+              alt="LifeRise"
+              width={32}
+              height={32}
+              className="h-8 w-auto object-contain"
+              style={{ width: 'auto' }}
+            />
             <div>
               <p className="font-heading font-bold text-lr-white text-sm">LifeRise Solutions</p>
               <p className="text-muted text-xs">Simplifying Services, Enhancing Lives</p>
             </div>
           </div>
           <div className="flex items-center gap-6 text-xs text-muted">
-            <Link href="/login" className="hover:text-lr-white transition-colors">Login</Link>
-            <Link href="/signup" className="hover:text-lr-white transition-colors">Sign Up</Link>
-            <Link href="/resident" className="hover:text-lr-white transition-colors">Resident Portal</Link>
-            <Link href="/vendor" className="hover:text-lr-white transition-colors">Vendor Portal</Link>
-            <Link href="/manager" className="hover:text-lr-white transition-colors">Manager Portal</Link>
-            <Link href="/trust-safety" className="hover:text-lr-white transition-colors">Trust & Safety</Link>
+            <Link href="/login" className="hover:text-lr-white transition-colors">
+              Login
+            </Link>
+            <Link href="/signup" className="hover:text-lr-white transition-colors">
+              Sign Up
+            </Link>
+            <Link href="/resident" className="hover:text-lr-white transition-colors">
+              Resident Portal
+            </Link>
+            <Link href="/vendor" className="hover:text-lr-white transition-colors">
+              Vendor Portal
+            </Link>
+            <Link href="/manager" className="hover:text-lr-white transition-colors">
+              Manager Portal
+            </Link>
+            <Link href="/trust-safety" className="hover:text-lr-white transition-colors">
+              Trust & Safety
+            </Link>
           </div>
         </div>
         <p className="text-center text-muted/60 text-[11px] mt-8">

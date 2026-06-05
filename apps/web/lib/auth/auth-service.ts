@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 /**
  * Unified authentication service.
@@ -6,14 +6,20 @@
  * to the Go backend (or mock auth in demo mode).
  */
 
-import { createClient } from "@/lib/supabase/client";
-import { login as apiLogin, signup as apiSignup, logout as apiLogout, forgotPassword as apiForgotPassword, resetPassword as apiResetPassword } from "@/lib/api/auth";
-import { setTokens, clearTokens } from "@/lib/api/client";
-import type { LoginCredentials, SignupData, BackendProfile } from "@/lib/api/types";
-import type { User, Session } from "@supabase/supabase-js";
+import { createClient } from '@/lib/supabase/client';
+import {
+  login as apiLogin,
+  signup as apiSignup,
+  logout as apiLogout,
+  forgotPassword as apiForgotPassword,
+  resetPassword as apiResetPassword,
+} from '@/lib/api/auth';
+import { setTokens, clearTokens } from '@/lib/api/client';
+import type { LoginCredentials, SignupData, BackendProfile } from '@/lib/api/types';
+import type { User, Session } from '@supabase/supabase-js';
 
-const BACKEND_RESET_TOKEN_KEY = "liferise_backend_reset_token";
-const BACKEND_RESET_CODE_KEY = "liferise_backend_reset_code";
+const BACKEND_RESET_TOKEN_KEY = 'liferise_backend_reset_token';
+const BACKEND_RESET_CODE_KEY = 'liferise_backend_reset_code';
 
 const isSupabaseConfigured = () => !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 
@@ -41,7 +47,7 @@ export const authService = {
             first_name: data.first_name,
             last_name: data.last_name,
             phone: data.phone,
-            role: data.role || "resident",
+            role: data.role || 'resident',
           },
         },
       });
@@ -53,7 +59,10 @@ export const authService = {
       } catch (backendErr: unknown) {
         // User might already exist in backend, or backend might be down.
         // Supabase auth is the source of truth — don't block on backend failure.
-        console.warn("[auth-service] Backend signup bridge failed:", backendErr instanceof Error ? backendErr.message : String(backendErr));
+        console.warn(
+          '[auth-service] Backend signup bridge failed:',
+          backendErr instanceof Error ? backendErr.message : String(backendErr)
+        );
       }
 
       return { user: result.user, session: result.session };
@@ -65,7 +74,9 @@ export const authService = {
   },
 
   /** Email + password sign-in */
-  async signInWithPassword(creds: LoginCredentials): Promise<AuthSession & { profile?: BackendProfile }> {
+  async signInWithPassword(
+    creds: LoginCredentials
+  ): Promise<AuthSession & { profile?: BackendProfile }> {
     // Strategy: try Supabase first (for users created via Supabase),
     // but if that fails, fall back to Go backend login (for backend-only demo accounts).
     if (isSupabaseConfigured()) {
@@ -82,14 +93,21 @@ export const authService = {
           setTokens(tokenPair.access_token, tokenPair.refresh_token);
           return { user: data.user, session: data.session, profile };
         } catch (backendErr: unknown) {
-          console.warn("[auth-service] Backend login bridge failed:", backendErr instanceof Error ? backendErr.message : String(backendErr));
+          console.warn(
+            '[auth-service] Backend login bridge failed:',
+            backendErr instanceof Error ? backendErr.message : String(backendErr)
+          );
           // Still return Supabase session even if backend bridge fails
           return { user: data.user, session: data.session };
         }
       }
 
       // Supabase login failed — try backend-only fallback
-      console.warn("[auth-service] Supabase login failed:", error?.message, "— trying backend fallback");
+      console.warn(
+        '[auth-service] Supabase login failed:',
+        error?.message,
+        '— trying backend fallback'
+      );
     }
 
     // Fallback: mock auth (no Supabase configured)
@@ -128,13 +146,13 @@ export const authService = {
     email?: string;
     phone?: string;
     token: string;
-    type: "email" | "sms";
+    type: 'email' | 'sms';
   }): Promise<AuthSession> {
     const supabase = getSupabase();
     const verifyParams =
-      params.type === "email"
-        ? { email: params.email!, token: params.token, type: "email" as const }
-        : { phone: params.phone!, token: params.token, type: "sms" as const };
+      params.type === 'email'
+        ? { email: params.email!, token: params.token, type: 'email' as const }
+        : { phone: params.phone!, token: params.token, type: 'sms' as const };
     const { data, error } = await supabase.auth.verifyOtp(verifyParams);
     if (error) throw new Error(error.message);
     return { user: data.user, session: data.session };
@@ -144,7 +162,7 @@ export const authService = {
   async resendConfirmation(email: string): Promise<void> {
     const supabase = getSupabase();
     const { error } = await supabase.auth.resend({
-      type: "signup",
+      type: 'signup',
       email,
     });
     if (error) throw new Error(error.message);
@@ -180,14 +198,20 @@ export const authService = {
     const url = new URL(window.location.href);
 
     // Backend flow: token + code in query params
-    const token = url.searchParams.get("token");
-    const code = url.searchParams.get("code");
+    const token = url.searchParams.get('token');
+    const code = url.searchParams.get('code');
     if (token && code) {
       localStorage.setItem(BACKEND_RESET_TOKEN_KEY, token);
       localStorage.setItem(BACKEND_RESET_CODE_KEY, code);
-      window.history.replaceState(null, "", window.location.pathname);
+      window.history.replaceState(null, '', window.location.pathname);
       // Return a minimal mock session so the UI knows context is valid
-      return { access_token: "", refresh_token: "", expires_in: 0, token_type: "bearer", user: null } as unknown as Session;
+      return {
+        access_token: '',
+        refresh_token: '',
+        expires_in: 0,
+        token_type: 'bearer',
+        user: null,
+      } as unknown as Session;
     }
 
     if (!isSupabaseConfigured()) return null;
@@ -195,28 +219,31 @@ export const authService = {
     const supabase = getSupabase();
 
     // PKCE flow: exchange code query param for session
-    const pkceCode = url.searchParams.get("code");
+    const pkceCode = url.searchParams.get('code');
     if (pkceCode) {
       const { error } = await supabase.auth.exchangeCodeForSession(pkceCode);
       if (error) throw new Error(error.message);
-      window.history.replaceState(null, "", window.location.pathname);
+      window.history.replaceState(null, '', window.location.pathname);
     }
 
     // Implicit flow: tokens in URL hash
     const hash = window.location.hash.substring(1);
     const params = new URLSearchParams(hash);
-    const access_token = params.get("access_token");
-    const refresh_token = params.get("refresh_token");
-    const type = params.get("type");
+    const access_token = params.get('access_token');
+    const refresh_token = params.get('refresh_token');
+    const type = params.get('type');
 
-    if (access_token && refresh_token && type === "recovery") {
+    if (access_token && refresh_token && type === 'recovery') {
       const { error } = await supabase.auth.setSession({ access_token, refresh_token });
       if (error) throw new Error(error.message);
-      window.history.replaceState(null, "", window.location.pathname);
+      window.history.replaceState(null, '', window.location.pathname);
     }
 
     // Verify session was established
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
     if (sessionError) throw new Error(sessionError.message);
     return session;
   },

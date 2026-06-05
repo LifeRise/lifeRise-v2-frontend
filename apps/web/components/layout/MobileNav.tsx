@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -14,51 +14,51 @@ import {
   Users,
   LogOut,
   ShieldCheck,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/lib/auth/hooks";
-import { useAppStore } from "@/lib/store";
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth/hooks';
+import { useAppStore } from '@/lib/store';
 
-type Role = "resident" | "vendor" | "manager";
+type Role = 'resident' | 'vendor' | 'manager';
 
 const mobileNav: Record<
   Role,
   { icon: React.ElementType; label: string; href: string; badge?: number; isDrawer?: boolean }[]
 > = {
   resident: [
-    { icon: ShoppingBag, label: "Services", href: "/resident/services" },
-    { icon: CalendarDays, label: "Bookings", href: "/resident/bookings" },
-    { icon: LayoutDashboard, label: "Home", href: "/resident" },
-    { icon: User, label: "Account", href: "#", isDrawer: true },
+    { icon: ShoppingBag, label: 'Services', href: '/resident/services' },
+    { icon: CalendarDays, label: 'Bookings', href: '/resident/bookings' },
+    { icon: LayoutDashboard, label: 'Home', href: '/resident' },
+    { icon: User, label: 'Account', href: '#', isDrawer: true },
   ],
   vendor: [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/vendor" },
-    { icon: List, label: "Queue", href: "/vendor/queue" },
-    { icon: CalendarDays, label: "Schedule", href: "/vendor/schedule" },
-    { icon: DollarSign, label: "Earnings", href: "/vendor/earnings" },
+    { icon: LayoutDashboard, label: 'Dashboard', href: '/vendor' },
+    { icon: List, label: 'Queue', href: '/vendor/queue' },
+    { icon: CalendarDays, label: 'Schedule', href: '/vendor/schedule' },
+    { icon: DollarSign, label: 'Earnings', href: '/vendor/earnings' },
   ],
   manager: [
-    { icon: LayoutDashboard, label: "Overview", href: "/manager" },
-    { icon: BarChart3, label: "Analytics", href: "/manager/analytics" },
-    { icon: Users, label: "Directory", href: "/manager/residents" },
-    { icon: ShieldCheck, label: "Approvals", href: "/admin/approvals" },
-    { icon: User, label: "Profile", href: "/manager/profile" },
+    { icon: LayoutDashboard, label: 'Overview', href: '/manager' },
+    { icon: BarChart3, label: 'Analytics', href: '/manager/analytics' },
+    { icon: Users, label: 'Directory', href: '/manager/residents' },
+    { icon: ShieldCheck, label: 'Approvals', href: '/admin/approvals' },
+    { icon: User, label: 'Profile', href: '/manager/profile' },
   ],
 };
 
 const accentTextClass: Record<Role, string> = {
-  resident: "text-teal",
-  vendor: "text-gold",
-  manager: "text-purple-accent",
+  resident: 'text-teal',
+  vendor: 'text-gold',
+  manager: 'text-purple-accent',
 };
 
 const accentColor: Record<Role, string> = {
-  resident: "#00D4AA",
-  vendor: "#F5A623",
-  manager: "#818CF8",
+  resident: '#00D4AA',
+  vendor: '#F5A623',
+  manager: '#818CF8',
 };
 
 export default function MobileNav({ role }: { role: Role }) {
@@ -72,7 +72,7 @@ export default function MobileNav({ role }: { role: Role }) {
   const handleSignOut = async () => {
     await signOut();
     setRole(null);
-    router.push("/login");
+    router.push('/login');
   };
 
   return (
@@ -80,15 +80,11 @@ export default function MobileNav({ role }: { role: Role }) {
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 glass-dark border-t border-white/[0.07] flex items-center justify-around px-2 py-2 safe-area-pb">
         {nav.map(({ icon: Icon, label, href, badge, isDrawer }) => {
           const active =
-            !isDrawer &&
-            (pathname === href || (href !== `/${role}` && pathname.startsWith(href)));
+            !isDrawer && (pathname === href || (href !== `/${role}` && pathname.startsWith(href)));
           const content = (
             <>
               <div className="relative">
-                <Icon
-                  size={22}
-                  className={active ? accentTextClass[role] : "text-muted"}
-                />
+                <Icon size={22} className={active ? accentTextClass[role] : 'text-muted'} />
                 {badge && badge > 0 && (
                   <span className="absolute -top-1.5 -right-2 min-w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center px-1">
                     {badge}
@@ -97,8 +93,8 @@ export default function MobileNav({ role }: { role: Role }) {
               </div>
               <span
                 className={cn(
-                  "text-[10px] font-medium",
-                  active ? accentTextClass[role] : "text-muted"
+                  'text-[10px] font-medium',
+                  active ? accentTextClass[role] : 'text-muted'
                 )}
               >
                 {label}
@@ -124,8 +120,8 @@ export default function MobileNav({ role }: { role: Role }) {
               key={href}
               href={href}
               className={cn(
-                "flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all relative",
-                active ? "opacity-100" : "opacity-50"
+                'flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all relative',
+                active ? 'opacity-100' : 'opacity-50'
               )}
             >
               {content}
@@ -146,17 +142,14 @@ export default function MobileNav({ role }: { role: Role }) {
               onClick={() => setShowAccountDrawer(false)}
             />
             <motion.div
-              initial={{ y: "100%" }}
+              initial={{ y: '100%' }}
               animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", stiffness: 350, damping: 30 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', stiffness: 350, damping: 30 }}
               className="fixed bottom-0 left-0 right-0 z-50 glass-dark rounded-t-3xl border-t border-white/8 shadow-2xl"
             >
               <div className="flex justify-center pt-3 pb-1">
-                <div
-                  className="w-10 h-1 rounded-full"
-                  style={{ background: accentColor[role] }}
-                />
+                <div className="w-10 h-1 rounded-full" style={{ background: accentColor[role] }} />
               </div>
               <div className="p-5 space-y-1">
                 {/* User info */}
@@ -166,7 +159,9 @@ export default function MobileNav({ role }: { role: Role }) {
                       {`${profile.first_name.charAt(0)}${profile.last_name.charAt(0)}`.toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-lr-white text-sm font-semibold">{profile.first_name} {profile.last_name}</p>
+                      <p className="text-lr-white text-sm font-semibold">
+                        {profile.first_name} {profile.last_name}
+                      </p>
                       <p className="text-muted text-xs">{profile.email}</p>
                     </div>
                   </div>
@@ -175,10 +170,10 @@ export default function MobileNav({ role }: { role: Role }) {
                   Account
                 </p>
                 {[
-                  { label: "Notifications", href: "/resident/notifications", icon: Bell, badge: 3 },
-                  { label: "Profile", href: "/resident/profile", icon: User },
-                  { label: "Events", href: "/resident/events", icon: CalendarDays },
-                  { label: "Favorites", href: "/resident/favorites", icon: ShoppingBag },
+                  { label: 'Notifications', href: '/resident/notifications', icon: Bell, badge: 3 },
+                  { label: 'Profile', href: '/resident/profile', icon: User },
+                  { label: 'Events', href: '/resident/events', icon: CalendarDays },
+                  { label: 'Favorites', href: '/resident/favorites', icon: ShoppingBag },
                 ].map(({ label, href, icon: Icon, badge }) => (
                   <Link
                     key={href}

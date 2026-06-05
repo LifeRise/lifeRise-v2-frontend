@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Calendar, Clock, MapPin, Users, Heart } from "lucide-react";
-import { events } from "@/lib/mock-data";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { staggerContainerResponsive, fadeUpItem } from "@/lib/animations";
-import { cn } from "@/lib/utils";
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Calendar, Clock, MapPin, Users, Heart } from 'lucide-react';
+import { events } from '@/lib/mock-data';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { SectionHeader } from '@/components/ui/SectionHeader';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { staggerContainerResponsive, fadeUpItem } from '@/lib/animations';
+import { cn } from '@/lib/utils';
 
 export default function EventsPage() {
   const [interestedMap, setInterestedMap] = useState<Record<string, boolean>>({});
@@ -35,13 +35,22 @@ export default function EventsPage() {
           {events.map((e) => {
             const interested = interestedMap[e.id] || false;
             const spotsLeft = e.spots;
-            const spotPercent = spotsLeft > 0 ? Math.min(100, (interested ? e.interested + 1 : e.interested) / (e.spots + e.interested) * 100) : 100;
+            const spotPercent =
+              spotsLeft > 0
+                ? Math.min(
+                    100,
+                    ((interested ? e.interested + 1 : e.interested) / (e.spots + e.interested)) *
+                      100
+                  )
+                : 100;
 
             return (
               <motion.div key={e.id} variants={fadeUpItem}>
                 <GlassCard hover className="overflow-hidden h-full flex flex-col">
                   {/* Image Placeholder with Gradient */}
-                  <div className={`bg-linear-to-br ${e.gradient} h-40 flex items-center justify-center relative`}>
+                  <div
+                    className={`bg-linear-to-br ${e.gradient} h-40 flex items-center justify-center relative`}
+                  >
                     <Calendar size={32} className="text-white/40" />
                     <div className="absolute top-3 left-3">
                       <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-midnight/60 text-lr-white border border-white/10">
@@ -76,7 +85,7 @@ export default function EventsPage() {
                       <div className="flex items-center justify-between text-[11px] mb-1.5">
                         <span className="text-muted flex items-center gap-1">
                           <Users size={10} />
-                          {spotsLeft > 0 ? `${spotsLeft} spots left` : "Join waitlist"}
+                          {spotsLeft > 0 ? `${spotsLeft} spots left` : 'Join waitlist'}
                         </span>
                         <span className="text-muted">
                           {interested ? e.interested + 1 : e.interested} interested
@@ -87,26 +96,26 @@ export default function EventsPage() {
                           className="h-full rounded-full bg-teal"
                           initial={{ width: 0 }}
                           animate={{ width: `${spotPercent}%` }}
-                          transition={{ duration: 0.8, ease: "easeOut" }}
+                          transition={{ duration: 0.8, ease: 'easeOut' }}
                         />
                       </div>
 
                       <button
                         onClick={() => toggleInterested(e.id)}
                         className={cn(
-                          "w-full py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5",
+                          'w-full py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5',
                           interested
-                            ? "bg-teal/15 text-teal border border-teal/20"
-                            : "bg-white/[0.06] text-lr-white hover:bg-white/[0.10]"
+                            ? 'bg-teal/15 text-teal border border-teal/20'
+                            : 'bg-white/[0.06] text-lr-white hover:bg-white/[0.10]'
                         )}
                       >
                         <motion.div
                           animate={interested ? { scale: [1, 1.3, 1] } : { scale: 1 }}
                           transition={{ duration: 0.3 }}
                         >
-                          <Heart size={13} className={cn(interested && "fill-teal text-teal")} />
+                          <Heart size={13} className={cn(interested && 'fill-teal text-teal')} />
                         </motion.div>
-                        {interested ? "Interested" : "I'm Interested"}
+                        {interested ? 'Interested' : "I'm Interested"}
                       </button>
                     </div>
                   </div>

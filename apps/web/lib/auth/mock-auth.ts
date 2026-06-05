@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 /**
  * Mock Supabase Auth implementation for offline/demo use.
@@ -6,20 +6,15 @@
  * Supports: email/password, OAuth, magic link, OTP, email confirmation.
  */
 
-import type {
-  AuthChangeEvent,
-  Session,
-  User,
-  Provider,
-} from "@supabase/supabase-js";
+import type { AuthChangeEvent, Session, User, Provider } from '@supabase/supabase-js';
 
-const MOCK_USERS_KEY = "liferise_mock_users";
-const MOCK_SESSION_KEY = "liferise_mock_session";
-const MOCK_PROFILES_KEY = "liferise_mock_profiles";
-const MOCK_PENDING_CONFIRMATIONS_KEY = "liferise_mock_pending_confirmations";
-const MOCK_MAGIC_LINKS_KEY = "liferise_mock_magic_links";
-const MOCK_OTP_CODES_KEY = "liferise_mock_otp_codes";
-const MOCK_PENDING_RESET_KEY = "liferise_mock_pending_reset";
+const MOCK_USERS_KEY = 'liferise_mock_users';
+const MOCK_SESSION_KEY = 'liferise_mock_session';
+const MOCK_PROFILES_KEY = 'liferise_mock_profiles';
+const MOCK_PENDING_CONFIRMATIONS_KEY = 'liferise_mock_pending_confirmations';
+const MOCK_MAGIC_LINKS_KEY = 'liferise_mock_magic_links';
+const MOCK_OTP_CODES_KEY = 'liferise_mock_otp_codes';
+const MOCK_PENDING_RESET_KEY = 'liferise_mock_pending_reset';
 
 export interface MockProfile {
   id: string;
@@ -27,8 +22,8 @@ export interface MockProfile {
   first_name: string;
   last_name: string;
   phone: string;
-  role: "resident" | "vendor" | "manager";
-  approval_status: "pending" | "approved" | "rejected";
+  role: 'resident' | 'vendor' | 'manager';
+  approval_status: 'pending' | 'approved' | 'rejected';
   onboarding_completed: boolean;
   ein_tax_id?: string;
   description?: string;
@@ -38,7 +33,7 @@ export interface MockProfile {
 }
 
 function generateId(): string {
-  return "mock-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+  return 'mock-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
 function getItem<T>(key: string, fallback: T): T {
@@ -84,14 +79,14 @@ function createMockUser(email: string, metadata: Record<string, unknown>): User 
     email,
     user_metadata: metadata,
     app_metadata: {},
-    aud: "authenticated",
+    aud: 'authenticated',
     created_at: new Date().toISOString(),
     confirmation_sent_at: new Date().toISOString(),
     email_confirmed_at: new Date().toISOString(),
-    phone: (metadata.phone as string) ?? "",
+    phone: (metadata.phone as string) ?? '',
     confirmed_at: new Date().toISOString(),
     last_sign_in_at: new Date().toISOString(),
-    role: "authenticated",
+    role: 'authenticated',
     updated_at: new Date().toISOString(),
     identities: [],
     factors: [],
@@ -100,18 +95,16 @@ function createMockUser(email: string, metadata: Record<string, unknown>): User 
 
 function createMockSession(user: User): Session {
   return {
-    access_token: "mock-token-" + generateId(),
-    refresh_token: "mock-refresh-" + generateId(),
+    access_token: 'mock-token-' + generateId(),
+    refresh_token: 'mock-refresh-' + generateId(),
     expires_in: 3600,
     expires_at: Math.floor(Date.now() / 1000) + 3600,
-    token_type: "bearer",
+    token_type: 'bearer',
     user,
   } as Session;
 }
 
-const listeners = new Set<
-  (event: AuthChangeEvent, session: Session | null) => void
->();
+const listeners = new Set<(event: AuthChangeEvent, session: Session | null) => void>();
 
 function notify(event: AuthChangeEvent, session: Session | null) {
   listeners.forEach((cb) => cb(event, session));
@@ -130,7 +123,7 @@ export const mockAuth = {
     await new Promise((r) => setTimeout(r, 600));
     const users = getUsers();
     if (users[email]) {
-      throw { message: "User already registered" };
+      throw { message: 'User already registered' };
     }
     const user = createMockUser(email, options?.data ?? {});
     users[email] = { password, user, confirmed: false };
@@ -138,15 +131,15 @@ export const mockAuth = {
 
     // Create profile
     const profiles = getProfiles();
-    const role = (options?.data?.role as MockProfile["role"]) ?? "resident";
+    const role = (options?.data?.role as MockProfile['role']) ?? 'resident';
     profiles[user.id] = {
       id: user.id,
       email,
-      first_name: (options?.data?.first_name as string) ?? "",
-      last_name: (options?.data?.last_name as string) ?? "",
-      phone: (options?.data?.phone as string) ?? "",
+      first_name: (options?.data?.first_name as string) ?? '',
+      last_name: (options?.data?.last_name as string) ?? '',
+      phone: (options?.data?.phone as string) ?? '',
       role,
-      approval_status: role === "vendor" ? "pending" : "approved",
+      approval_status: role === 'vendor' ? 'pending' : 'approved',
       onboarding_completed: false,
       ein_tax_id: (options?.data?.ein_tax_id as string) ?? undefined,
       description: (options?.data?.description as string) ?? undefined,
@@ -166,25 +159,19 @@ export const mockAuth = {
     return { data: { user, session: null }, error: null };
   },
 
-  signInWithPassword: async ({
-    email,
-    password,
-  }: {
-    email: string;
-    password: string;
-  }) => {
+  signInWithPassword: async ({ email, password }: { email: string; password: string }) => {
     await new Promise((r) => setTimeout(r, 600));
     const users = getUsers();
     const record = users[email];
     if (!record || record.password !== password) {
-      throw { message: "Invalid login credentials" };
+      throw { message: 'Invalid login credentials' };
     }
     if (!record.confirmed) {
-      throw { message: "Email not confirmed" };
+      throw { message: 'Email not confirmed' };
     }
     const session = createMockSession(record.user);
     setSession(session);
-    notify("SIGNED_IN", session);
+    notify('SIGNED_IN', session);
     return { data: { user: record.user, session }, error: null };
   },
 
@@ -196,7 +183,7 @@ export const mockAuth = {
     options?: { redirectTo?: string; scopes?: string };
   }) => {
     await new Promise((r) => setTimeout(r, 800));
-    const email = `${provider}-user-` + generateId() + "@example.com";
+    const email = `${provider}-user-` + generateId() + '@example.com';
     const users = getUsers();
     let user: User;
     const existing = Object.values(users).find((u) => u.user.email === email);
@@ -209,7 +196,7 @@ export const mockAuth = {
         avatar_url: `https://ui-avatars.com/api/?name=${provider}+User`,
         provider,
       });
-      users[email] = { password: "oauth-no-password", user, confirmed: true };
+      users[email] = { password: 'oauth-no-password', user, confirmed: true };
       setUsers(users);
 
       const profiles = getProfiles();
@@ -217,10 +204,10 @@ export const mockAuth = {
         id: user.id,
         email,
         first_name: provider,
-        last_name: "User",
-        phone: "",
-        role: "resident",
-        approval_status: "approved",
+        last_name: 'User',
+        phone: '',
+        role: 'resident',
+        approval_status: 'approved',
         onboarding_completed: false,
         avatar_url: `https://ui-avatars.com/api/?name=${provider}+User`,
         created_at: new Date().toISOString(),
@@ -231,10 +218,10 @@ export const mockAuth = {
 
     const session = createMockSession(user);
     setSession(session);
-    notify("SIGNED_IN", session);
+    notify('SIGNED_IN', session);
 
     return {
-      data: { url: options?.redirectTo ?? "/resident" },
+      data: { url: options?.redirectTo ?? '/resident' },
       error: null,
     };
   },
@@ -270,7 +257,7 @@ export const mockAuth = {
       return { data: {}, error: null };
     }
 
-    throw { message: "Email or phone required" };
+    throw { message: 'Email or phone required' };
   },
 
   verifyOtp: async ({
@@ -282,14 +269,14 @@ export const mockAuth = {
     email?: string;
     phone?: string;
     token: string;
-    type: "email" | "sms" | "signup";
+    type: 'email' | 'sms' | 'signup';
   }) => {
     await new Promise((r) => setTimeout(r, 400));
 
     if (email) {
       const magicLinks = getItem<Record<string, string>>(MOCK_MAGIC_LINKS_KEY, {});
       if (magicLinks[email] !== token) {
-        throw { message: "Invalid token" };
+        throw { message: 'Invalid token' };
       }
       delete magicLinks[email];
       setItem(MOCK_MAGIC_LINKS_KEY, magicLinks);
@@ -299,7 +286,7 @@ export const mockAuth = {
       if (!record) {
         // Create user if not exists (magic link creates user)
         const user = createMockUser(email, {});
-        users[email] = { password: "magic-link-no-password", user, confirmed: true };
+        users[email] = { password: 'magic-link-no-password', user, confirmed: true };
         setUsers(users);
         record = users[email];
 
@@ -307,11 +294,11 @@ export const mockAuth = {
         profiles[user.id] = {
           id: user.id,
           email,
-          first_name: "",
-          last_name: "",
-          phone: "",
-          role: "resident",
-          approval_status: "approved",
+          first_name: '',
+          last_name: '',
+          phone: '',
+          role: 'resident',
+          approval_status: 'approved',
           onboarding_completed: false,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -321,14 +308,14 @@ export const mockAuth = {
 
       const session = createMockSession(record.user);
       setSession(session);
-      notify("SIGNED_IN", session);
+      notify('SIGNED_IN', session);
       return { data: { user: record.user, session }, error: null };
     }
 
     if (phone) {
       const otpCodes = getItem<Record<string, string>>(MOCK_OTP_CODES_KEY, {});
       if (otpCodes[phone] !== token) {
-        throw { message: "Invalid OTP code" };
+        throw { message: 'Invalid OTP code' };
       }
       delete otpCodes[phone];
       setItem(MOCK_OTP_CODES_KEY, otpCodes);
@@ -336,9 +323,9 @@ export const mockAuth = {
       const users = getUsers();
       let record = Object.values(users).find((u) => u.user.phone === phone);
       if (!record) {
-        const email = `phone-${phone.replace(/\D/g, "")}@example.com`;
+        const email = `phone-${phone.replace(/\D/g, '')}@example.com`;
         const user = createMockUser(email, { phone });
-        users[email] = { password: "otp-no-password", user, confirmed: true };
+        users[email] = { password: 'otp-no-password', user, confirmed: true };
         setUsers(users);
         record = users[email];
 
@@ -346,11 +333,11 @@ export const mockAuth = {
         profiles[user.id] = {
           id: user.id,
           email,
-          first_name: "",
-          last_name: "",
+          first_name: '',
+          last_name: '',
           phone,
-          role: "resident",
-          approval_status: "approved",
+          role: 'resident',
+          approval_status: 'approved',
           onboarding_completed: false,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -360,37 +347,37 @@ export const mockAuth = {
 
       const session = createMockSession(record.user);
       setSession(session);
-      notify("SIGNED_IN", session);
+      notify('SIGNED_IN', session);
       return { data: { user: record.user, session }, error: null };
     }
 
-    throw { message: "Email or phone required" };
+    throw { message: 'Email or phone required' };
   },
 
   resend: async ({
     type,
     email,
   }: {
-    type: "signup" | "email_change" | "phone_change" | "recovery" | "email";
+    type: 'signup' | 'email_change' | 'phone_change' | 'recovery' | 'email';
     email?: string;
     phone?: string;
   }) => {
     await new Promise((r) => setTimeout(r, 300));
-    if (type === "signup" && email) {
+    if (type === 'signup' && email) {
       const pending = getItem<string[]>(MOCK_PENDING_CONFIRMATIONS_KEY, []);
       if (!pending.includes(email)) {
-        throw { message: "User not found or already confirmed" };
+        throw { message: 'User not found or already confirmed' };
       }
       console.log(`[MOCK] Confirmation email resent to ${email}`);
       return { data: {}, error: null };
     }
-    throw { message: "Unsupported resend type" };
+    throw { message: 'Unsupported resend type' };
   },
 
   signOut: async () => {
     await new Promise((r) => setTimeout(r, 300));
     setSession(null);
-    notify("SIGNED_OUT", null);
+    notify('SIGNED_OUT', null);
     return { error: null };
   },
 
@@ -419,19 +406,13 @@ export const mockAuth = {
     return { data: {}, error: null };
   },
 
-  updateUser: async ({
-    password,
-  }: {
-    password: string;
-  }) => {
+  updateUser: async ({ password }: { password: string }) => {
     await new Promise((r) => setTimeout(r, 400));
     const session = getSession();
     const users = getUsers();
 
     if (session) {
-      const entry = Object.entries(users).find(
-        ([_, v]) => v.user.id === session.user.id
-      );
+      const entry = Object.entries(users).find(([_, v]) => v.user.id === session.user.id);
       if (entry) {
         entry[1].password = password;
         setUsers(users);
@@ -445,20 +426,18 @@ export const mockAuth = {
       users[pendingResetEmail].password = password;
       setUsers(users);
       setItem(MOCK_PENDING_RESET_KEY, null);
-      notify("USER_UPDATED", getSession());
+      notify('USER_UPDATED', getSession());
       return { data: { user: users[pendingResetEmail].user }, error: null };
     }
 
-    throw { message: "Not authenticated" };
+    throw { message: 'Not authenticated' };
   },
 
-  onAuthStateChange: (
-    callback: (event: AuthChangeEvent, session: Session | null) => void
-  ) => {
+  onAuthStateChange: (callback: (event: AuthChangeEvent, session: Session | null) => void) => {
     listeners.add(callback);
     // Emit current state immediately
     const session = getSession();
-    callback(session ? "INITIAL_SESSION" : "SIGNED_OUT", session);
+    callback(session ? 'INITIAL_SESSION' : 'SIGNED_OUT', session);
 
     return {
       data: {
@@ -510,90 +489,98 @@ export function seedMockData() {
 
   if (Object.keys(users).length > 0) return; // Already seeded
 
-  const managerUser = createMockUser("manager@liferise.demo", {
-    first_name: "Admin",
-    last_name: "Manager",
-    role: "manager",
-    approval_status: "approved",
+  const managerUser = createMockUser('manager@liferise.demo', {
+    first_name: 'Admin',
+    last_name: 'Manager',
+    role: 'manager',
+    approval_status: 'approved',
   });
-  users["manager@liferise.demo"] = { password: "Manager123!", user: managerUser, confirmed: true };
+  users['manager@liferise.demo'] = { password: 'Manager123!', user: managerUser, confirmed: true };
   profiles[managerUser.id] = {
     id: managerUser.id,
-    email: "manager@liferise.demo",
-    first_name: "Admin",
-    last_name: "Manager",
-    phone: "+1234567890",
-    role: "manager",
-    approval_status: "approved",
+    email: 'manager@liferise.demo',
+    first_name: 'Admin',
+    last_name: 'Manager',
+    phone: '+1234567890',
+    role: 'manager',
+    approval_status: 'approved',
     onboarding_completed: true,
-    avatar_url: "https://ui-avatars.com/api/?name=Admin+Manager",
+    avatar_url: 'https://ui-avatars.com/api/?name=Admin+Manager',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
 
-  const vendorUser = createMockUser("vendor@liferise.demo", {
-    first_name: "Marcus",
-    last_name: "Rivers",
-    role: "vendor",
-    approval_status: "approved",
+  const vendorUser = createMockUser('vendor@liferise.demo', {
+    first_name: 'Marcus',
+    last_name: 'Rivers',
+    role: 'vendor',
+    approval_status: 'approved',
   });
-  users["vendor@liferise.demo"] = { password: "Vendor123!", user: vendorUser, confirmed: true };
+  users['vendor@liferise.demo'] = { password: 'Vendor123!', user: vendorUser, confirmed: true };
   profiles[vendorUser.id] = {
     id: vendorUser.id,
-    email: "vendor@liferise.demo",
-    first_name: "Marcus",
-    last_name: "Rivers",
-    phone: "+1234567891",
-    role: "vendor",
-    approval_status: "approved",
+    email: 'vendor@liferise.demo',
+    first_name: 'Marcus',
+    last_name: 'Rivers',
+    phone: '+1234567891',
+    role: 'vendor',
+    approval_status: 'approved',
     onboarding_completed: true,
-    ein_tax_id: "12-3456789",
-    description: "Professional cleaning and maintenance services.",
-    avatar_url: "https://ui-avatars.com/api/?name=Marcus+Rivers",
+    ein_tax_id: '12-3456789',
+    description: 'Professional cleaning and maintenance services.',
+    avatar_url: 'https://ui-avatars.com/api/?name=Marcus+Rivers',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
 
-  const pendingVendor = createMockUser("pending@liferise.demo", {
-    first_name: "Sarah",
-    last_name: "Pending",
-    role: "vendor",
-    approval_status: "pending",
+  const pendingVendor = createMockUser('pending@liferise.demo', {
+    first_name: 'Sarah',
+    last_name: 'Pending',
+    role: 'vendor',
+    approval_status: 'pending',
   });
-  users["pending@liferise.demo"] = { password: "Pending123!", user: pendingVendor, confirmed: true };
+  users['pending@liferise.demo'] = {
+    password: 'Pending123!',
+    user: pendingVendor,
+    confirmed: true,
+  };
   profiles[pendingVendor.id] = {
     id: pendingVendor.id,
-    email: "pending@liferise.demo",
-    first_name: "Sarah",
-    last_name: "Pending",
-    phone: "+1234567892",
-    role: "vendor",
-    approval_status: "pending",
+    email: 'pending@liferise.demo',
+    first_name: 'Sarah',
+    last_name: 'Pending',
+    phone: '+1234567892',
+    role: 'vendor',
+    approval_status: 'pending',
     onboarding_completed: false,
-    ein_tax_id: "98-7654321",
-    description: "New wellness provider awaiting approval.",
-    avatar_url: "https://ui-avatars.com/api/?name=Sarah+Pending",
+    ein_tax_id: '98-7654321',
+    description: 'New wellness provider awaiting approval.',
+    avatar_url: 'https://ui-avatars.com/api/?name=Sarah+Pending',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
 
-  const residentUser = createMockUser("resident@liferise.demo", {
-    first_name: "Sarah",
-    last_name: "Mitchell",
-    role: "resident",
-    approval_status: "approved",
+  const residentUser = createMockUser('resident@liferise.demo', {
+    first_name: 'Sarah',
+    last_name: 'Mitchell',
+    role: 'resident',
+    approval_status: 'approved',
   });
-  users["resident@liferise.demo"] = { password: "Resident123!", user: residentUser, confirmed: true };
+  users['resident@liferise.demo'] = {
+    password: 'Resident123!',
+    user: residentUser,
+    confirmed: true,
+  };
   profiles[residentUser.id] = {
     id: residentUser.id,
-    email: "resident@liferise.demo",
-    first_name: "Sarah",
-    last_name: "Mitchell",
-    phone: "+1234567893",
-    role: "resident",
-    approval_status: "approved",
+    email: 'resident@liferise.demo',
+    first_name: 'Sarah',
+    last_name: 'Mitchell',
+    phone: '+1234567893',
+    role: 'resident',
+    approval_status: 'approved',
     onboarding_completed: true,
-    avatar_url: "https://ui-avatars.com/api/?name=Sarah+Mitchell",
+    avatar_url: 'https://ui-avatars.com/api/?name=Sarah+Mitchell',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };

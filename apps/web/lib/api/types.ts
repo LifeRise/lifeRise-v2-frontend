@@ -25,14 +25,14 @@ export interface BackendProfile {
   avatar?: string;
   timezone: string;
   status: string;
-  role: "resident" | "vendor" | "manager";
-  user_type: "customer" | "user";
+  role: 'resident' | 'vendor' | 'manager';
+  user_type: 'customer' | 'user';
   roles: string[];
   created_at: string;
   // Optional fields for vendor profiles (may come from future backend extensions)
   ein_tax_id?: string;
   description?: string;
-  approval_status?: "pending" | "approved" | "rejected";
+  approval_status?: 'pending' | 'approved' | 'rejected';
 }
 
 export interface LoginCredentials {
@@ -55,7 +55,7 @@ export class ApiError extends Error {
 
   constructor(message: string, status: number, errors?: Record<string, string[]>) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.status = status;
     this.errors = errors;
   }

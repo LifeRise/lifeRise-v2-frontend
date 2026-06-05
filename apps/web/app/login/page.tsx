@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
 import {
   Mail,
   Lock,
@@ -17,40 +17,40 @@ import {
   Sparkles,
   MessageSquare,
   LayoutDashboard,
-} from "lucide-react";
-import { useAuth } from "@/lib/auth/hooks";
-import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
-import { authService } from "@/lib/auth/auth-service";
+} from 'lucide-react';
+import { useAuth } from '@/lib/auth/hooks';
+import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons';
+import { authService } from '@/lib/auth/auth-service';
 
-type LoginTab = "password" | "magic" | "otp";
+type LoginTab = 'password' | 'magic' | 'otp';
 
 export default function LoginPage() {
   const router = useRouter();
   const { signIn } = useAuth();
 
-  const [tab, setTab] = useState<LoginTab>("password");
-  const [userType, setUserType] = useState<"resident" | "vendor" | "manager">("resident");
+  const [tab, setTab] = useState<LoginTab>('password');
+  const [userType, setUserType] = useState<'resident' | 'vendor' | 'manager'>('resident');
 
   // Password login fields
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
 
   // Magic link fields
-  const [magicEmail, setMagicEmail] = useState("");
+  const [magicEmail, setMagicEmail] = useState('');
   const [magicSent, setMagicSent] = useState(false);
 
   // OTP fields
-  const [phone, setPhone] = useState("");
-  const [otpCode, setOtpCode] = useState("");
+  const [phone, setPhone] = useState('');
+  const [otpCode, setOtpCode] = useState('');
   const [otpSent, setOtpSent] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   const formatPhone = (value: string) => {
-    let cleaned = value.replace(/[^\d+]/g, "");
-    cleaned = cleaned.replace(/\+/g, "");
+    let cleaned = value.replace(/[^\d+]/g, '');
+    cleaned = cleaned.replace(/\+/g, '');
     cleaned = `+${cleaned}`;
     if (cleaned.length > 15) cleaned = cleaned.slice(0, 15);
     return cleaned;
@@ -58,23 +58,23 @@ export default function LoginPage() {
 
   const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
     if (!email || !password) {
-      setError("Please enter both email and password");
+      setError('Please enter both email and password');
       return;
     }
     setIsLoading(true);
     try {
       const { profile } = await signIn({ email, password });
       const dest =
-        profile.role === "manager"
-          ? "/manager"
-          : profile.role === "vendor"
-          ? "/vendor"
-          : "/resident";
+        profile.role === 'manager'
+          ? '/manager'
+          : profile.role === 'vendor'
+            ? '/vendor'
+            : '/resident';
       router.push(dest);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Invalid email or password");
+      setError(err instanceof Error ? err.message : 'Invalid email or password');
     } finally {
       setIsLoading(false);
     }
@@ -82,9 +82,9 @@ export default function LoginPage() {
 
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
     if (!magicEmail) {
-      setError("Please enter your email");
+      setError('Please enter your email');
       return;
     }
     setIsLoading(true);
@@ -92,16 +92,16 @@ export default function LoginPage() {
       await authService.signInWithMagicLink(magicEmail);
       setMagicSent(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to send magic link");
+      setError(err instanceof Error ? err.message : 'Failed to send magic link');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleSendOtp = async () => {
-    setError("");
+    setError('');
     if (!phone || phone.length < 8) {
-      setError("Please enter a valid phone number with country code");
+      setError('Please enter a valid phone number with country code');
       return;
     }
     setIsLoading(true);
@@ -109,7 +109,7 @@ export default function LoginPage() {
       await authService.signInWithOtp(phone);
       setOtpSent(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to send OTP");
+      setError(err instanceof Error ? err.message : 'Failed to send OTP');
     } finally {
       setIsLoading(false);
     }
@@ -117,26 +117,26 @@ export default function LoginPage() {
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
     if (!otpCode) {
-      setError("Please enter the OTP code");
+      setError('Please enter the OTP code');
       return;
     }
     setIsLoading(true);
     try {
-      await authService.verifyOtp({ phone, token: otpCode, type: "sms" });
-      router.push("/resident");
+      await authService.verifyOtp({ phone, token: otpCode, type: 'sms' });
+      router.push('/resident');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Invalid OTP code");
+      setError(err instanceof Error ? err.message : 'Invalid OTP code');
     } finally {
       setIsLoading(false);
     }
   };
 
   const tabs: { key: LoginTab; label: string; icon: React.ElementType }[] = [
-    { key: "password", label: "Password", icon: Lock },
-    { key: "magic", label: "Magic Link", icon: Sparkles },
-    { key: "otp", label: "Phone OTP", icon: MessageSquare },
+    { key: 'password', label: 'Password', icon: Lock },
+    { key: 'magic', label: 'Magic Link', icon: Sparkles },
+    { key: 'otp', label: 'Phone OTP', icon: MessageSquare },
   ];
 
   return (
@@ -174,11 +174,9 @@ export default function LoginPage() {
           <div className="flex bg-midnight/60 rounded-xl p-1 border border-white/10">
             <button
               type="button"
-              onClick={() => setUserType("resident")}
+              onClick={() => setUserType('resident')}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium transition-all ${
-                userType === "resident"
-                  ? "bg-teal text-midnight"
-                  : "text-muted hover:text-lr-white"
+                userType === 'resident' ? 'bg-teal text-midnight' : 'text-muted hover:text-lr-white'
               }`}
             >
               <Building2 size={15} />
@@ -186,11 +184,9 @@ export default function LoginPage() {
             </button>
             <button
               type="button"
-              onClick={() => setUserType("vendor")}
+              onClick={() => setUserType('vendor')}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium transition-all ${
-                userType === "vendor"
-                  ? "bg-gold text-midnight"
-                  : "text-muted hover:text-lr-white"
+                userType === 'vendor' ? 'bg-gold text-midnight' : 'text-muted hover:text-lr-white'
               }`}
             >
               <Wrench size={15} />
@@ -198,11 +194,11 @@ export default function LoginPage() {
             </button>
             <button
               type="button"
-              onClick={() => setUserType("manager")}
+              onClick={() => setUserType('manager')}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium transition-all ${
-                userType === "manager"
-                  ? "bg-purple-accent text-midnight"
-                  : "text-muted hover:text-lr-white"
+                userType === 'manager'
+                  ? 'bg-purple-accent text-midnight'
+                  : 'text-muted hover:text-lr-white'
               }`}
             >
               <LayoutDashboard size={15} />
@@ -232,12 +228,10 @@ export default function LoginPage() {
                 type="button"
                 onClick={() => {
                   setTab(t.key);
-                  setError("");
+                  setError('');
                 }}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all ${
-                  tab === t.key
-                    ? "bg-white/10 text-lr-white"
-                    : "text-muted hover:text-lr-white"
+                  tab === t.key ? 'bg-white/10 text-lr-white' : 'text-muted hover:text-lr-white'
                 }`}
               >
                 <t.icon size={14} />
@@ -247,7 +241,7 @@ export default function LoginPage() {
           </div>
 
           <AnimatePresence mode="wait">
-            {tab === "password" && (
+            {tab === 'password' && (
               <motion.form
                 key="password"
                 initial={{ opacity: 0, y: 8 }}
@@ -271,7 +265,7 @@ export default function LoginPage() {
                 <div className="relative">
                   <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
                   <input
-                    type={showPass ? "text" : "password"}
+                    type={showPass ? 'text' : 'password'}
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -288,7 +282,10 @@ export default function LoginPage() {
 
                 <div className="flex items-center justify-between text-xs">
                   <label className="flex items-center gap-2 text-muted cursor-pointer">
-                    <input type="checkbox" className="rounded border-white/20 bg-midnight/60 text-teal focus:ring-teal" />
+                    <input
+                      type="checkbox"
+                      className="rounded border-white/20 bg-midnight/60 text-teal focus:ring-teal"
+                    />
                     Remember me
                   </label>
                   <Link
@@ -315,7 +312,7 @@ export default function LoginPage() {
               </motion.form>
             )}
 
-            {tab === "magic" && (
+            {tab === 'magic' && (
               <motion.form
                 key="magic"
                 initial={{ opacity: 0, y: 8 }}
@@ -330,13 +327,17 @@ export default function LoginPage() {
                     <Sparkles size={24} className="text-teal mx-auto" />
                     <p className="text-teal text-sm font-medium">Magic link sent!</p>
                     <p className="text-muted text-xs">
-                      Check your email at <span className="text-lr-white">{magicEmail}</span> for a sign-in link.
+                      Check your email at <span className="text-lr-white">{magicEmail}</span> for a
+                      sign-in link.
                     </p>
                   </div>
                 ) : (
                   <>
                     <div className="relative">
-                      <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+                      <Mail
+                        size={16}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-muted"
+                      />
                       <input
                         type="email"
                         placeholder="Email address"
@@ -366,7 +367,7 @@ export default function LoginPage() {
               </motion.form>
             )}
 
-            {tab === "otp" && (
+            {tab === 'otp' && (
               <motion.form
                 key="otp"
                 initial={{ opacity: 0, y: 8 }}
@@ -379,7 +380,10 @@ export default function LoginPage() {
                 {!otpSent ? (
                   <>
                     <div className="relative">
-                      <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+                      <Phone
+                        size={16}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-muted"
+                      />
                       <input
                         type="tel"
                         placeholder="Phone number (e.g. +1234567890)"
@@ -389,7 +393,8 @@ export default function LoginPage() {
                       />
                     </div>
                     <p className="text-muted text-xs">
-                      Enter your phone number with country code. We&apos;ll send you a one-time code.
+                      Enter your phone number with country code. We&apos;ll send you a one-time
+                      code.
                     </p>
                     <button
                       type="button"
@@ -414,12 +419,15 @@ export default function LoginPage() {
                       </p>
                     </div>
                     <div className="relative">
-                      <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+                      <Lock
+                        size={16}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-muted"
+                      />
                       <input
                         type="text"
                         placeholder="Enter 6-digit code"
                         value={otpCode}
-                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                         maxLength={6}
                         className="w-full bg-midnight/60 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm text-lr-white placeholder-muted focus:outline-none focus:border-teal/50 transition-colors text-center tracking-widest"
                       />
@@ -453,20 +461,34 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-muted text-xs">
-          Don&apos;t have an account?{" "}
-          <Link href="/signup" className="text-teal hover:opacity-80 transition-opacity font-medium">
+          Don&apos;t have an account?{' '}
+          <Link
+            href="/signup"
+            className="text-teal hover:opacity-80 transition-opacity font-medium"
+          >
             Create one free
           </Link>
         </p>
 
         {/* Demo credentials hint */}
         <div className="mt-6 glass rounded-xl p-4 border border-white/5">
-          <p className="text-[10px] text-muted uppercase tracking-wider font-semibold mb-2">Demo Accounts</p>
+          <p className="text-[10px] text-muted uppercase tracking-wider font-semibold mb-2">
+            Demo Accounts
+          </p>
           <div className="space-y-1 text-xs text-muted">
-            <p><span className="text-teal">Resident:</span> resident@liferise.demo / Resident123!</p>
-            <p><span className="text-gold">Vendor:</span> vendor@liferise.demo / Vendor123!</p>
-            <p><span className="text-purple-accent">Manager:</span> manager@liferise.demo / Manager123!</p>
-            <p><span className="text-rose">Pending:</span> pending@liferise.demo / Pending123!</p>
+            <p>
+              <span className="text-teal">Resident:</span> resident@liferise.demo / Resident123!
+            </p>
+            <p>
+              <span className="text-gold">Vendor:</span> vendor@liferise.demo / Vendor123!
+            </p>
+            <p>
+              <span className="text-purple-accent">Manager:</span> manager@liferise.demo /
+              Manager123!
+            </p>
+            <p>
+              <span className="text-rose">Pending:</span> pending@liferise.demo / Pending123!
+            </p>
           </div>
         </div>
       </motion.div>

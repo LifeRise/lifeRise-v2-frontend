@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback } from 'react';
 
 const FOCUSABLE_SELECTOR = [
-  "button:not([disabled])",
-  "a[href]",
-  "input:not([disabled])",
-  "select:not([disabled])",
-  "textarea:not([disabled])",
+  'button:not([disabled])',
+  'a[href]',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
   '[tabindex]:not([tabindex="-1"])',
-].join(",");
+].join(',');
 
 export function useFocusTrap<T extends HTMLElement>(isActive: boolean, onEscape?: () => void) {
   const containerRef = useRef<T>(null);
@@ -36,12 +36,12 @@ export function useFocusTrap<T extends HTMLElement>(isActive: boolean, onEscape?
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         onEscape?.();
         return;
       }
 
-      if (e.key !== "Tab") return;
+      if (e.key !== 'Tab') return;
 
       const elements = getFocusable();
       if (elements.length === 0) {
@@ -65,9 +65,9 @@ export function useFocusTrap<T extends HTMLElement>(isActive: boolean, onEscape?
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener('keydown', handleKeyDown);
       // Return focus to trigger element
       if (previouslyFocusedRef.current instanceof HTMLElement) {
         previouslyFocusedRef.current.focus();

@@ -1,9 +1,18 @@
-"use client";
+'use client';
 
-import { X, BarChart3, ShieldCheck, Users, Megaphone, Tag, Sparkles, ArrowRight } from "lucide-react";
-import * as Dialog from "@radix-ui/react-dialog";
-import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
-import { useIsMobile } from "@/lib/hooks/useMediaQuery";
+import {
+  X,
+  BarChart3,
+  ShieldCheck,
+  Users,
+  Megaphone,
+  Tag,
+  Sparkles,
+  ArrowRight,
+} from 'lucide-react';
+import * as Dialog from '@radix-ui/react-dialog';
+import { ResponsiveModal } from '@/components/ui/ResponsiveModal';
+import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 
 interface ManagerModalProps {
   open: boolean;
@@ -13,34 +22,40 @@ interface ManagerModalProps {
 const features = [
   {
     icon: Sparkles,
-    title: "Brand-Personalized Dashboards",
-    desc: "Every property gets a fully customized portal — your logo, your palette, your identity. Not a generic SaaS template.",
+    title: 'Brand-Personalized Dashboards',
+    desc: 'Every property gets a fully customized portal — your logo, your palette, your identity. Not a generic SaaS template.',
   },
   {
     icon: ShieldCheck,
-    title: "Vendor Compliance Monitoring",
-    desc: "Real-time compliance status, certification tracking, and automated alerts for lapsed credentials or policy violations.",
+    title: 'Vendor Compliance Monitoring',
+    desc: 'Real-time compliance status, certification tracking, and automated alerts for lapsed credentials or policy violations.',
   },
   {
     icon: BarChart3,
-    title: "Facility Performance Analytics",
-    desc: "Booking volume, satisfaction scores, revenue trends, and resident engagement reports — all in one command view.",
+    title: 'Facility Performance Analytics',
+    desc: 'Booking volume, satisfaction scores, revenue trends, and resident engagement reports — all in one command view.',
   },
   {
     icon: Users,
-    title: "Resident Directory & Management",
-    desc: "Full resident profiles, booking history, direct communication channels, and unit-level status at your fingertips.",
+    title: 'Resident Directory & Management',
+    desc: 'Full resident profiles, booking history, direct communication channels, and unit-level status at your fingertips.',
   },
   {
     icon: Megaphone,
-    title: "Announcement Broadcasting",
-    desc: "Push property-wide announcements instantly to all resident and vendor portals simultaneously, with read-receipt tracking.",
+    title: 'Announcement Broadcasting',
+    desc: 'Push property-wide announcements instantly to all resident and vendor portals simultaneously, with read-receipt tracking.',
   },
 ];
 
 const promos = [
-  { code: "LAUNCH50", desc: "Generate a property-wide promo to drive initial resident platform adoption." },
-  { code: "MANAGER10", desc: "Unlock 10 free resident invite codes to fast-track onboarding at move-in." },
+  {
+    code: 'LAUNCH50',
+    desc: 'Generate a property-wide promo to drive initial resident platform adoption.',
+  },
+  {
+    code: 'MANAGER10',
+    desc: 'Unlock 10 free resident invite codes to fast-track onboarding at move-in.',
+  },
 ];
 
 export function ManagerModal({ open, onOpenChange }: ManagerModalProps) {
@@ -55,7 +70,9 @@ export function ManagerModal({ open, onOpenChange }: ManagerModalProps) {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <div className="w-2 h-2 rounded-full bg-purple-accent" />
-            <span className="text-purple-accent text-xs font-bold uppercase tracking-[0.2em]">For Property Managers</span>
+            <span className="text-purple-accent text-xs font-bold uppercase tracking-[0.2em]">
+              For Property Managers
+            </span>
           </div>
           <Dialog.Title className="font-heading text-2xl font-extrabold text-lr-white tracking-tight">
             The Command Center
@@ -74,9 +91,14 @@ export function ManagerModal({ open, onOpenChange }: ManagerModalProps) {
       <div className="relative p-6 space-y-6 overflow-y-auto max-h-[60vh] sm:max-h-none">
         {/* Feature list */}
         <div className="space-y-3">
-          <p className="text-xs font-bold uppercase tracking-[0.15em] text-muted">Platform Capabilities</p>
+          <p className="text-xs font-bold uppercase tracking-[0.15em] text-muted">
+            Platform Capabilities
+          </p>
           {features.map((f) => (
-            <div key={f.title} className="flex gap-3 p-3 rounded-xl glass-dark border border-white/5">
+            <div
+              key={f.title}
+              className="flex gap-3 p-3 rounded-xl glass-dark border border-white/5"
+            >
               <div className="w-8 h-8 rounded-lg bg-purple-accent/10 border border-purple-accent/20 flex items-center justify-center shrink-0">
                 <f.icon size={14} className="text-purple-accent" />
               </div>
@@ -92,11 +114,14 @@ export function ManagerModal({ open, onOpenChange }: ManagerModalProps) {
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Tag size={12} className="text-teal" />
-            <p className="text-xs font-bold uppercase tracking-[0.15em] text-muted">Promo Code System</p>
+            <p className="text-xs font-bold uppercase tracking-[0.15em] text-muted">
+              Promo Code System
+            </p>
           </div>
           <div className="p-4 rounded-xl border border-teal/20 bg-teal/5">
             <p className="text-xs text-muted leading-relaxed mb-3">
-              Managers generate and distribute promo codes to accelerate resident onboarding, reward high-engagement communities, and track promotional campaign effectiveness.
+              Managers generate and distribute promo codes to accelerate resident onboarding, reward
+              high-engagement communities, and track promotional campaign effectiveness.
             </p>
             {promos.map((p) => (
               <div key={p.code} className="flex items-start gap-3 mb-2 last:mb-0">
@@ -113,9 +138,14 @@ export function ManagerModal({ open, onOpenChange }: ManagerModalProps) {
         <div className="p-4 rounded-xl border border-purple-accent/20 bg-purple-accent/5">
           <p className="text-sm font-semibold text-lr-white mb-1">Need a Custom Build?</p>
           <p className="text-xs text-muted leading-relaxed mb-3">
-            Every LifeRise dashboard is brand-personalized to match your property&apos;s identity. For bespoke feature development — custom integrations, white-label portals, or enterprise workflows — our team is ready to build it.
+            Every LifeRise dashboard is brand-personalized to match your property&apos;s identity.
+            For bespoke feature development — custom integrations, white-label portals, or
+            enterprise workflows — our team is ready to build it.
           </p>
-          <button type="button" className="flex items-center gap-1.5 text-xs font-bold text-purple-accent hover:text-lr-white transition-colors group">
+          <button
+            type="button"
+            className="flex items-center gap-1.5 text-xs font-bold text-purple-accent hover:text-lr-white transition-colors group"
+          >
             Discuss Bespoke Development
             <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
           </button>

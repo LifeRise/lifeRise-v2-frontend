@@ -3,37 +3,37 @@
   Versioned cache strategy with automatic update support.
   Bump BUILD_ID below for each production release.
 */
-const BUILD_ID = "20260529-001";
+const BUILD_ID = '20260529-001';
 const CACHE_NAME = `liferise-${BUILD_ID}`;
 const SHELL_ROUTES = [
-  "/",
-  "/login",
-  "/offline",
-  "/resident",
-  "/resident/services",
-  "/resident/bookings",
-  "/resident/events",
-  "/resident/favorites",
-  "/resident/notifications",
-  "/resident/profile",
-  "/vendor",
-  "/vendor/schedule",
-  "/vendor/queue",
-  "/vendor/earnings",
-  "/vendor/services",
-  "/vendor/profile",
-  "/manager",
-  "/manager/analytics",
-  "/manager/residents",
-  "/manager/vendors",
-  "/manager/announcements",
-  "/manager/settings",
+  '/',
+  '/login',
+  '/offline',
+  '/resident',
+  '/resident/services',
+  '/resident/bookings',
+  '/resident/events',
+  '/resident/favorites',
+  '/resident/notifications',
+  '/resident/profile',
+  '/vendor',
+  '/vendor/schedule',
+  '/vendor/queue',
+  '/vendor/earnings',
+  '/vendor/services',
+  '/vendor/profile',
+  '/manager',
+  '/manager/analytics',
+  '/manager/residents',
+  '/manager/vendors',
+  '/manager/announcements',
+  '/manager/settings',
 ];
 
-const OFFLINE_FALLBACK = "/offline";
+const OFFLINE_FALLBACK = '/offline';
 
 /* ─── Install ──────────────────────────────────────────────────── */
-self.addEventListener("install", (event) => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(CACHE_NAME)
@@ -43,42 +43,40 @@ self.addEventListener("install", (event) => {
 });
 
 /* ─── Activate ─────────────────────────────────────────────────── */
-self.addEventListener("activate", (event) => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches
       .keys()
       .then((keys) =>
-        Promise.all(
-          keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
-        )
+        Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))
       )
       .then(() => self.clients.claim())
   );
 });
 
 /* ─── Messages from client ─────────────────────────────────────── */
-self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "SKIP_WAITING") {
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
 
 /* ─── Fetch ────────────────────────────────────────────────────── */
-self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") return;
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
 
   const { request } = event;
   const url = new URL(request.url);
 
   // Skip non-HTTP schemes (chrome-extension, blob, data, etc.)
-  if (url.protocol !== "http:" && url.protocol !== "https:") return;
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
 
   // Skip API calls to the backend — never cache those
-  if (url.hostname === "localhost" && url.port === "8080") return;
-  if (url.hostname === "localhost" && url.port === "8081") return;
-  if (url.hostname === "localhost" && url.port === "8082") return;
+  if (url.hostname === 'localhost' && url.port === '8080') return;
+  if (url.hostname === 'localhost' && url.port === '8081') return;
+  if (url.hostname === 'localhost' && url.port === '8082') return;
 
-  const isNavigation = request.mode === "navigate";
+  const isNavigation = request.mode === 'navigate';
 
   if (isNavigation) {
     // Network-first for HTML pages so updates are always visible
@@ -95,7 +93,10 @@ self.addEventListener("fetch", (event) => {
             if (cached) return cached;
             // Graceful offline fallback for uncached routes
             return caches.match(OFFLINE_FALLBACK).then((fallback) => {
-              return fallback || new Response("Offline", { status: 503, statusText: "Service Unavailable" });
+              return (
+                fallback ||
+                new Response('Offline', { status: 503, statusText: 'Service Unavailable' })
+              );
             });
           });
         })

@@ -1,8 +1,14 @@
-"use client";
+'use client';
 
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle } from 'lucide-react';
 
-export default function ManagerError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function ManagerError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
   return (
     <div className="flex items-center justify-center min-h-[60vh] px-4">
       <div className="glass rounded-2xl p-8 max-w-md w-full text-center">
@@ -10,7 +16,9 @@ export default function ManagerError({ error, reset }: { error: Error & { digest
           <AlertTriangle size={20} className="text-red-400" />
         </div>
         <h2 className="font-heading text-lg font-bold text-lr-white mb-2">Something went wrong</h2>
-        <p className="text-sm text-muted mb-6">{error.message || "An unexpected error occurred in the manager portal."}</p>
+        <p className="text-sm text-muted mb-6">
+          {error.message || 'An unexpected error occurred in the manager portal.'}
+        </p>
         <button
           type="button"
           onClick={reset}

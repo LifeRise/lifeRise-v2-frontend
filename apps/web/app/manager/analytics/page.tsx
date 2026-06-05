@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useMemo } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import {
   LineChart,
   Line,
@@ -15,56 +15,73 @@ import {
   AreaChart,
   Area,
   Cell,
-} from "recharts";
+} from 'recharts';
 import {
   analyticsTimeSeries,
   analyticsTimeSeries7d,
   analyticsTimeSeries90d,
   categoryRevenue,
   vendorLeaderboard,
-} from "@/lib/mock-data";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { staggerContainerResponsive, fadeUpItem } from "@/lib/animations";
-import { cn } from "@/lib/utils";
+} from '@/lib/mock-data';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { SectionHeader } from '@/components/ui/SectionHeader';
+import { staggerContainerResponsive, fadeUpItem } from '@/lib/animations';
+import { cn } from '@/lib/utils';
 
-type Range = "7d" | "30d" | "90d";
+type Range = '7d' | '30d' | '90d';
 
-const kpiByRange: Record<Range, Array<{ label: string; value: string; delta: string; up: boolean }>> = {
-  "7d": [
-    { label: "Total Residents", value: "247", delta: "+1", up: true },
-    { label: "Bookings", value: "65", delta: "+8%", up: true },
-    { label: "Revenue", value: "$5.5K", delta: "+5%", up: true },
-    { label: "Complaints", value: "1", delta: "-1", up: false },
+const kpiByRange: Record<
+  Range,
+  Array<{ label: string; value: string; delta: string; up: boolean }>
+> = {
+  '7d': [
+    { label: 'Total Residents', value: '247', delta: '+1', up: true },
+    { label: 'Bookings', value: '65', delta: '+8%', up: true },
+    { label: 'Revenue', value: '$5.5K', delta: '+5%', up: true },
+    { label: 'Complaints', value: '1', delta: '-1', up: false },
   ],
-  "30d": [
-    { label: "Total Residents", value: "247", delta: "+4", up: true },
-    { label: "Bookings", value: "143", delta: "+18%", up: true },
-    { label: "Revenue", value: "$37K", delta: "+12%", up: true },
-    { label: "Complaints", value: "3", delta: "-2", up: false },
+  '30d': [
+    { label: 'Total Residents', value: '247', delta: '+4', up: true },
+    { label: 'Bookings', value: '143', delta: '+18%', up: true },
+    { label: 'Revenue', value: '$37K', delta: '+12%', up: true },
+    { label: 'Complaints', value: '3', delta: '-2', up: false },
   ],
-  "90d": [
-    { label: "Total Residents", value: "247", delta: "+23", up: true },
-    { label: "Bookings", value: "543", delta: "+31%", up: true },
-    { label: "Revenue", value: "$91K", delta: "+22%", up: true },
-    { label: "Complaints", value: "14", delta: "+3", up: true },
+  '90d': [
+    { label: 'Total Residents', value: '247', delta: '+23', up: true },
+    { label: 'Bookings', value: '543', delta: '+31%', up: true },
+    { label: 'Revenue', value: '$91K', delta: '+22%', up: true },
+    { label: 'Complaints', value: '14', delta: '+3', up: true },
   ],
 };
 
 const timeSeriesByRange = {
-  "7d": analyticsTimeSeries7d,
-  "30d": analyticsTimeSeries,
-  "90d": analyticsTimeSeries90d,
+  '7d': analyticsTimeSeries7d,
+  '30d': analyticsTimeSeries,
+  '90d': analyticsTimeSeries90d,
 };
 
 function ChartWrapper({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setMounted(true), 0); return () => clearTimeout(t); }, []);
-  if (!mounted) return <div className="h-56 flex items-center justify-center text-muted text-sm">Loading chart…</div>;
+  useEffect(() => {
+    const t = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(t);
+  }, []);
+  if (!mounted)
+    return (
+      <div className="h-56 flex items-center justify-center text-muted text-sm">Loading chart…</div>
+    );
   return <div className="h-56 min-h-56">{children}</div>;
 }
 
-function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ name: string; value: number; color: string }>; label?: string }) {
+function CustomTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; color: string }>;
+  label?: string;
+}) {
   if (active && payload && payload.length) {
     return (
       <div className="glass rounded-xl px-3 py-2 text-xs">
@@ -81,7 +98,7 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
 }
 
 export default function AnalyticsPage() {
-  const [range, setRange] = useState<Range>("30d");
+  const [range, setRange] = useState<Range>('30d');
 
   const kpis = useMemo(() => kpiByRange[range], [range]);
   const timeSeries = useMemo(() => timeSeriesByRange[range], [range]);
@@ -98,25 +115,28 @@ export default function AnalyticsPage() {
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <SectionHeader title="Analytics" subtitle="Deep insights into complex operations" />
         <div className="flex items-center gap-1 bg-midnight/60 rounded-lg p-1">
-          {(["7d", "30d", "90d"] as Range[]).map((r) => (
+          {(['7d', '30d', '90d'] as Range[]).map((r) => (
             <button
               type="button"
               key={r}
               onClick={() => setRange(r)}
               className={cn(
-                "px-3 py-1.5 rounded-md text-xs font-medium transition-all",
-                range === r
-                  ? "bg-purple-accent text-white"
-                  : "text-muted hover:text-lr-white"
+                'px-3 py-1.5 rounded-md text-xs font-medium transition-all',
+                range === r ? 'bg-purple-accent text-white' : 'text-muted hover:text-lr-white'
               )}
             >
-              {r === "7d" ? "7 Days" : r === "30d" ? "30 Days" : "90 Days"}
+              {r === '7d' ? '7 Days' : r === '30d' ? '30 Days' : '90 Days'}
             </button>
           ))}
         </div>
       </div>
 
-      <motion.div variants={staggerContainerResponsive(0.06)} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }}>
+      <motion.div
+        variants={staggerContainerResponsive(0.06)}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, amount: 0.1 }}
+      >
         {/* KPIs — range-aware */}
         <motion.div variants={fadeUpItem} className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           {kpis.map((kpi) => (
@@ -125,11 +145,11 @@ export default function AnalyticsPage() {
               <p className="font-heading font-bold text-2xl text-lr-white">{kpi.value}</p>
               <p
                 className={cn(
-                  "text-[10px] mt-1 font-medium",
-                  kpi.up ? "text-teal" : "text-red-400"
+                  'text-[10px] mt-1 font-medium',
+                  kpi.up ? 'text-teal' : 'text-red-400'
                 )}
               >
-                {kpi.delta} {kpi.up ? "↑" : "↓"} vs last period
+                {kpi.delta} {kpi.up ? '↑' : '↓'} vs last period
               </p>
             </GlassCard>
           ))}
@@ -146,11 +166,34 @@ export default function AnalyticsPage() {
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={timeSeries} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                    <XAxis dataKey="date" tick={{ fill: "#94A3B8", fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: "#94A3B8", fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fill: '#94A3B8', fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{ fill: '#94A3B8', fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
                     <Tooltip content={<CustomTooltip />} />
-                    <Line type="monotone" dataKey="bookings" stroke="#00D4AA" strokeWidth={2.5} dot={false} activeDot={{ r: 4, fill: "#00D4AA" }} />
-                    <Line type="monotone" dataKey="newResidents" stroke="#818CF8" strokeWidth={2.5} dot={false} activeDot={{ r: 4, fill: "#818CF8" }} />
+                    <Line
+                      type="monotone"
+                      dataKey="bookings"
+                      stroke="#00D4AA"
+                      strokeWidth={2.5}
+                      dot={false}
+                      activeDot={{ r: 4, fill: '#00D4AA' }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="newResidents"
+                      stroke="#818CF8"
+                      strokeWidth={2.5}
+                      dot={false}
+                      activeDot={{ r: 4, fill: '#818CF8' }}
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </ChartWrapper>
@@ -164,10 +207,22 @@ export default function AnalyticsPage() {
               </h3>
               <ChartWrapper>
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={categoryRevenue} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                  <BarChart
+                    data={categoryRevenue}
+                    margin={{ top: 8, right: 8, left: -20, bottom: 0 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                    <XAxis dataKey="category" tick={{ fill: "#94A3B8", fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: "#94A3B8", fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <XAxis
+                      dataKey="category"
+                      tick={{ fill: '#94A3B8', fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{ fill: '#94A3B8', fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
                     <Tooltip content={<CustomTooltip />} />
                     <Bar dataKey="revenue" radius={[4, 4, 0, 0]}>
                       {categoryRevenue.map((entry, index) => (
@@ -198,10 +253,26 @@ export default function AnalyticsPage() {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                    <XAxis dataKey="date" tick={{ fill: "#94A3B8", fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: "#94A3B8", fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fill: '#94A3B8', fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{ fill: '#94A3B8', fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
                     <Tooltip content={<CustomTooltip />} />
-                    <Area type="monotone" dataKey="revenue" stroke="#818CF8" strokeWidth={2} fill="url(#revGrad)" dot={false} />
+                    <Area
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="#818CF8"
+                      strokeWidth={2}
+                      fill="url(#revGrad)"
+                      dot={false}
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               </ChartWrapper>
@@ -223,10 +294,26 @@ export default function AnalyticsPage() {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                    <XAxis dataKey="date" tick={{ fill: "#94A3B8", fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: "#94A3B8", fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fill: '#94A3B8', fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{ fill: '#94A3B8', fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
                     <Tooltip content={<CustomTooltip />} />
-                    <Area type="monotone" dataKey="complaints" stroke="#F87171" strokeWidth={2} fill="url(#compGrad)" dot={false} />
+                    <Area
+                      type="monotone"
+                      dataKey="complaints"
+                      stroke="#F87171"
+                      strokeWidth={2}
+                      fill="url(#compGrad)"
+                      dot={false}
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               </ChartWrapper>
@@ -240,15 +327,18 @@ export default function AnalyticsPage() {
             <h3 className="font-heading text-sm font-semibold text-lr-white mb-1">
               Top Vendors This Period
             </h3>
-            <p className="text-muted text-[11px] mb-5">Ranked by booking volume · {range === "7d" ? "Last 7 days" : range === "30d" ? "Last 30 days" : "Last 90 days"}</p>
+            <p className="text-muted text-[11px] mb-5">
+              Ranked by booking volume ·{' '}
+              {range === '7d' ? 'Last 7 days' : range === '30d' ? 'Last 30 days' : 'Last 90 days'}
+            </p>
             <div className="space-y-4">
               {topVendors.map((v, i) => (
                 <div key={v.name} className="flex items-center gap-3">
                   {/* Gradient avatar */}
                   <div
                     className={cn(
-                      "w-8 h-8 rounded-full bg-linear-to-br flex items-center justify-center text-[10px] font-bold text-white font-heading shrink-0",
-                      v.gradient ?? "from-slate-600 to-slate-700"
+                      'w-8 h-8 rounded-full bg-linear-to-br flex items-center justify-center text-[10px] font-bold text-white font-heading shrink-0',
+                      v.gradient ?? 'from-slate-600 to-slate-700'
                     )}
                   >
                     {v.initials ?? v.name.slice(0, 2)}

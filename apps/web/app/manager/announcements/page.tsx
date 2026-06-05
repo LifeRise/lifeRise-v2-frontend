@@ -1,32 +1,32 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Megaphone, Send, AlertTriangle, Info, CalendarDays, Copy } from "lucide-react";
-import { announcements as initialAnnouncements } from "@/lib/mock-data";
-import type { Announcement } from "@/lib/types";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { staggerContainerResponsive, fadeUpItem } from "@/lib/animations";
-import { cn } from "@/lib/utils";
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Megaphone, Send, AlertTriangle, Info, CalendarDays, Copy } from 'lucide-react';
+import { announcements as initialAnnouncements } from '@/lib/mock-data';
+import type { Announcement } from '@/lib/types';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { SectionHeader } from '@/components/ui/SectionHeader';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { staggerContainerResponsive, fadeUpItem } from '@/lib/animations';
+import { cn } from '@/lib/utils';
 
-type Audience = "all" | "residents" | "vendors";
-type Priority = "normal" | "urgent";
+type Audience = 'all' | 'residents' | 'vendors';
+type Priority = 'normal' | 'urgent';
 
 export default function AnnouncementsPage() {
   const [items, setItems] = useState<Announcement[]>(initialAnnouncements);
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [audience, setAudience] = useState<Audience>("all");
-  const [priority, setPriority] = useState<Priority>("normal");
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+  const [audience, setAudience] = useState<Audience>('all');
+  const [priority, setPriority] = useState<Priority>('normal');
   const [sent, setSent] = useState(false);
-  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [categoryFilter, setCategoryFilter] = useState('All');
 
-  const categories = ["All", ...Array.from(new Set(items.map((a) => a.category)))];
+  const categories = ['All', ...Array.from(new Set(items.map((a) => a.category)))];
 
   const filtered =
-    categoryFilter === "All" ? items : items.filter((a) => a.category === categoryFilter);
+    categoryFilter === 'All' ? items : items.filter((a) => a.category === categoryFilter);
 
   const sendAnnouncement = () => {
     if (!title.trim()) return;
@@ -34,16 +34,16 @@ export default function AnnouncementsPage() {
       id: `a${Date.now()}`,
       title,
       body,
-      date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-      category: priority === "urgent" ? "Urgent" : "General",
-      urgent: priority === "urgent",
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      category: priority === 'urgent' ? 'Urgent' : 'General',
+      urgent: priority === 'urgent',
     };
     setItems((prev) => [newAnn, ...prev]);
     setSent(true);
-    setTitle("");
-    setBody("");
-    setAudience("all");
-    setPriority("normal");
+    setTitle('');
+    setBody('');
+    setAudience('all');
+    setPriority('normal');
     setTimeout(() => setSent(false), 2500);
   };
 
@@ -52,7 +52,7 @@ export default function AnnouncementsPage() {
       {
         ...ann,
         id: `a${Date.now()}`,
-        date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       },
       ...prev,
     ]);
@@ -70,34 +70,34 @@ export default function AnnouncementsPage() {
           </h3>
 
           <div className="flex flex-wrap gap-2 mb-3">
-            {(["all", "residents", "vendors"] as Audience[]).map((a) => (
+            {(['all', 'residents', 'vendors'] as Audience[]).map((a) => (
               <button
                 type="button"
                 key={a}
                 onClick={() => setAudience(a)}
                 className={cn(
-                  "px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize",
+                  'px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize',
                   audience === a
-                    ? "bg-purple-accent text-white"
-                    : "bg-white/6 text-muted hover:text-lr-white"
+                    ? 'bg-purple-accent text-white'
+                    : 'bg-white/6 text-muted hover:text-lr-white'
                 )}
               >
-                {a === "all" ? "All" : a}
+                {a === 'all' ? 'All' : a}
               </button>
             ))}
             <div className="w-px h-5 bg-white/10 mx-1" />
-            {(["normal", "urgent"] as Priority[]).map((p) => (
+            {(['normal', 'urgent'] as Priority[]).map((p) => (
               <button
                 type="button"
                 key={p}
                 onClick={() => setPriority(p)}
                 className={cn(
-                  "px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize",
+                  'px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize',
                   priority === p
-                    ? p === "urgent"
-                      ? "bg-red-400/15 text-red-400 border border-red-400/20"
-                      : "bg-purple-accent text-white"
-                    : "bg-white/6 text-muted hover:text-lr-white"
+                    ? p === 'urgent'
+                      ? 'bg-red-400/15 text-red-400 border border-red-400/20'
+                      : 'bg-purple-accent text-white'
+                    : 'bg-white/6 text-muted hover:text-lr-white'
                 )}
               >
                 {p}
@@ -123,14 +123,12 @@ export default function AnnouncementsPage() {
             onClick={sendAnnouncement}
             disabled={!title.trim()}
             className={cn(
-              "flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed",
-              sent
-                ? "bg-teal/15 text-teal"
-                : "bg-purple-accent text-white"
+              'flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed',
+              sent ? 'bg-teal/15 text-teal' : 'bg-purple-accent text-white'
             )}
           >
             <Send size={14} />
-            {sent ? "Sent successfully ✓" : "Send Announcement"}
+            {sent ? 'Sent successfully ✓' : 'Send Announcement'}
           </button>
         </GlassCard>
       </motion.div>
@@ -143,10 +141,10 @@ export default function AnnouncementsPage() {
             key={c}
             onClick={() => setCategoryFilter(c)}
             className={cn(
-              "shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+              'shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
               categoryFilter === c
-                ? "bg-purple-accent text-white"
-                : "bg-white/6 text-muted hover:text-lr-white"
+                ? 'bg-purple-accent text-white'
+                : 'bg-white/6 text-muted hover:text-lr-white'
             )}
           >
             {c}
@@ -155,7 +153,13 @@ export default function AnnouncementsPage() {
       </div>
 
       {/* History */}
-      <motion.div variants={staggerContainerResponsive(0.04)} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} className="space-y-2">
+      <motion.div
+        variants={staggerContainerResponsive(0.04)}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, amount: 0.1 }}
+        className="space-y-2"
+      >
         <AnimatePresence>
           {filtered.map((a) => (
             <motion.div key={a.id} variants={fadeUpItem} layout exit={{ opacity: 0, x: 20 }}>
@@ -163,8 +167,8 @@ export default function AnnouncementsPage() {
                 <div className="flex items-start gap-3">
                   <div
                     className={cn(
-                      "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5",
-                      a.urgent ? "bg-red-400/15" : "bg-purple-accent/15"
+                      'w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5',
+                      a.urgent ? 'bg-red-400/15' : 'bg-purple-accent/15'
                     )}
                   >
                     {a.urgent ? (

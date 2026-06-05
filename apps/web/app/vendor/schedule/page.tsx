@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import { useMemo } from "react";
-import type { Booking } from "@/lib/api/bookings";
-import { motion } from "framer-motion";
-import { CalendarDays, User, MapPin } from "lucide-react";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { useAuth } from "@/lib/auth/hooks";
-import { useBookings } from "@/lib/api/hooks";
-import { cn } from "@/lib/utils";
+import { useMemo } from 'react';
+import type { Booking } from '@/lib/api/bookings';
+import { motion } from 'framer-motion';
+import { CalendarDays, User, MapPin } from 'lucide-react';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { useAuth } from '@/lib/auth/hooks';
+import { useBookings } from '@/lib/api/hooks';
+import { cn } from '@/lib/utils';
 
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
-  Pending: { label: "Pending", color: "text-gold", bg: "bg-gold/10" },
-  Confirmed: { label: "Confirmed", color: "text-teal", bg: "bg-teal/10" },
-  Completed: { label: "Completed", color: "text-purple-accent", bg: "bg-purple-accent/10" },
-  Cancelled: { label: "Cancelled", color: "text-rose", bg: "bg-rose/10" },
+  Pending: { label: 'Pending', color: 'text-gold', bg: 'bg-gold/10' },
+  Confirmed: { label: 'Confirmed', color: 'text-teal', bg: 'bg-teal/10' },
+  Completed: { label: 'Completed', color: 'text-purple-accent', bg: 'bg-purple-accent/10' },
+  Cancelled: { label: 'Cancelled', color: 'text-rose', bg: 'bg-rose/10' },
 };
 
 export default function VendorSchedulePage() {
@@ -26,7 +26,7 @@ export default function VendorSchedulePage() {
   const grouped = useMemo(() => {
     const map = new Map<string, Booking[]>();
     apiBookings.forEach((b) => {
-      const date = b.booking_date?.split("T")[0] ?? "Unknown";
+      const date = b.booking_date?.split('T')[0] ?? 'Unknown';
       if (!map.has(date)) map.set(date, []);
       map.get(date)!.push(b);
     });
@@ -43,10 +43,14 @@ export default function VendorSchedulePage() {
           <CalendarDays size={20} className="text-gold" /> My Schedule
         </h1>
         {isLive && (
-          <span className="text-[10px] text-teal bg-teal/10 px-2 py-0.5 rounded-full">Live data</span>
+          <span className="text-[10px] text-teal bg-teal/10 px-2 py-0.5 rounded-full">
+            Live data
+          </span>
         )}
         {!isLive && !isLoading && (
-          <span className="text-[10px] text-muted bg-white/5 px-2 py-0.5 rounded-full">Demo data</span>
+          <span className="text-[10px] text-muted bg-white/5 px-2 py-0.5 rounded-full">
+            Demo data
+          </span>
         )}
       </div>
 
@@ -60,13 +64,13 @@ export default function VendorSchedulePage() {
         <div className="space-y-6">
           {dates.map((date) => {
             const dayBookings = grouped.get(date)!;
-            const isToday = date === new Date().toISOString().split("T")[0];
+            const isToday = date === new Date().toISOString().split('T')[0];
             const displayDate = isToday
-              ? "Today"
-              : new Date(date).toLocaleDateString("en-US", {
-                  weekday: "long",
-                  month: "short",
-                  day: "numeric",
+              ? 'Today'
+              : new Date(date).toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  month: 'short',
+                  day: 'numeric',
                 });
 
             return (
@@ -89,7 +93,7 @@ export default function VendorSchedulePage() {
                           <div className="flex items-center gap-3">
                             <div className="text-center shrink-0 w-14">
                               <p className="text-gold text-[10px] font-bold">
-                                {b.start_time?.slice(0, 5) ?? "—"}
+                                {b.start_time?.slice(0, 5) ?? '—'}
                               </p>
                               <p className="text-muted text-[8px]">{b.duration} min</p>
                             </div>
@@ -99,22 +103,29 @@ export default function VendorSchedulePage() {
                                 <p className="text-lr-white text-xs font-semibold truncate">
                                   {b.service_name ?? `Service #${b.service_id}`}
                                 </p>
-                                <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded-full", cfg.bg, cfg.color)}>
+                                <span
+                                  className={cn(
+                                    'text-[9px] font-bold px-1.5 py-0.5 rounded-full',
+                                    cfg.bg,
+                                    cfg.color
+                                  )}
+                                >
                                   {cfg.label}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2 mt-1 text-[10px] text-muted">
                                 <span className="flex items-center gap-0.5">
-                                  <User size={8} /> {b.customer_name ?? `Customer #${b.customer_id}`}
+                                  <User size={8} />{' '}
+                                  {b.customer_name ?? `Customer #${b.customer_id}`}
                                 </span>
                                 <span className="flex items-center gap-0.5 truncate">
-                                  <MapPin size={8} /> {b.address ?? "On-site"}
+                                  <MapPin size={8} /> {b.address ?? 'On-site'}
                                 </span>
                               </div>
                             </div>
                             <div className="text-right shrink-0">
                               <p className="text-gold text-xs font-bold">
-                                ${parseFloat(b.final_price ?? b.price ?? "0").toFixed(0)}
+                                ${parseFloat(b.final_price ?? b.price ?? '0').toFixed(0)}
                               </p>
                             </div>
                           </div>

@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import type { Booking } from "@/lib/api/bookings";
-import { motion, AnimatePresence } from "framer-motion";
-import { List, CheckCircle, XCircle, Clock, CalendarDays, User } from "lucide-react";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { useAuth } from "@/lib/auth/hooks";
-import { useBookings } from "@/lib/api/hooks";
-import { updateBookingStatus } from "@/lib/api/bookings";
-import { cn } from "@/lib/utils";
+import { useState, useMemo } from 'react';
+import type { Booking } from '@/lib/api/bookings';
+import { motion, AnimatePresence } from 'framer-motion';
+import { List, CheckCircle, XCircle, Clock, CalendarDays, User } from 'lucide-react';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { useAuth } from '@/lib/auth/hooks';
+import { useBookings } from '@/lib/api/hooks';
+import { updateBookingStatus } from '@/lib/api/bookings';
+import { cn } from '@/lib/utils';
 
 const columns = [
-  { id: "pending", label: "New", color: "text-gold", bg: "bg-gold/10" },
-  { id: "confirmed", label: "Accepted", color: "text-teal", bg: "bg-teal/10" },
-  { id: "completed", label: "Completed", color: "text-purple-accent", bg: "bg-purple-accent/10" },
+  { id: 'pending', label: 'New', color: 'text-gold', bg: 'bg-gold/10' },
+  { id: 'confirmed', label: 'Accepted', color: 'text-teal', bg: 'bg-teal/10' },
+  { id: 'completed', label: 'Completed', color: 'text-purple-accent', bg: 'bg-purple-accent/10' },
 ];
 
 function QueueCard({
@@ -34,15 +34,17 @@ function QueueCard({
       className="glass-dark rounded-lg p-3 border border-white/5 space-y-2"
     >
       <div className="flex items-center justify-between">
-        <span className="text-[10px] text-muted font-mono">#{booking.booking_number ?? booking.id}</span>
+        <span className="text-[10px] text-muted font-mono">
+          #{booking.booking_number ?? booking.id}
+        </span>
         <span
           className={cn(
-            "text-[9px] font-bold px-1.5 py-0.5 rounded-full",
-            booking.status === "Pending"
-              ? "bg-gold/10 text-gold"
-              : booking.status === "Confirmed"
-              ? "bg-teal/10 text-teal"
-              : "bg-purple-accent/10 text-purple-accent"
+            'text-[9px] font-bold px-1.5 py-0.5 rounded-full',
+            booking.status === 'Pending'
+              ? 'bg-gold/10 text-gold'
+              : booking.status === 'Confirmed'
+                ? 'bg-teal/10 text-teal'
+                : 'bg-purple-accent/10 text-purple-accent'
           )}
         >
           {booking.status}
@@ -63,7 +65,7 @@ function QueueCard({
 
       <div className="flex items-center gap-2 text-[10px] text-muted">
         <span className="flex items-center gap-0.5">
-          <CalendarDays size={8} /> {booking.booking_date?.split("T")[0]}
+          <CalendarDays size={8} /> {booking.booking_date?.split('T')[0]}
         </span>
         <span className="flex items-center gap-0.5">
           <Clock size={8} /> {booking.start_time?.slice(0, 5)}
@@ -71,10 +73,10 @@ function QueueCard({
       </div>
 
       <p className="text-gold text-[11px] font-bold">
-        ${parseFloat(booking.final_price ?? booking.price ?? "0").toFixed(0)}
+        ${parseFloat(booking.final_price ?? booking.price ?? '0').toFixed(0)}
       </p>
 
-      {booking.status === "Pending" && (
+      {booking.status === 'Pending' && (
         <div className="flex items-center gap-2 pt-1">
           <button
             type="button"
@@ -107,13 +109,13 @@ export default function VendorQueuePage() {
     const result: Record<string, Booking[]> = { pending: [], confirmed: [], completed: [] };
     apiBookings.forEach((b) => {
       const key =
-        b.status === "Pending"
-          ? "pending"
-          : b.status === "Confirmed"
-          ? "confirmed"
-          : b.status === "Completed"
-          ? "completed"
-          : null;
+        b.status === 'Pending'
+          ? 'pending'
+          : b.status === 'Confirmed'
+            ? 'confirmed'
+            : b.status === 'Completed'
+              ? 'completed'
+              : null;
       if (key) result[key].push(b);
     });
     return result;
@@ -123,10 +125,10 @@ export default function VendorQueuePage() {
     if (!profile?.role || actingId) return;
     setActingId(id);
     try {
-      await updateBookingStatus(profile.role, id, "Confirmed");
+      await updateBookingStatus(profile.role, id, 'Confirmed');
       refresh();
     } catch (err: unknown) {
-      console.error("Accept failed:", err instanceof Error ? err.message : String(err));
+      console.error('Accept failed:', err instanceof Error ? err.message : String(err));
     } finally {
       setActingId(null);
     }
@@ -136,10 +138,10 @@ export default function VendorQueuePage() {
     if (!profile?.role || actingId) return;
     setActingId(id);
     try {
-      await updateBookingStatus(profile.role, id, "Cancelled");
+      await updateBookingStatus(profile.role, id, 'Cancelled');
       refresh();
     } catch (err: unknown) {
-      console.error("Decline failed:", err instanceof Error ? err.message : String(err));
+      console.error('Decline failed:', err instanceof Error ? err.message : String(err));
     } finally {
       setActingId(null);
     }
@@ -152,10 +154,14 @@ export default function VendorQueuePage() {
           <List size={20} className="text-gold" /> Booking Queue
         </h1>
         {isLive && (
-          <span className="text-[10px] text-teal bg-teal/10 px-2 py-0.5 rounded-full">Live data</span>
+          <span className="text-[10px] text-teal bg-teal/10 px-2 py-0.5 rounded-full">
+            Live data
+          </span>
         )}
         {!isLive && !isLoading && (
-          <span className="text-[10px] text-muted bg-white/5 px-2 py-0.5 rounded-full">Demo data</span>
+          <span className="text-[10px] text-muted bg-white/5 px-2 py-0.5 rounded-full">
+            Demo data
+          </span>
         )}
       </div>
 
@@ -170,8 +176,8 @@ export default function VendorQueuePage() {
           {columns.map((col) => (
             <div key={col.id}>
               <div className="flex items-center gap-2 mb-3">
-                <div className={cn("w-2 h-2 rounded-full", col.bg.replace("/10", ""))} />
-                <h2 className={cn("text-xs font-bold uppercase tracking-wider", col.color)}>
+                <div className={cn('w-2 h-2 rounded-full', col.bg.replace('/10', ''))} />
+                <h2 className={cn('text-xs font-bold uppercase tracking-wider', col.color)}>
                   {col.label}
                 </h2>
                 <span className="text-[10px] text-muted ml-auto">

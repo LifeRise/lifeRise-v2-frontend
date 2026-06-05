@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import * as Dialog from "@radix-ui/react-dialog";
-import { motion, AnimatePresence, useDragControls } from "framer-motion";
-import { X } from "lucide-react";
-import { useIsMobile } from "@/lib/hooks/useMediaQuery";
-import { cn } from "@/lib/utils";
+import * as Dialog from '@radix-ui/react-dialog';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
+import { X } from 'lucide-react';
+import { useIsMobile } from '@/lib/hooks/useMediaQuery';
+import { cn } from '@/lib/utils';
 
 interface ResponsiveModalProps {
   open: boolean;
@@ -13,12 +13,7 @@ interface ResponsiveModalProps {
   className?: string;
 }
 
-export function ResponsiveModal({
-  open,
-  onOpenChange,
-  children,
-  className,
-}: ResponsiveModalProps) {
+export function ResponsiveModal({ open, onOpenChange, children, className }: ResponsiveModalProps) {
   const isMobile = useIsMobile();
   const dragControls = useDragControls();
 
@@ -43,30 +38,18 @@ export function ResponsiveModal({
             <Dialog.Content asChild>
               <motion.div
                 className={cn(
-                  "fixed inset-0 z-50 flex p-0 sm:p-6",
-                  isMobile ? "items-end" : "items-center justify-center"
+                  'fixed inset-0 z-50 flex p-0 sm:p-6',
+                  isMobile ? 'items-end' : 'items-center justify-center'
                 )}
-                initial={
-                  isMobile
-                    ? { opacity: 1, y: "100%" }
-                    : { opacity: 0, scale: 0.95, y: 12 }
-                }
-                animate={
-                  isMobile
-                    ? { opacity: 1, y: 0 }
-                    : { opacity: 1, scale: 1, y: 0 }
-                }
-                exit={
-                  isMobile
-                    ? { opacity: 1, y: "100%" }
-                    : { opacity: 0, scale: 0.97, y: 6 }
-                }
+                initial={isMobile ? { opacity: 1, y: '100%' } : { opacity: 0, scale: 0.95, y: 12 }}
+                animate={isMobile ? { opacity: 1, y: 0 } : { opacity: 1, scale: 1, y: 0 }}
+                exit={isMobile ? { opacity: 1, y: '100%' } : { opacity: 0, scale: 0.97, y: 6 }}
                 transition={
                   isMobile
-                    ? { type: "spring", stiffness: 350, damping: 30 }
-                    : { type: "spring", stiffness: 350, damping: 28 }
+                    ? { type: 'spring', stiffness: 350, damping: 30 }
+                    : { type: 'spring', stiffness: 350, damping: 28 }
                 }
-                drag={isMobile ? "y" : false}
+                drag={isMobile ? 'y' : false}
                 dragControls={dragControls}
                 dragConstraints={{ top: 0 }}
                 dragElastic={0.15}
@@ -78,16 +61,16 @@ export function ResponsiveModal({
               >
                 <div
                   className={cn(
-                    "relative w-full bg-slate-deep/95 shadow-2xl overflow-hidden",
+                    'relative w-full bg-slate-deep/95 shadow-2xl overflow-hidden',
                     isMobile
-                      ? "max-h-[90vh] rounded-t-3xl border-t border-x border-white/10"
-                      : "max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10",
+                      ? 'max-h-[90vh] rounded-t-3xl border-t border-x border-white/10'
+                      : 'max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10',
                     className
                   )}
                   style={{
-                    touchAction: isMobile ? "pan-y" : undefined,
-                    overscrollBehavior: "contain",
-                    WebkitOverflowScrolling: "touch",
+                    touchAction: isMobile ? 'pan-y' : undefined,
+                    overscrollBehavior: 'contain',
+                    WebkitOverflowScrolling: 'touch',
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -96,7 +79,7 @@ export function ResponsiveModal({
                     <div
                       className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing"
                       onPointerDown={(e) => dragControls.start(e)}
-                      style={{ touchAction: "pan-y" }}
+                      style={{ touchAction: 'pan-y' }}
                     >
                       <div className="w-10 h-1 rounded-full bg-white/20" />
                     </div>

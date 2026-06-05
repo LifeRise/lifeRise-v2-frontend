@@ -1,26 +1,26 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Bell, ShoppingBag, Tag, AlertTriangle, CheckCheck, Trash2, Info } from "lucide-react";
-import { notifications } from "@/lib/mock-data";
-import type { NotificationItem } from "@/lib/types";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { staggerContainerResponsive, listItem } from "@/lib/animations";
-import { cn } from "@/lib/utils";
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Bell, ShoppingBag, Tag, AlertTriangle, CheckCheck, Trash2, Info } from 'lucide-react';
+import { notifications } from '@/lib/mock-data';
+import type { NotificationItem } from '@/lib/types';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { staggerContainerResponsive, listItem } from '@/lib/animations';
+import { cn } from '@/lib/utils';
 
 const typeConfig = {
-  booking: { icon: ShoppingBag, color: "text-teal", bg: "bg-teal/10" },
-  promo: { icon: Tag, color: "text-gold", bg: "bg-gold/10" },
-  alert: { icon: AlertTriangle, color: "text-red-400", bg: "bg-red-400/10" },
-  system: { icon: Info, color: "text-purple-accent", bg: "bg-purple-accent/10" },
+  booking: { icon: ShoppingBag, color: 'text-teal', bg: 'bg-teal/10' },
+  promo: { icon: Tag, color: 'text-gold', bg: 'bg-gold/10' },
+  alert: { icon: AlertTriangle, color: 'text-red-400', bg: 'bg-red-400/10' },
+  system: { icon: Info, color: 'text-purple-accent', bg: 'bg-purple-accent/10' },
 };
 
 function relativeTime(ts: string) {
   const diff = Date.now() - new Date(ts).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "Just now";
+  if (mins < 1) return 'Just now';
   if (mins < 60) return `${mins}m ago`;
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs}h ago`;
@@ -47,9 +47,7 @@ export default function NotificationsPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="font-heading text-2xl font-bold text-lr-white">Notifications</h1>
-          {unreadCount > 0 && (
-            <p className="text-muted text-xs mt-0.5">{unreadCount} unread</p>
-          )}
+          {unreadCount > 0 && <p className="text-muted text-xs mt-0.5">{unreadCount} unread</p>}
         </div>
         <div className="flex items-center gap-2">
           {unreadCount > 0 && (
@@ -84,23 +82,18 @@ export default function NotificationsPage() {
               const config = typeConfig[n.type] || typeConfig.system;
               const Icon = config.icon;
               return (
-                <motion.div
-                  key={n.id}
-                  variants={listItem}
-                  layout
-                  exit={{ opacity: 0, x: 40 }}
-                >
+                <motion.div key={n.id} variants={listItem} layout exit={{ opacity: 0, x: 40 }}>
                   <GlassCard
                     className={cn(
-                      "p-3.5 transition-opacity cursor-pointer",
-                      !n.read && "border-l-2 border-l-teal"
+                      'p-3.5 transition-opacity cursor-pointer',
+                      !n.read && 'border-l-2 border-l-teal'
                     )}
                     onClick={() => markRead(n.id)}
                   >
                     <div className="flex items-start gap-3">
                       <div
                         className={cn(
-                          "w-9 h-9 rounded-full flex items-center justify-center shrink-0",
+                          'w-9 h-9 rounded-full flex items-center justify-center shrink-0',
                           config.bg
                         )}
                       >
@@ -115,9 +108,7 @@ export default function NotificationsPage() {
                         </div>
                         <p className="text-muted text-xs mt-0.5 line-clamp-2">{n.body}</p>
                       </div>
-                      {!n.read && (
-                        <div className="w-2 h-2 rounded-full bg-teal shrink-0 mt-1.5" />
-                      )}
+                      {!n.read && <div className="w-2 h-2 rounded-full bg-teal shrink-0 mt-1.5" />}
                     </div>
                   </GlassCard>
                 </motion.div>

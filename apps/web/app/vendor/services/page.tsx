@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Briefcase, Plus, Star, Clock, DollarSign, Pencil, Trash2, X, Check } from "lucide-react";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { useAuth } from "@/lib/auth/hooks";
-import { useServices } from "@/lib/api/hooks";
-import { createService, updateService, deleteService } from "@/lib/api/services";
-import type { Service } from "@/lib/api/services";
-import { cn } from "@/lib/utils";
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Briefcase, Plus, Star, Clock, DollarSign, Pencil, Trash2, X, Check } from 'lucide-react';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { useAuth } from '@/lib/auth/hooks';
+import { useServices } from '@/lib/api/hooks';
+import { createService, updateService, deleteService } from '@/lib/api/services';
+import type { Service } from '@/lib/api/services';
+import { cn } from '@/lib/utils';
 
 interface ServiceForm {
   name: string;
@@ -27,7 +27,7 @@ function ServiceCard({
   onEdit: (s: Service) => void;
   onDelete: (id: number) => void;
 }) {
-  const price = parseFloat(service.price ?? "0").toFixed(0);
+  const price = parseFloat(service.price ?? '0').toFixed(0);
 
   return (
     <motion.div
@@ -43,16 +43,16 @@ function ServiceCard({
               <h3 className="text-lr-white text-sm font-semibold truncate">{service.name}</h3>
               <span
                 className={cn(
-                  "text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0",
-                  service.status === "active"
-                    ? "bg-teal/10 text-teal"
-                    : "bg-muted/10 text-muted"
+                  'text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0',
+                  service.status === 'active' ? 'bg-teal/10 text-teal' : 'bg-muted/10 text-muted'
                 )}
               >
-                {service.status ?? "active"}
+                {service.status ?? 'active'}
               </span>
             </div>
-            <p className="text-muted text-xs mt-0.5 line-clamp-2">{service.description || "No description"}</p>
+            <p className="text-muted text-xs mt-0.5 line-clamp-2">
+              {service.description || 'No description'}
+            </p>
             <div className="flex items-center gap-3 mt-2 text-[10px] text-muted">
               <span className="flex items-center gap-0.5">
                 <DollarSign size={8} className="text-gold" /> ${price}
@@ -61,7 +61,7 @@ function ServiceCard({
                 <Clock size={8} /> {service.duration} min
               </span>
               <span className="flex items-center gap-0.5">
-                <Star size={8} className="text-gold" /> {service.avg_rating ?? "—"}
+                <Star size={8} className="text-gold" /> {service.avg_rating ?? '—'}
               </span>
             </div>
           </div>
@@ -94,7 +94,12 @@ export default function VendorServicesPage() {
   const { services: apiServices, isLoading, refresh } = useServices();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [form, setForm] = useState<ServiceForm>({ name: "", description: "", price: "", duration: "60" });
+  const [form, setForm] = useState<ServiceForm>({
+    name: '',
+    description: '',
+    price: '',
+    duration: '60',
+  });
   const [submitting, setSubmitting] = useState(false);
 
   const isLive = apiServices.length > 0;
@@ -107,7 +112,7 @@ export default function VendorServicesPage() {
     try {
       const priceNum = parseFloat(form.price);
       if (isNaN(priceNum) || priceNum < 0) {
-        console.error("Invalid price");
+        console.error('Invalid price');
         setSubmitting(false);
         return;
       }
@@ -117,8 +122,8 @@ export default function VendorServicesPage() {
         description: form.description || undefined,
         price: priceNum,
         duration: parseInt(form.duration) || 60,
-        currency: "USD",
-        location_type: "on_site",
+        currency: 'USD',
+        location_type: 'on_site',
       };
 
       if (editingId) {
@@ -127,12 +132,12 @@ export default function VendorServicesPage() {
         await createService(profile.role, data);
       }
 
-      setForm({ name: "", description: "", price: "", duration: "60" });
+      setForm({ name: '', description: '', price: '', duration: '60' });
       setEditingId(null);
       setShowForm(false);
       refresh();
     } catch (err: unknown) {
-      console.error("Save service failed:", err instanceof Error ? err.message : String(err));
+      console.error('Save service failed:', err instanceof Error ? err.message : String(err));
     } finally {
       setSubmitting(false);
     }
@@ -141,28 +146,28 @@ export default function VendorServicesPage() {
   const handleEdit = (s: Service) => {
     setEditingId(s.id);
     setForm({
-      name: s.name ?? "",
-      description: s.description ?? "",
-      price: String(s.price ?? ""),
-      duration: String(s.duration ?? "60"),
+      name: s.name ?? '',
+      description: s.description ?? '',
+      price: String(s.price ?? ''),
+      duration: String(s.duration ?? '60'),
     });
     setShowForm(true);
   };
 
   const handleDelete = async (id: number) => {
-    if (!profile?.role || !confirm("Delete this service?")) return;
+    if (!profile?.role || !confirm('Delete this service?')) return;
     try {
       await deleteService(profile.role, id);
       refresh();
     } catch (err: unknown) {
-      console.error("Delete failed:", err instanceof Error ? err.message : String(err));
+      console.error('Delete failed:', err instanceof Error ? err.message : String(err));
     }
   };
 
   const handleCancel = () => {
     setShowForm(false);
     setEditingId(null);
-    setForm({ name: "", description: "", price: "", duration: "60" });
+    setForm({ name: '', description: '', price: '', duration: '60' });
   };
 
   return (
@@ -173,10 +178,14 @@ export default function VendorServicesPage() {
         </h1>
         <div className="flex items-center gap-2">
           {isLive && (
-            <span className="text-[10px] text-teal bg-teal/10 px-2 py-0.5 rounded-full">Live data</span>
+            <span className="text-[10px] text-teal bg-teal/10 px-2 py-0.5 rounded-full">
+              Live data
+            </span>
           )}
           {!isLive && !isLoading && (
-            <span className="text-[10px] text-muted bg-white/5 px-2 py-0.5 rounded-full">Demo data</span>
+            <span className="text-[10px] text-muted bg-white/5 px-2 py-0.5 rounded-full">
+              Demo data
+            </span>
           )}
           <button
             type="button"
@@ -193,16 +202,21 @@ export default function VendorServicesPage() {
         {showForm && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
+            animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden mb-4"
           >
             <GlassCard className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-sm font-semibold text-lr-white">
-                  {editingId ? "Edit Service" : "New Service"}
+                  {editingId ? 'Edit Service' : 'New Service'}
                 </p>
-                <button type="button" title="Cancel" onClick={handleCancel} className="text-muted hover:text-lr-white">
+                <button
+                  type="button"
+                  title="Cancel"
+                  onClick={handleCancel}
+                  className="text-muted hover:text-lr-white"
+                >
                   <X size={14} />
                 </button>
               </div>
@@ -243,7 +257,7 @@ export default function VendorServicesPage() {
                   <div className="w-4 h-4 rounded-full border-2 border-midnight/30 border-t-midnight animate-spin" />
                 ) : (
                   <>
-                    <Check size={12} /> {editingId ? "Update" : "Create"} Service
+                    <Check size={12} /> {editingId ? 'Update' : 'Create'} Service
                   </>
                 )}
               </button>

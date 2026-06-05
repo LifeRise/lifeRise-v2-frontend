@@ -2,9 +2,9 @@
 
 /** True if the app is running in standalone / installed mode */
 export function isStandalone(): boolean {
-  if (typeof window === "undefined") return false;
+  if (typeof window === 'undefined') return false;
   return (
-    window.matchMedia("(display-mode: standalone)").matches ||
+    window.matchMedia('(display-mode: standalone)').matches ||
     // @ts-expect-error iOS standalone property
     window.navigator.standalone === true
   );
@@ -20,7 +20,7 @@ export function isStandalone(): boolean {
  * simply never fire on non-supporting browsers (Safari, Firefox).
  */
 export function canInstall(): boolean {
-  return typeof window !== "undefined";
+  return typeof window !== 'undefined';
 }
 
 /** Send a message to the active service worker */
@@ -32,17 +32,17 @@ export async function sendMessageToSW(type: string, payload?: Record<string, unk
 
 /** Tell the waiting SW to skip waiting and activate */
 export async function skipWaiting() {
-  await sendMessageToSW("SKIP_WAITING");
+  await sendMessageToSW('SKIP_WAITING');
 }
 
 /** Local-storage key for tracking prompt dismissal */
-export const INSTALL_DISMISSED_KEY = "liferise_install_dismissed_at";
+export const INSTALL_DISMISSED_KEY = 'liferise_install_dismissed_at';
 
 /** Days to wait before showing the install prompt again */
 export const INSTALL_COOLDOWN_DAYS = 7;
 
 export function wasInstallPromptDismissedRecently(): boolean {
-  if (typeof window === "undefined") return false;
+  if (typeof window === 'undefined') return false;
   const raw = localStorage.getItem(INSTALL_DISMISSED_KEY);
   if (!raw) return false;
   const dismissedAt = parseInt(raw, 10);
@@ -51,13 +51,13 @@ export function wasInstallPromptDismissedRecently(): boolean {
 }
 
 export function dismissInstallPrompt() {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   localStorage.setItem(INSTALL_DISMISSED_KEY, String(Date.now()));
 }
 
 /* ─── Engagement Milestones for install prompt gating ─────────── */
 
-const MILESTONES_KEY = "liferise_engagement_milestones";
+const MILESTONES_KEY = 'liferise_engagement_milestones';
 
 export interface EngagementMilestones {
   pagesVisited: string[];
@@ -67,7 +67,7 @@ export interface EngagementMilestones {
 }
 
 function getMilestones(): EngagementMilestones {
-  if (typeof window === "undefined") {
+  if (typeof window === 'undefined') {
     return { pagesVisited: [], actionsCompleted: [], sessions: 0, firstSessionAt: null };
   }
   try {
@@ -80,7 +80,7 @@ function getMilestones(): EngagementMilestones {
 }
 
 function setMilestones(m: EngagementMilestones) {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   localStorage.setItem(MILESTONES_KEY, JSON.stringify(m));
 }
 
@@ -117,9 +117,5 @@ export function trackAction(action: string) {
  */
 export function hasEngagementForInstall(): boolean {
   const m = getMilestones();
-  return (
-    m.pagesVisited.length > 2 ||
-    m.actionsCompleted.length >= 1 ||
-    m.sessions >= 2
-  );
+  return m.pagesVisited.length > 2 || m.actionsCompleted.length >= 1 || m.sessions >= 2;
 }

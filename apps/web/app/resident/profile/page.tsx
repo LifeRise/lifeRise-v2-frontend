@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   User,
   Mail,
@@ -16,15 +16,15 @@ import {
   Edit3,
   X,
   Download,
-} from "lucide-react";
-import { usePWA } from "@/components/pwa/PWAProvider";
-import { residentProfile as mockResidentProfile, paymentMethods } from "@/lib/mock-data";
-import type { PaymentMethod } from "@/lib/types";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { staggerContainerResponsive, fadeUpItem } from "@/lib/animations";
-import { cn, getInitials } from "@/lib/utils";
-import { useAuth } from "@/lib/auth/hooks";
+} from 'lucide-react';
+import { usePWA } from '@/components/pwa/PWAProvider';
+import { residentProfile as mockResidentProfile, paymentMethods } from '@/lib/mock-data';
+import type { PaymentMethod } from '@/lib/types';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { SectionHeader } from '@/components/ui/SectionHeader';
+import { staggerContainerResponsive, fadeUpItem } from '@/lib/animations';
+import { cn, getInitials } from '@/lib/utils';
+import { useAuth } from '@/lib/auth/hooks';
 
 function Toggle({
   checked,
@@ -42,14 +42,14 @@ function Toggle({
       aria-pressed={checked}
       onClick={() => onChange(!checked)}
       className={cn(
-        "relative h-6 w-11 rounded-full transition-colors",
-        checked ? "bg-teal" : "bg-slate-light"
+        'relative h-6 w-11 rounded-full transition-colors',
+        checked ? 'bg-teal' : 'bg-slate-light'
       )}
     >
       <motion.div
         className="absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow"
         animate={{ x: checked ? 20 : 0 }}
-        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
       />
     </button>
   );
@@ -57,15 +57,15 @@ function Toggle({
 
 function CardBrandIcon({ type }: { type: string }) {
   const colors: Record<string, string> = {
-    visa: "from-blue-600 to-blue-800",
-    mastercard: "from-red-600 to-yellow-600",
-    amex: "from-cyan-600 to-blue-600",
+    visa: 'from-blue-600 to-blue-800',
+    mastercard: 'from-red-600 to-yellow-600',
+    amex: 'from-cyan-600 to-blue-600',
   };
   return (
     <div
       className={cn(
-        "w-8 h-5 rounded bg-linear-to-br flex items-center justify-center text-[8px] font-bold text-white uppercase",
-        colors[type] || "from-slate-light to-slate-mid"
+        'w-8 h-5 rounded bg-linear-to-br flex items-center justify-center text-[8px] font-bold text-white uppercase',
+        colors[type] || 'from-slate-light to-slate-mid'
       )}
     >
       {type.slice(0, 2)}
@@ -79,7 +79,9 @@ export default function ProfilePage() {
   // Merge API profile with mock data for fields backend doesn't have yet
   const [profile, setProfile] = useState(() => ({
     ...mockResidentProfile,
-    name: apiProfile ? `${apiProfile.first_name} ${apiProfile.last_name}` : mockResidentProfile.name,
+    name: apiProfile
+      ? `${apiProfile.first_name} ${apiProfile.last_name}`
+      : mockResidentProfile.name,
     email: apiProfile?.email ?? mockResidentProfile.email,
     phone: apiProfile?.phone ?? mockResidentProfile.phone,
   }));
@@ -101,21 +103,21 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false);
   const [showAddCard, setShowAddCard] = useState(false);
   const [newCard, setNewCard] = useState<{
-    type: "visa" | "mastercard" | "amex";
+    type: 'visa' | 'mastercard' | 'amex';
     last4: string;
     expiry: string;
     cardholderName: string;
   }>({
-    type: "visa",
-    last4: "",
-    expiry: "",
+    type: 'visa',
+    last4: '',
+    expiry: '',
     cardholderName: profile.name,
   });
 
   const handleSaveProfile = () => setEditing(false);
 
   const handleAddCard = () => {
-    if (newCard.last4.length !== 4 || !newCard.expiry.includes("/")) return;
+    if (newCard.last4.length !== 4 || !newCard.expiry.includes('/')) return;
     const card: PaymentMethod = {
       id: `pm${Date.now()}`,
       type: newCard.type,
@@ -126,7 +128,7 @@ export default function ProfilePage() {
     };
     setCards((prev) => [...prev, card]);
     setShowAddCard(false);
-    setNewCard({ type: "visa", last4: "", expiry: "", cardholderName: profile.name });
+    setNewCard({ type: 'visa', last4: '', expiry: '', cardholderName: profile.name });
   };
 
   const handleRemoveCard = (id: string) => {
@@ -144,14 +146,24 @@ export default function ProfilePage() {
       <div className="flex items-center justify-between mb-6">
         <SectionHeader title="Profile" />
         {isLive && (
-          <span className="text-[10px] text-teal bg-teal/10 px-2 py-0.5 rounded-full">Live data</span>
+          <span className="text-[10px] text-teal bg-teal/10 px-2 py-0.5 rounded-full">
+            Live data
+          </span>
         )}
         {!isLive && (
-          <span className="text-[10px] text-muted bg-white/5 px-2 py-0.5 rounded-full">Demo data</span>
+          <span className="text-[10px] text-muted bg-white/5 px-2 py-0.5 rounded-full">
+            Demo data
+          </span>
         )}
       </div>
 
-      <motion.div variants={staggerContainerResponsive(0.06)} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} className="space-y-5">
+      <motion.div
+        variants={staggerContainerResponsive(0.06)}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, amount: 0.1 }}
+        className="space-y-5"
+      >
         {/* Profile Header */}
         <motion.div variants={fadeUpItem}>
           <GlassCard className="p-5">
@@ -170,7 +182,7 @@ export default function ProfilePage() {
                 className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/6 text-muted hover:text-lr-white hover:bg-white/10 transition-colors flex items-center gap-1"
               >
                 {editing ? <Check size={12} /> : <Edit3 size={12} />}
-                {editing ? "Save" : "Edit"}
+                {editing ? 'Save' : 'Edit'}
               </button>
             </div>
           </GlassCard>
@@ -184,10 +196,10 @@ export default function ProfilePage() {
             </h3>
             <div className="space-y-3">
               {[
-                { label: "Full Name", value: profile.name, icon: User, key: "name" },
-                { label: "Email", value: profile.email, icon: Mail, key: "email" },
-                { label: "Phone", value: profile.phone, icon: Phone, key: "phone" },
-                { label: "Unit", value: profile.unit, icon: Home, key: "unit" },
+                { label: 'Full Name', value: profile.name, icon: User, key: 'name' },
+                { label: 'Email', value: profile.email, icon: Mail, key: 'email' },
+                { label: 'Phone', value: profile.phone, icon: Phone, key: 'phone' },
+                { label: 'Unit', value: profile.unit, icon: Home, key: 'unit' },
               ].map((field) => (
                 <div key={field.key} className="flex items-center gap-3">
                   <field.icon size={14} className="text-muted shrink-0" />
@@ -197,9 +209,7 @@ export default function ProfilePage() {
                       <input
                         aria-label={field.label}
                         value={profile[field.key as keyof typeof profile] as string}
-                        onChange={(e) =>
-                          setProfile((p) => ({ ...p, [field.key]: e.target.value }))
-                        }
+                        onChange={(e) => setProfile((p) => ({ ...p, [field.key]: e.target.value }))}
                         className="w-full bg-midnight/60 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-lr-white mt-0.5 focus:outline-none focus:border-teal/40"
                       />
                     ) : (
@@ -232,14 +242,19 @@ export default function ProfilePage() {
               {showAddCard && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
+                  animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   className="overflow-hidden"
                 >
                   <div className="bg-midnight/60 border border-white/10 rounded-xl p-4 mb-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-medium text-lr-white">Add New Card</p>
-                      <button type="button" aria-label="Close" onClick={() => setShowAddCard(false)} className="text-muted hover:text-lr-white">
+                      <button
+                        type="button"
+                        aria-label="Close"
+                        onClick={() => setShowAddCard(false)}
+                        className="text-muted hover:text-lr-white"
+                      >
                         <X size={14} />
                       </button>
                     </div>
@@ -247,7 +262,9 @@ export default function ProfilePage() {
                       <select
                         aria-label="Card type"
                         value={newCard.type}
-                        onChange={(e) => setNewCard((c) => ({ ...c, type: e.target.value as typeof c.type }))}
+                        onChange={(e) =>
+                          setNewCard((c) => ({ ...c, type: e.target.value as typeof c.type }))
+                        }
                         className="bg-slate-deep border border-white/10 rounded-lg px-3 py-2 text-sm text-lr-white"
                       >
                         <option value="visa">Visa</option>
@@ -258,7 +275,9 @@ export default function ProfilePage() {
                         placeholder="Last 4 digits"
                         maxLength={4}
                         value={newCard.last4}
-                        onChange={(e) => setNewCard((c) => ({ ...c, last4: e.target.value.replace(/\D/g, "") }))}
+                        onChange={(e) =>
+                          setNewCard((c) => ({ ...c, last4: e.target.value.replace(/\D/g, '') }))
+                        }
                         className="bg-slate-deep border border-white/10 rounded-lg px-3 py-2 text-sm text-lr-white placeholder:text-muted"
                       />
                       <input
@@ -271,7 +290,9 @@ export default function ProfilePage() {
                       <input
                         placeholder="Cardholder Name"
                         value={newCard.cardholderName}
-                        onChange={(e) => setNewCard((c) => ({ ...c, cardholderName: e.target.value }))}
+                        onChange={(e) =>
+                          setNewCard((c) => ({ ...c, cardholderName: e.target.value }))
+                        }
                         className="bg-slate-deep border border-white/10 rounded-lg px-3 py-2 text-sm text-lr-white placeholder:text-muted"
                       />
                     </div>
@@ -343,21 +364,21 @@ export default function ProfilePage() {
             <div className="space-y-4">
               {[
                 {
-                  key: "notifications" as const,
-                  label: "Push Notifications",
-                  desc: "Get notified about bookings and updates",
+                  key: 'notifications' as const,
+                  label: 'Push Notifications',
+                  desc: 'Get notified about bookings and updates',
                   icon: Bell,
                 },
                 {
-                  key: "marketing" as const,
-                  label: "Email Updates",
-                  desc: "Receive news and special offers",
+                  key: 'marketing' as const,
+                  label: 'Email Updates',
+                  desc: 'Receive news and special offers',
                   icon: Mail,
                 },
                 {
-                  key: "sms" as const,
-                  label: "SMS Alerts",
-                  desc: "Get text messages for urgent updates",
+                  key: 'sms' as const,
+                  label: 'SMS Alerts',
+                  desc: 'Get text messages for urgent updates',
                   icon: Smartphone,
                 },
               ].map((pref) => (

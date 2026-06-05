@@ -1,44 +1,35 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
-import {
-  User,
-  Mail,
-  Phone,
-  Lock,
-  Eye,
-  EyeOff,
-  ArrowRight,
-  ChevronLeft,
-} from "lucide-react";
-import { authService } from "@/lib/auth/auth-service";
-import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
+import { User, Mail, Phone, Lock, Eye, EyeOff, ArrowRight, ChevronLeft } from 'lucide-react';
+import { authService } from '@/lib/auth/auth-service';
+import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons';
 
 export default function ResidentSignupPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const roleParam = searchParams.get("role");
-  const isManager = roleParam === "manager";
+  const roleParam = searchParams.get('role');
+  const isManager = roleParam === 'manager';
 
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const formatPhone = (value: string) => {
-    let cleaned = value.replace(/[^\d+]/g, "");
-    cleaned = cleaned.replace(/\+/g, "");
+    let cleaned = value.replace(/[^\d+]/g, '');
+    cleaned = cleaned.replace(/\+/g, '');
     cleaned = `+${cleaned}`;
     if (cleaned.length > 13) cleaned = cleaned.slice(0, 13);
     return cleaned;
@@ -46,27 +37,27 @@ export default function ResidentSignupPage() {
 
   const validate = () => {
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
-      setError("Please fill in all required fields");
+      setError('Please fill in all required fields');
       return false;
     }
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError('Passwords do not match');
       return false;
     }
     if (password.length < 8) {
-      setError("Password must be at least 8 characters");
+      setError('Password must be at least 8 characters');
       return false;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setError("Please enter a valid email address");
+      setError('Please enter a valid email address');
       return false;
     }
     if (phone && !/^\+\d{1,12}$/.test(phone)) {
-      setError("Please enter a valid phone number with country code");
+      setError('Please enter a valid phone number with country code');
       return false;
     }
-    setError("");
+    setError('');
     return true;
   };
 
@@ -83,7 +74,7 @@ export default function ResidentSignupPage() {
         email,
         phone,
         password,
-        role: isManager ? "manager" : "resident",
+        role: isManager ? 'manager' : 'resident',
       });
 
       if (authService.isSupabaseConfigured() && !session) {
@@ -92,12 +83,12 @@ export default function ResidentSignupPage() {
         return;
       }
 
-      setSuccess("Account created successfully! Redirecting…");
+      setSuccess('Account created successfully! Redirecting…');
       setTimeout(() => {
-        router.push("/login");
+        router.push('/login');
       }, 1500);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Signup failed. Please try again.");
+      setError(err instanceof Error ? err.message : 'Signup failed. Please try again.');
       setIsLoading(false);
     }
   };
@@ -125,7 +116,7 @@ export default function ResidentSignupPage() {
             priority
           />
           <h1 className="font-heading font-extrabold text-lr-white text-3xl leading-tight mb-1">
-            {isManager ? "Manager Sign Up" : "Resident Sign Up"}
+            {isManager ? 'Manager Sign Up' : 'Resident Sign Up'}
           </h1>
           <p className="text-muted text-sm">Create your account</p>
         </div>
@@ -200,7 +191,7 @@ export default function ResidentSignupPage() {
             <div className="relative">
               <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
               <input
-                type={showPass ? "text" : "password"}
+                type={showPass ? 'text' : 'password'}
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -218,7 +209,7 @@ export default function ResidentSignupPage() {
             <div className="relative">
               <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
               <input
-                type={showConfirmPass ? "text" : "password"}
+                type={showConfirmPass ? 'text' : 'password'}
                 placeholder="Re-Enter Password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -258,8 +249,11 @@ export default function ResidentSignupPage() {
           </Link>
           <span className="text-white/10">|</span>
           <p className="text-muted text-sm">
-            Already have an account?{" "}
-            <Link href="/login" className="text-teal hover:opacity-80 transition-opacity font-medium">
+            Already have an account?{' '}
+            <Link
+              href="/login"
+              className="text-teal hover:opacity-80 transition-opacity font-medium"
+            >
               Sign in
             </Link>
           </p>

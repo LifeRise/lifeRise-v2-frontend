@@ -1,34 +1,36 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import { motion } from "framer-motion";
-import { Search, Users, CalendarDays, Phone, Mail, X } from "lucide-react";
-import { residentDirectory } from "@/lib/mock-data";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { staggerContainerResponsive, fadeUpItem } from "@/lib/animations";
-import { cn, getInitials } from "@/lib/utils";
-import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
+import { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { Search, Users, CalendarDays, Phone, Mail, X } from 'lucide-react';
+import { residentDirectory } from '@/lib/mock-data';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { SectionHeader } from '@/components/ui/SectionHeader';
+import { StatusBadge } from '@/components/ui/StatusBadge';
+import { staggerContainerResponsive, fadeUpItem } from '@/lib/animations';
+import { cn, getInitials } from '@/lib/utils';
+import { useFocusTrap } from '@/lib/hooks/useFocusTrap';
 
-type ViewMode = "grid" | "table";
+type ViewMode = 'grid' | 'table';
 
 export default function ResidentsPage() {
-  const [search, setSearch] = useState("");
-  const [buildingFilter, setBuildingFilter] = useState("All");
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [search, setSearch] = useState('');
+  const [buildingFilter, setBuildingFilter] = useState('All');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [selectedResident, setSelectedResident] = useState<string | null>(null);
-  const modalRef = useFocusTrap<HTMLDivElement>(!!selectedResident, () => setSelectedResident(null));
+  const modalRef = useFocusTrap<HTMLDivElement>(!!selectedResident, () =>
+    setSelectedResident(null)
+  );
 
-  const buildings = ["All", ...Array.from(new Set(residentDirectory.map((r) => r.building)))];
+  const buildings = ['All', ...Array.from(new Set(residentDirectory.map((r) => r.building)))];
 
   const filtered = useMemo(() => {
     return residentDirectory.filter((r) => {
-      const matchesBuilding = buildingFilter === "All" || r.building === buildingFilter;
+      const matchesBuilding = buildingFilter === 'All' || r.building === buildingFilter;
       const q = search.toLowerCase();
       const matchesSearch =
-        q === "" ||
+        q === '' ||
         r.name.toLowerCase().includes(q) ||
         r.unit.toLowerCase().includes(q) ||
         r.email.toLowerCase().includes(q);
@@ -63,10 +65,10 @@ export default function ResidentsPage() {
               key={b}
               onClick={() => setBuildingFilter(b)}
               className={cn(
-                "px-3 py-2 rounded-lg text-xs font-medium transition-all",
+                'px-3 py-2 rounded-lg text-xs font-medium transition-all',
                 buildingFilter === b
-                  ? "bg-purple-accent text-white"
-                  : "bg-white/6 text-muted hover:text-lr-white"
+                  ? 'bg-purple-accent text-white'
+                  : 'bg-white/6 text-muted hover:text-lr-white'
               )}
             >
               {b}
@@ -76,20 +78,22 @@ export default function ResidentsPage() {
         <div className="flex items-center gap-1 bg-midnight/60 rounded-lg p-1">
           <button
             type="button"
-            onClick={() => setViewMode("grid")}
+            onClick={() => setViewMode('grid')}
             className={cn(
-              "px-3 py-1.5 rounded-md text-xs font-medium transition-all",
-              viewMode === "grid" ? "bg-purple-accent text-white" : "text-muted hover:text-lr-white"
+              'px-3 py-1.5 rounded-md text-xs font-medium transition-all',
+              viewMode === 'grid' ? 'bg-purple-accent text-white' : 'text-muted hover:text-lr-white'
             )}
           >
             Grid
           </button>
           <button
             type="button"
-            onClick={() => setViewMode("table")}
+            onClick={() => setViewMode('table')}
             className={cn(
-              "px-3 py-1.5 rounded-md text-xs font-medium transition-all",
-              viewMode === "table" ? "bg-purple-accent text-white" : "text-muted hover:text-lr-white"
+              'px-3 py-1.5 rounded-md text-xs font-medium transition-all',
+              viewMode === 'table'
+                ? 'bg-purple-accent text-white'
+                : 'text-muted hover:text-lr-white'
             )}
           >
             Table
@@ -104,7 +108,7 @@ export default function ResidentsPage() {
           whileInView="show"
           viewport={{ once: true, amount: 0.1 }}
         >
-          {viewMode === "grid" ? (
+          {viewMode === 'grid' ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {filtered.map((r) => (
                 <motion.div key={r.id} variants={fadeUpItem}>
@@ -143,11 +147,16 @@ export default function ResidentsPage() {
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-white/[0.07]">
-                    {["Name", "Unit", "Building", "Email", "Phone", "Status", "Bookings"].map((h) => (
-                      <th key={h} className="px-4 py-3 text-[10px] text-muted uppercase tracking-wider font-medium">
-                        {h}
-                      </th>
-                    ))}
+                    {['Name', 'Unit', 'Building', 'Email', 'Phone', 'Status', 'Bookings'].map(
+                      (h) => (
+                        <th
+                          key={h}
+                          className="px-4 py-3 text-[10px] text-muted uppercase tracking-wider font-medium"
+                        >
+                          {h}
+                        </th>
+                      )
+                    )}
                   </tr>
                 </thead>
                 <tbody className="text-sm">
@@ -206,7 +215,12 @@ export default function ResidentsPage() {
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-heading text-lg font-bold text-lr-white">Resident Details</h3>
-              <button type="button" aria-label="Close" onClick={() => setSelectedResident(null)} className="text-muted hover:text-lr-white">
+              <button
+                type="button"
+                aria-label="Close"
+                onClick={() => setSelectedResident(null)}
+                className="text-muted hover:text-lr-white"
+              >
                 <X size={16} />
               </button>
             </div>
@@ -216,7 +230,9 @@ export default function ResidentsPage() {
               </div>
               <div>
                 <p className="font-semibold text-lr-white">{resident.name}</p>
-                <p className="text-muted text-xs">Unit {resident.unit} · {resident.building}</p>
+                <p className="text-muted text-xs">
+                  Unit {resident.unit} · {resident.building}
+                </p>
               </div>
             </div>
             <div className="space-y-3 text-sm">
@@ -234,9 +250,9 @@ export default function ResidentsPage() {
               <p className="text-muted text-xs mb-2">Recent Activity</p>
               <div className="space-y-2">
                 {[
-                  { action: "Booked Deep Tissue Massage", date: "May 20", type: "booking" },
-                  { action: "Paid $85 via Visa •••• 4242", date: "May 20", type: "payment" },
-                  { action: "Updated profile info", date: "May 15", type: "system" },
+                  { action: 'Booked Deep Tissue Massage', date: 'May 20', type: 'booking' },
+                  { action: 'Paid $85 via Visa •••• 4242', date: 'May 20', type: 'payment' },
+                  { action: 'Updated profile info', date: 'May 15', type: 'system' },
                 ].map((a, i) => (
                   <div key={i} className="flex items-center justify-between text-xs">
                     <span className="text-lr-white">{a.action}</span>

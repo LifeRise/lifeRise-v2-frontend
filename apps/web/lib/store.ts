@@ -1,12 +1,12 @@
-import { create } from "zustand";
-import type { BackendProfile } from "@/lib/api/types";
+import { create } from 'zustand';
+import type { BackendProfile } from '@/lib/api/types';
 
-export type Role = "resident" | "vendor" | "manager" | null;
+export type Role = 'resident' | 'vendor' | 'manager' | null;
 
 export interface AuthUser {
   id: string | number;
   email?: string;
-  userType: "customer" | "user";
+  userType: 'customer' | 'user';
   roles: string[];
 }
 
@@ -29,7 +29,7 @@ interface AppStore {
 export const useAppStore = create<AppStore>()((set) => ({
   role: null,
   isOnline: true,
-  activeCategory: "All",
+  activeCategory: 'All',
   profile: null,
   authUser: null,
   isAuthLoading: true,
@@ -40,7 +40,7 @@ export const useAppStore = create<AppStore>()((set) => ({
   setAuthUser: (authUser) => set({ authUser }),
   setAuthLoading: (isAuthLoading) => set({ isAuthLoading }),
   signOut: async () => {
-    const { clearTokens } = await import("@/lib/api/client");
+    const { clearTokens } = await import('@/lib/api/client');
     clearTokens();
     set({ profile: null, authUser: null, role: null });
   },

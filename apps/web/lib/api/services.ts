@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { apiGet, apiPost, apiPatch, apiDelete } from "./client";
-import { getApiBaseUrl, type FrontendRole } from "./config";
+import { apiGet, apiPost, apiPatch, apiDelete } from './client';
+import { getApiBaseUrl, type FrontendRole } from './config';
 
 export interface Service {
   id: number;
@@ -45,9 +45,9 @@ export interface ServiceInput {
   location_type?: string;
 }
 
-export function listServices(role: FrontendRole = "resident") {
+export function listServices(role: FrontendRole = 'resident') {
   const baseUrl = getApiBaseUrl(role);
-  return apiGet<{ services: Service[] }>(baseUrl, "/api/services");
+  return apiGet<{ services: Service[] }>(baseUrl, '/api/services');
 }
 
 export function getService(role: FrontendRole, id: number) {
@@ -62,7 +62,7 @@ export function getServiceSlots(role: FrontendRole, id: number) {
 
 export function createService(role: FrontendRole, data: ServiceInput) {
   const baseUrl = getApiBaseUrl(role);
-  return apiPost<{ service: Service }>(baseUrl, "/api/services", data);
+  return apiPost<{ service: Service }>(baseUrl, '/api/services', data);
 }
 
 export function updateService(role: FrontendRole, id: number, data: Partial<ServiceInput>) {

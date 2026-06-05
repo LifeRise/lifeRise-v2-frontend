@@ -9,19 +9,19 @@
  * To use mode 2, set NEXT_PUBLIC_VENDOR_API_URL and NEXT_PUBLIC_ADMIN_API_URL.
  */
 
-const CUSTOMER_API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+const CUSTOMER_API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 const VENDOR_API = process.env.NEXT_PUBLIC_VENDOR_API_URL ?? CUSTOMER_API;
 const ADMIN_API = process.env.NEXT_PUBLIC_ADMIN_API_URL ?? CUSTOMER_API;
 
-export type FrontendRole = "resident" | "vendor" | "manager";
+export type FrontendRole = 'resident' | 'vendor' | 'manager';
 
 export function getApiBaseUrl(role?: FrontendRole | null): string {
   switch (role) {
-    case "vendor":
+    case 'vendor':
       return VENDOR_API;
-    case "manager":
+    case 'manager':
       return ADMIN_API;
-    case "resident":
+    case 'resident':
     default:
       return CUSTOMER_API;
   }

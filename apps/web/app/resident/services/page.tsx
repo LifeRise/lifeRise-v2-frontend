@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Search, Star, Clock, ArrowRight } from "lucide-react";
-import { serviceDetails as mockServiceDetails, categories } from "@/lib/mock-data";
-import { useServices } from "@/lib/api/hooks";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { staggerContainerResponsive, fadeUpItem } from "@/lib/animations";
-import { trackAction } from "@/lib/pwa";
-import { cn } from "@/lib/utils";
-import { useActiveCategory, useSetActiveCategory } from "@/lib/store";
+import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, Star, Clock, ArrowRight } from 'lucide-react';
+import { serviceDetails as mockServiceDetails, categories } from '@/lib/mock-data';
+import { useServices } from '@/lib/api/hooks';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { SectionHeader } from '@/components/ui/SectionHeader';
+import { staggerContainerResponsive, fadeUpItem } from '@/lib/animations';
+import { trackAction } from '@/lib/pwa';
+import { cn } from '@/lib/utils';
+import { useActiveCategory, useSetActiveCategory } from '@/lib/store';
 
 export default function ServicesPage() {
   const activeCategory = useActiveCategory();
   const setActiveCategory = useSetActiveCategory();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [bookedId, setBookedId] = useState<string | null>(null);
   const { details: apiServices, isLoading: apiLoading } = useServices();
 
@@ -25,10 +25,10 @@ export default function ServicesPage() {
 
   const filtered = useMemo(() => {
     return serviceData.filter((s) => {
-      const matchesCategory = activeCategory === "All" || s.category === activeCategory;
+      const matchesCategory = activeCategory === 'All' || s.category === activeCategory;
       const q = searchQuery.toLowerCase();
       const matchesSearch =
-        q === "" ||
+        q === '' ||
         s.name.toLowerCase().includes(q) ||
         s.specialty.toLowerCase().includes(q) ||
         s.tags.some((t) => t.toLowerCase().includes(q));
@@ -64,10 +64,10 @@ export default function ServicesPage() {
             key={cat}
             onClick={() => setActiveCategory(cat)}
             className={cn(
-              "shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all",
+              'shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all',
               activeCategory === cat
-                ? "bg-teal text-midnight"
-                : "bg-white/[0.06] text-muted hover:text-lr-white"
+                ? 'bg-teal text-midnight'
+                : 'bg-white/[0.06] text-muted hover:text-lr-white'
             )}
           >
             {cat}
@@ -78,7 +78,7 @@ export default function ServicesPage() {
       {/* Results Count + API Status */}
       <div className="flex items-center justify-between mb-4">
         <p className="text-muted text-xs">
-          {filtered.length} {filtered.length === 1 ? "service" : "services"} available
+          {filtered.length} {filtered.length === 1 ? 'service' : 'services'} available
         </p>
         {apiServices.length > 0 && (
           <span className="text-[10px] text-teal bg-teal/10 px-2 py-0.5 rounded-full">
@@ -112,7 +112,9 @@ export default function ServicesPage() {
               >
                 <GlassCard hover className="overflow-hidden group h-full flex flex-col">
                   {/* Gradient Header */}
-                  <div className={`bg-linear-to-br ${v.gradient} h-36 flex items-center justify-center relative`}>
+                  <div
+                    className={`bg-linear-to-br ${v.gradient} h-36 flex items-center justify-center relative`}
+                  >
                     <span className="text-5xl select-none opacity-30">✦</span>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <span className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-2xl font-bold text-white font-heading backdrop-blur-sm">
@@ -166,18 +168,18 @@ export default function ServicesPage() {
                       <button
                         onClick={() => {
                           setBookedId(v.id);
-                          trackAction("book_service");
+                          trackAction('book_service');
                         }}
                         disabled={!v.available || bookedId === v.id}
                         className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
                         style={
                           bookedId === v.id
-                            ? { background: "rgba(0,212,170,0.2)", color: "#00D4AA" }
-                            : { background: "#00D4AA", color: "#0A0F1E" }
+                            ? { background: 'rgba(0,212,170,0.2)', color: '#00D4AA' }
+                            : { background: '#00D4AA', color: '#0A0F1E' }
                         }
                       >
                         {bookedId === v.id ? (
-                          "✓ Booked!"
+                          '✓ Booked!'
                         ) : (
                           <>
                             Book Now <ArrowRight size={11} />
@@ -199,8 +201,8 @@ export default function ServicesPage() {
           action={
             <button
               onClick={() => {
-                setSearchQuery("");
-                setActiveCategory("All");
+                setSearchQuery('');
+                setActiveCategory('All');
               }}
               className="px-4 py-2 rounded-lg text-xs font-semibold bg-teal text-midnight"
             >

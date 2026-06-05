@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { User } from "lucide-react";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { useAuth } from "@/lib/auth/hooks";
+import { User } from 'lucide-react';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { useAuth } from '@/lib/auth/hooks';
 
 export default function VendorProfilePage() {
   const { profile } = useAuth();
@@ -20,14 +20,16 @@ export default function VendorProfilePage() {
                 {`${profile.first_name.charAt(0)}${profile.last_name.charAt(0)}`.toUpperCase()}
               </div>
               <div>
-                <p className="text-lr-white font-semibold text-lg">{profile.first_name} {profile.last_name}</p>
+                <p className="text-lr-white font-semibold text-lg">
+                  {profile.first_name} {profile.last_name}
+                </p>
                 <p className="text-muted text-sm">{profile.email}</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
               <div>
                 <p className="text-muted text-xs">Phone</p>
-                <p className="text-lr-white text-sm">{profile.phone || "N/A"}</p>
+                <p className="text-lr-white text-sm">{profile.phone || 'N/A'}</p>
               </div>
               <div>
                 <p className="text-muted text-xs">Role</p>
@@ -35,11 +37,13 @@ export default function VendorProfilePage() {
               </div>
               <div>
                 <p className="text-muted text-xs">EIN / Tax ID</p>
-                <p className="text-lr-white text-sm">{profile.ein_tax_id || "N/A"}</p>
+                <p className="text-lr-white text-sm">{profile.ein_tax_id || 'N/A'}</p>
               </div>
               <div>
                 <p className="text-muted text-xs">Status</p>
-                <p className="text-lr-white text-sm capitalize">{profile.approval_status || profile.status}</p>
+                <p className="text-lr-white text-sm capitalize">
+                  {profile.approval_status || profile.status}
+                </p>
               </div>
             </div>
             {profile.description && (

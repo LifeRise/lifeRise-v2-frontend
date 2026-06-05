@@ -1,40 +1,40 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import Image from "next/image";
-import Link from "next/link";
-import { Building2, Wrench, Users, ArrowRight } from "lucide-react";
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Building2, Wrench, Users, ArrowRight } from 'lucide-react';
 
 const roles = [
   {
-    key: "resident" as const,
-    label: "Resident",
-    description: "Browse & book services for your home",
+    key: 'resident' as const,
+    label: 'Resident',
+    description: 'Browse & book services for your home',
     icon: Building2,
-    href: "/signup/resident",
-    accent: "#00D4AA",
-    bg: "rgba(0,212,170,0.08)",
-    border: "rgba(0,212,170,0.25)",
+    href: '/signup/resident',
+    accent: '#00D4AA',
+    bg: 'rgba(0,212,170,0.08)',
+    border: 'rgba(0,212,170,0.25)',
   },
   {
-    key: "vendor" as const,
-    label: "Service Provider",
-    description: "Manage bookings & track earnings",
+    key: 'vendor' as const,
+    label: 'Service Provider',
+    description: 'Manage bookings & track earnings',
     icon: Wrench,
-    href: "/signup/vendor",
-    accent: "#F5A623",
-    bg: "rgba(245,166,35,0.08)",
-    border: "rgba(245,166,35,0.25)",
+    href: '/signup/vendor',
+    accent: '#F5A623',
+    bg: 'rgba(245,166,35,0.08)',
+    border: 'rgba(245,166,35,0.25)',
   },
   {
-    key: "manager" as const,
-    label: "Property Manager",
-    description: "Oversee complex operations",
+    key: 'manager' as const,
+    label: 'Property Manager',
+    description: 'Oversee complex operations',
     icon: Users,
-    href: "/signup/resident?role=manager",
-    accent: "#818CF8",
-    bg: "rgba(129,140,248,0.08)",
-    border: "rgba(129,140,248,0.25)",
+    href: '/signup/resident?role=manager',
+    accent: '#818CF8',
+    bg: 'rgba(129,140,248,0.08)',
+    border: 'rgba(129,140,248,0.25)',
   },
 ];
 
@@ -103,7 +103,7 @@ export default function SignupRolePage() {
         </div>
 
         <p className="text-center text-muted text-xs mt-6">
-          Already have an account?{" "}
+          Already have an account?{' '}
           <Link href="/login" className="text-teal hover:opacity-80 transition-opacity font-medium">
             Sign in
           </Link>

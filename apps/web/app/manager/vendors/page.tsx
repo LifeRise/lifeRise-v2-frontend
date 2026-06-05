@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Briefcase,
   CheckCircle,
@@ -13,64 +13,75 @@ import {
   Clock,
   Star,
   Phone,
-} from "lucide-react";
-import { vendorApplications, vendorLeaderboard } from "@/lib/mock-data";
-import type { VendorApplication } from "@/lib/types";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { Tabs } from "@/components/ui/Tabs";
-import { staggerContainerResponsive, fadeUpItem } from "@/lib/animations";
-import { cn, getInitials } from "@/lib/utils";
+} from 'lucide-react';
+import { vendorApplications, vendorLeaderboard } from '@/lib/mock-data';
+import type { VendorApplication } from '@/lib/types';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { SectionHeader } from '@/components/ui/SectionHeader';
+import { StatusBadge } from '@/components/ui/StatusBadge';
+import { Tabs } from '@/components/ui/Tabs';
+import { staggerContainerResponsive, fadeUpItem } from '@/lib/animations';
+import { cn, getInitials } from '@/lib/utils';
 
 const trendIcon = { up: TrendingUp, down: TrendingDown, stable: Minus };
-const trendColor = { up: "#00D4AA", down: "#F87171", stable: "#94A3B8" };
+const trendColor = { up: '#00D4AA', down: '#F87171', stable: '#94A3B8' };
 
 export default function VendorsPage() {
   const [applications, setApplications] = useState<VendorApplication[]>(vendorApplications);
-  const [, setActiveTab] = useState("applications");
+  const [, setActiveTab] = useState('applications');
   const [expandedVendor, setExpandedVendor] = useState<number | null>(null);
 
   const handleApprove = (id: string) => {
     setApplications((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status: "approved" as const } : a))
+      prev.map((a) => (a.id === id ? { ...a, status: 'approved' as const } : a))
     );
   };
 
   const handleReject = (id: string) => {
     setApplications((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status: "rejected" as const } : a))
+      prev.map((a) => (a.id === id ? { ...a, status: 'rejected' as const } : a))
     );
   };
 
-  const pendingApps = applications.filter((a) => a.status === "pending");
-  const activeVendors = vendorLeaderboard.map((v) => ({ ...v, status: "approved" as const }));
-  const rejectedApps = applications.filter((a) => a.status === "rejected");
+  const pendingApps = applications.filter((a) => a.status === 'pending');
+  const activeVendors = vendorLeaderboard.map((v) => ({ ...v, status: 'approved' as const }));
+  const rejectedApps = applications.filter((a) => a.status === 'rejected');
 
   // Summary stats for the header bar
   const totalActiveJobs = activeVendors.reduce((s, v) => s + v.bookings, 0);
-  const avgRating = (activeVendors.reduce((s, v) => s + v.rating, 0) / activeVendors.length).toFixed(1);
+  const avgRating = (
+    activeVendors.reduce((s, v) => s + v.rating, 0) / activeVendors.length
+  ).toFixed(1);
   const avgCompletion = Math.round(
     activeVendors.reduce((s, v) => s + (v.completionRate ?? 95), 0) / activeVendors.length
   );
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-5xl mx-auto pb-24 lg:pb-8">
-      <SectionHeader title="Vendor Management" subtitle="Review applications and monitor performance" />
+      <SectionHeader
+        title="Vendor Management"
+        subtitle="Review applications and monitor performance"
+      />
 
       {/* Stats summary bar */}
       <div className="grid grid-cols-3 gap-3 mb-5">
         {[
-          { label: "Active Vendors", value: activeVendors.length.toString(), color: "#818CF8" },
-          { label: "Total Jobs (30d)", value: totalActiveJobs.toString(), color: "#00D4AA" },
-          { label: "Avg Rating", value: `${avgRating}★`, color: "#F5A623" },
-          { label: "Avg Completion", value: `${avgCompletion}%`, color: "#34D399" },
-          { label: "Pending Applications", value: pendingApps.length.toString(), color: "#F5A623" },
-          { label: "Rejected", value: applications.filter((a) => a.status === "rejected").length.toString(), color: "#F87171" },
+          { label: 'Active Vendors', value: activeVendors.length.toString(), color: '#818CF8' },
+          { label: 'Total Jobs (30d)', value: totalActiveJobs.toString(), color: '#00D4AA' },
+          { label: 'Avg Rating', value: `${avgRating}★`, color: '#F5A623' },
+          { label: 'Avg Completion', value: `${avgCompletion}%`, color: '#34D399' },
+          { label: 'Pending Applications', value: pendingApps.length.toString(), color: '#F5A623' },
+          {
+            label: 'Rejected',
+            value: applications.filter((a) => a.status === 'rejected').length.toString(),
+            color: '#F87171',
+          },
         ].map((s) => (
           <GlassCard key={s.label} className="p-3 text-center">
-            <p className="font-heading font-bold text-xl" style={{ color: s.color }}>{s.value}</p>
+            <p className="font-heading font-bold text-xl" style={{ color: s.color }}>
+              {s.value}
+            </p>
             <p className="text-muted text-[10px] mt-0.5">{s.label}</p>
           </GlassCard>
         ))}
@@ -78,9 +89,9 @@ export default function VendorsPage() {
 
       <Tabs
         tabs={[
-          { id: "applications", label: `Applications (${pendingApps.length})` },
-          { id: "active", label: "Active Vendors" },
-          { id: "rejected", label: "Rejected" },
+          { id: 'applications', label: `Applications (${pendingApps.length})` },
+          { id: 'active', label: 'Active Vendors' },
+          { id: 'rejected', label: 'Rejected' },
         ]}
         defaultTab="applications"
         onChange={setActiveTab}
@@ -96,7 +107,7 @@ export default function VendorsPage() {
               viewport={{ once: true, amount: 0.1 }}
               className="space-y-3"
             >
-              {tabId === "applications" && (
+              {tabId === 'applications' && (
                 <>
                   {pendingApps.length > 0 ? (
                     pendingApps.map((app) => (
@@ -113,11 +124,15 @@ export default function VendorsPage() {
                                 <div className="flex items-center flex-wrap gap-2 mt-1">
                                   <span className="text-muted text-[11px]">{app.specialty}</span>
                                   <span className="text-muted/50 text-[11px]">·</span>
-                                  <span className="text-muted text-[11px]">Applied {app.appliedDate}</span>
+                                  <span className="text-muted text-[11px]">
+                                    Applied {app.appliedDate}
+                                  </span>
                                   {app.yearsExperience !== undefined && (
                                     <>
                                       <span className="text-muted/50 text-[11px]">·</span>
-                                      <span className="text-muted text-[11px]">{app.yearsExperience} yrs exp</span>
+                                      <span className="text-muted text-[11px]">
+                                        {app.yearsExperience} yrs exp
+                                      </span>
                                     </>
                                   )}
                                 </div>
@@ -173,7 +188,7 @@ export default function VendorsPage() {
                 </>
               )}
 
-              {tabId === "active" && (
+              {tabId === 'active' && (
                 <>
                   {activeVendors.length > 0 ? (
                     <div className="space-y-2">
@@ -195,34 +210,50 @@ export default function VendorsPage() {
                                 <div className="flex items-center gap-3 px-4 py-3">
                                   {/* Rank medal or number */}
                                   <span className="text-sm w-5 shrink-0 text-center">
-                                    {v.rank === 1 ? "🥇" : v.rank === 2 ? "🥈" : v.rank === 3 ? "🥉" : <span className="text-xs text-muted">{v.rank}</span>}
+                                    {v.rank === 1 ? (
+                                      '🥇'
+                                    ) : v.rank === 2 ? (
+                                      '🥈'
+                                    ) : v.rank === 3 ? (
+                                      '🥉'
+                                    ) : (
+                                      <span className="text-xs text-muted">{v.rank}</span>
+                                    )}
                                   </span>
                                   {/* Gradient avatar */}
                                   <div
                                     className={cn(
-                                      "w-9 h-9 rounded-full bg-linear-to-br flex items-center justify-center text-[11px] font-bold text-white font-heading shrink-0",
-                                      v.gradient ?? "from-slate-600 to-slate-700"
+                                      'w-9 h-9 rounded-full bg-linear-to-br flex items-center justify-center text-[11px] font-bold text-white font-heading shrink-0',
+                                      v.gradient ?? 'from-slate-600 to-slate-700'
                                     )}
                                   >
                                     {v.initials ?? getInitials(v.name)}
                                   </div>
                                   {/* Name + specialty */}
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-sm text-lr-white font-medium truncate">{v.name}</p>
+                                    <p className="text-sm text-lr-white font-medium truncate">
+                                      {v.name}
+                                    </p>
                                     <p className="text-[11px] text-muted">{v.specialty}</p>
                                   </div>
                                   {/* Stats */}
                                   <div className="hidden sm:flex items-center gap-4 shrink-0">
                                     <div className="text-center">
-                                      <p className="text-xs font-semibold text-lr-white">{v.bookings}</p>
+                                      <p className="text-xs font-semibold text-lr-white">
+                                        {v.bookings}
+                                      </p>
                                       <p className="text-[10px] text-muted">jobs</p>
                                     </div>
                                     <div className="text-center">
                                       <p className="text-xs font-semibold text-gold">{v.rating}★</p>
-                                      <p className="text-[10px] text-muted">{v.reviewCount ?? 0} reviews</p>
+                                      <p className="text-[10px] text-muted">
+                                        {v.reviewCount ?? 0} reviews
+                                      </p>
                                     </div>
                                     <div className="text-center">
-                                      <p className="text-xs font-semibold text-teal">{v.earnings}</p>
+                                      <p className="text-xs font-semibold text-teal">
+                                        {v.earnings}
+                                      </p>
                                       <p className="text-[10px] text-muted">earnings</p>
                                     </div>
                                     <TrendIcon size={14} style={{ color: tc }} />
@@ -232,8 +263,12 @@ export default function VendorsPage() {
                                 {v.completionRate !== undefined && (
                                   <div className="px-4 pb-3">
                                     <div className="flex items-center justify-between mb-1">
-                                      <span className="text-[10px] text-muted">Completion rate</span>
-                                      <span className="text-[10px] text-teal font-semibold">{v.completionRate}%</span>
+                                      <span className="text-[10px] text-muted">
+                                        Completion rate
+                                      </span>
+                                      <span className="text-[10px] text-teal font-semibold">
+                                        {v.completionRate}%
+                                      </span>
                                     </div>
                                     <div className="h-1 rounded-full bg-slate-mid overflow-hidden">
                                       <div
@@ -250,14 +285,16 @@ export default function VendorsPage() {
                                 {isExpanded && (
                                   <motion.div
                                     initial={{ height: 0, opacity: 0 }}
-                                    animate={{ height: "auto", opacity: 1 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
                                     exit={{ height: 0, opacity: 0 }}
                                     transition={{ duration: 0.2 }}
                                     className="overflow-hidden border-t border-white/6"
                                   >
                                     <div className="px-4 py-3 space-y-2">
                                       {v.bio && (
-                                        <p className="text-muted text-[12px] leading-relaxed">{v.bio}</p>
+                                        <p className="text-muted text-[12px] leading-relaxed">
+                                          {v.bio}
+                                        </p>
                                       )}
                                       <div className="flex flex-wrap gap-3 mt-2">
                                         {v.topService && (
@@ -267,7 +304,8 @@ export default function VendorsPage() {
                                         )}
                                         {v.avgResponseTime && (
                                           <span className="flex items-center gap-1 text-[11px] text-muted bg-white/5 rounded-full px-3 py-1">
-                                            <Clock size={10} className="text-purple-accent" /> {v.avgResponseTime} response
+                                            <Clock size={10} className="text-purple-accent" />{' '}
+                                            {v.avgResponseTime} response
                                           </span>
                                         )}
                                       </div>
@@ -286,7 +324,7 @@ export default function VendorsPage() {
                 </>
               )}
 
-              {tabId === "rejected" && (
+              {tabId === 'rejected' && (
                 <>
                   {rejectedApps.length > 0 ? (
                     rejectedApps.map((app) => (
@@ -298,7 +336,9 @@ export default function VendorsPage() {
                             </div>
                             <div className="flex-1">
                               <p className="text-sm font-semibold text-lr-white">{app.name}</p>
-                              <p className="text-muted text-xs">{app.specialty} · Applied {app.appliedDate}</p>
+                              <p className="text-muted text-xs">
+                                {app.specialty} · Applied {app.appliedDate}
+                              </p>
                             </div>
                             <StatusBadge status="rejected" variant="manager" />
                           </div>

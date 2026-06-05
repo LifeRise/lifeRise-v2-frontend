@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useState, useMemo, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Heart, Star, ArrowRight, ShoppingBag } from "lucide-react";
-import { serviceDetails as mockServiceDetails } from "@/lib/mock-data";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { staggerContainerResponsive, fadeUpItem } from "@/lib/animations";
-import Link from "next/link";
-import { useServices, useFavorites } from "@/lib/api/hooks";
-import { toggleFavorite } from "@/lib/api/favorites";
+import { useState, useMemo, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Heart, Star, ArrowRight, ShoppingBag } from 'lucide-react';
+import { serviceDetails as mockServiceDetails } from '@/lib/mock-data';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { SectionHeader } from '@/components/ui/SectionHeader';
+import { staggerContainerResponsive, fadeUpItem } from '@/lib/animations';
+import Link from 'next/link';
+import { useServices, useFavorites } from '@/lib/api/hooks';
+import { toggleFavorite } from '@/lib/api/favorites';
 
 export default function FavoritesPage() {
   const [bookedId, setBookedId] = useState<string | null>(null);
@@ -37,7 +37,7 @@ export default function FavoritesPage() {
       return allServices.filter((s) => favServiceIds.has(s.id));
     }
     // Fallback: use mock favorites (v1, v4)
-    return allServices.filter((s) => s.id === "v1" || s.id === "v4");
+    return allServices.filter((s) => s.id === 'v1' || s.id === 'v4');
   }, [allServices, favServiceIds, apiFavorites]);
 
   const isLoading = servicesLoading || favsLoading;
@@ -63,10 +63,14 @@ export default function FavoritesPage() {
       <div className="flex items-center justify-between mb-6">
         <SectionHeader title="Favorites" subtitle="Your saved vendors and services" />
         {isLive && (
-          <span className="text-[10px] text-teal bg-teal/10 px-2 py-0.5 rounded-full shrink-0">Live data</span>
+          <span className="text-[10px] text-teal bg-teal/10 px-2 py-0.5 rounded-full shrink-0">
+            Live data
+          </span>
         )}
         {!isLive && !isLoading && (
-          <span className="text-[10px] text-muted bg-white/5 px-2 py-0.5 rounded-full shrink-0">Demo data</span>
+          <span className="text-[10px] text-muted bg-white/5 px-2 py-0.5 rounded-full shrink-0">
+            Demo data
+          </span>
         )}
       </div>
 
@@ -87,7 +91,9 @@ export default function FavoritesPage() {
                 exit={{ opacity: 0, scale: 0.9, y: 10 }}
               >
                 <GlassCard hover className="overflow-hidden group h-full flex flex-col">
-                  <div className={`bg-linear-to-br ${v.gradient} h-36 flex items-center justify-center relative`}>
+                  <div
+                    className={`bg-linear-to-br ${v.gradient} h-36 flex items-center justify-center relative`}
+                  >
                     <span className="text-5xl select-none opacity-30">✦</span>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <span className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-2xl font-bold text-white font-heading backdrop-blur-sm">
@@ -128,9 +134,15 @@ export default function FavoritesPage() {
                         type="button"
                         onClick={() => setBookedId(v.id)}
                         disabled={!v.available || bookedId === v.id}
-                        className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 ${bookedId === v.id ? "bg-teal/20 text-teal" : "bg-teal text-midnight"}`}
+                        className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 ${bookedId === v.id ? 'bg-teal/20 text-teal' : 'bg-teal text-midnight'}`}
                       >
-                        {bookedId === v.id ? "✓ Booked!" : <>Book <ArrowRight size={11} /></>}
+                        {bookedId === v.id ? (
+                          '✓ Booked!'
+                        ) : (
+                          <>
+                            Book <ArrowRight size={11} />
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>

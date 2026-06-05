@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { motion, AnimatePresence } from "framer-motion";
-import { RefreshCw, Zap } from "lucide-react";
-import { usePWA } from "./PWAProvider";
+import { motion, AnimatePresence } from 'framer-motion';
+import { RefreshCw, Zap } from 'lucide-react';
+import { usePWA } from './PWAProvider';
 
 export function UpdateToast() {
   const { updateAvailable, acceptUpdate } = usePWA();
@@ -14,7 +14,7 @@ export function UpdateToast() {
           initial={{ opacity: 0, y: -30, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.98 }}
-          transition={{ type: "spring", stiffness: 400, damping: 28 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 28 }}
           className="fixed top-0 left-0 right-0 z-80 flex justify-center px-4 pt-4 pointer-events-none"
         >
           <div className="pointer-events-auto glass-dark rounded-2xl border border-white/8 shadow-2xl px-4 py-3 sm:px-5 sm:py-3.5 flex items-center gap-3 sm:gap-4 max-w-lg w-full">

@@ -1,30 +1,30 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { useSearchParams } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
-import { Mail, ArrowRight, RotateCcw, CheckCircle } from "lucide-react";
-import { authService } from "@/lib/auth/auth-service";
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { useSearchParams } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Mail, ArrowRight, RotateCcw, CheckCircle } from 'lucide-react';
+import { authService } from '@/lib/auth/auth-service';
 
 export default function VerifyEmailPage() {
   const searchParams = useSearchParams();
-  const email = searchParams.get("email");
+  const email = searchParams.get('email');
 
   const [isResending, setIsResending] = useState(false);
   const [resent, setResent] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   const handleResend = async () => {
     if (!email) return;
-    setError("");
+    setError('');
     setIsResending(true);
     try {
       await authService.resendConfirmation(email);
       setResent(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to resend confirmation email");
+      setError(err instanceof Error ? err.message : 'Failed to resend confirmation email');
     } finally {
       setIsResending(false);
     }
@@ -61,17 +61,15 @@ export default function VerifyEmailPage() {
             <h1 className="font-heading font-bold text-lr-white text-2xl mb-2">
               Verify Your Email
             </h1>
-            <p className="text-muted text-sm">
-              We&apos;ve sent a confirmation email to
-            </p>
-            {email && (
-              <p className="text-lr-white font-medium text-sm mt-1">{email}</p>
-            )}
+            <p className="text-muted text-sm">We&apos;ve sent a confirmation email to</p>
+            {email && <p className="text-lr-white font-medium text-sm mt-1">{email}</p>}
           </div>
 
           <div className="bg-white/5 rounded-xl p-4 text-left space-y-2">
             <p className="text-muted text-xs">
-              <span className="text-lr-white font-medium">Next step:</span> Click the confirmation link in your email to activate your account. If you don&apos;t see it, check your spam folder.
+              <span className="text-lr-white font-medium">Next step:</span> Click the confirmation
+              link in your email to activate your account. If you don&apos;t see it, check your spam
+              folder.
             </p>
           </div>
 

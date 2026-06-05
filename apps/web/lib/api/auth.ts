@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
 /**
  * Authentication API layer for the Go backend.
  */
 
-import { apiGet, apiPost, clearTokens, setTokens } from "./client";
-import { getAuthBaseUrl, getApiBaseUrl, type FrontendRole } from "./config";
-import type { BackendProfile, LoginCredentials, SignupData, TokenPair } from "./types";
+import { apiGet, apiPost, clearTokens, setTokens } from './client';
+import { getAuthBaseUrl, getApiBaseUrl, type FrontendRole } from './config';
+import type { BackendProfile, LoginCredentials, SignupData, TokenPair } from './types';
 
 /**
  * Login against the Go backend.
@@ -19,14 +19,14 @@ export async function login(
 ): Promise<{ tokenPair: TokenPair; profile: BackendProfile }> {
   const baseUrl = getAuthBaseUrl();
 
-  const tokenPair = await apiPost<TokenPair>(baseUrl, "/api/login", creds, {
+  const tokenPair = await apiPost<TokenPair>(baseUrl, '/api/login', creds, {
     skipAuth: true,
   });
 
   // Store tokens so the profile request can send the Bearer header
   setTokens(tokenPair.access_token, tokenPair.refresh_token);
 
-  const profile = await apiGet<BackendProfile>(baseUrl, "/api/profile");
+  const profile = await apiGet<BackendProfile>(baseUrl, '/api/profile');
 
   return { tokenPair, profile };
 }
@@ -36,7 +36,7 @@ export async function login(
  */
 export async function signup(data: SignupData): Promise<{ id: number; email: string }> {
   const baseUrl = getAuthBaseUrl();
-  return apiPost<{ id: number; email: string }>(baseUrl, "/api/signup", data, {
+  return apiPost<{ id: number; email: string }>(baseUrl, '/api/signup', data, {
     skipAuth: true,
   });
 }
@@ -44,11 +44,18 @@ export async function signup(data: SignupData): Promise<{ id: number; email: str
 /**
  * Register a new vendor (service provider) account.
  */
-export async function signupVendor(data: SignupData & { ein_tax_id: string; description: string }): Promise<{ id: number; email: string; status: string }> {
+export async function signupVendor(
+  data: SignupData & { ein_tax_id: string; description: string }
+): Promise<{ id: number; email: string; status: string }> {
   const baseUrl = getAuthBaseUrl();
-  return apiPost<{ id: number; email: string; status: string }>(baseUrl, "/api/vendor/signup", data, {
-    skipAuth: true,
-  });
+  return apiPost<{ id: number; email: string; status: string }>(
+    baseUrl,
+    '/api/vendor/signup',
+    data,
+    {
+      skipAuth: true,
+    }
+  );
 }
 
 /**
@@ -57,7 +64,7 @@ export async function signupVendor(data: SignupData & { ein_tax_id: string; desc
  */
 export async function fetchProfile(role?: FrontendRole | null): Promise<BackendProfile> {
   const baseUrl = getApiBaseUrl(role);
-  return apiGet<BackendProfile>(baseUrl, "/api/profile");
+  return apiGet<BackendProfile>(baseUrl, '/api/profile');
 }
 
 /**
@@ -66,7 +73,7 @@ export async function fetchProfile(role?: FrontendRole | null): Promise<BackendP
 export async function logout(role?: FrontendRole | null): Promise<void> {
   const baseUrl = getApiBaseUrl(role);
   try {
-    await apiPost<unknown>(baseUrl, "/api/logout", {});
+    await apiPost<unknown>(baseUrl, '/api/logout', {});
   } finally {
     clearTokens();
   }
@@ -77,8 +84,8 @@ export async function logout(role?: FrontendRole | null): Promise<void> {
  */
 export async function refreshToken(): Promise<TokenPair> {
   const baseUrl = getAuthBaseUrl();
-  return apiPost<TokenPair>(baseUrl, "/api/refresh-token", {
-    refresh_token: localStorage.getItem("liferise_refresh_token"),
+  return apiPost<TokenPair>(baseUrl, '/api/refresh-token', {
+    refresh_token: localStorage.getItem('liferise_refresh_token'),
   });
 }
 
@@ -87,7 +94,7 @@ export async function refreshToken(): Promise<TokenPair> {
  */
 export async function forgotPassword(email: string): Promise<void> {
   const baseUrl = getAuthBaseUrl();
-  await apiPost<unknown>(baseUrl, "/api/forgot-password", { email }, { skipAuth: true });
+  await apiPost<unknown>(baseUrl, '/api/forgot-password', { email }, { skipAuth: true });
 }
 
 /**
@@ -95,5 +102,10 @@ export async function forgotPassword(email: string): Promise<void> {
  */
 export async function resetPassword(token: string, code: string, password: string): Promise<void> {
   const baseUrl = getAuthBaseUrl();
-  await apiPost<unknown>(baseUrl, "/api/reset-password", { token, code, password }, { skipAuth: true });
+  await apiPost<unknown>(
+    baseUrl,
+    '/api/reset-password',
+    { token, code, password },
+    { skipAuth: true }
+  );
 }

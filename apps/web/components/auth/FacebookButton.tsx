@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
 
-export function FacebookButton({ label = "Continue with Facebook" }: { label?: string }) {
+export function FacebookButton({ label = 'Continue with Facebook' }: { label?: string }) {
   const [loading, setLoading] = useState(false);
 
   const handleFacebookSignIn = async () => {
@@ -11,15 +11,15 @@ export function FacebookButton({ label = "Continue with Facebook" }: { label?: s
     const supabase = createClient();
 
     const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "facebook",
+      provider: 'facebook',
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
-        scopes: "email public_profile",
+        scopes: 'email public_profile',
       },
     });
 
     if (error) {
-      console.error("Facebook sign in error:", error);
+      console.error('Facebook sign in error:', error);
       setLoading(false);
       return;
     }

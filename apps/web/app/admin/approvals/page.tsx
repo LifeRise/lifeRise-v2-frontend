@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   CheckCircle,
   XCircle,
@@ -15,9 +15,9 @@ import {
   Clock,
   ArrowLeft,
   ShieldCheck,
-} from "lucide-react";
-import { useAuth, useAllProfiles } from "@/lib/auth/hooks";
-import { GlassCard } from "@/components/ui/GlassCard";
+} from 'lucide-react';
+import { useAuth, useAllProfiles } from '@/lib/auth/hooks';
+import { GlassCard } from '@/components/ui/GlassCard';
 
 export default function AdminApprovalsPage() {
   const router = useRouter();
@@ -25,21 +25,21 @@ export default function AdminApprovalsPage() {
   const { profiles, isLoading, approveVendor, rejectVendor } = useAllProfiles();
 
   useEffect(() => {
-    if (!authLoading && (!profile || profile.role !== "manager")) {
-      router.push("/resident");
+    if (!authLoading && (!profile || profile.role !== 'manager')) {
+      router.push('/resident');
     }
   }, [profile, authLoading, router]);
 
   const pendingVendors = profiles.filter(
-    (p) => p.role === "vendor" && (p.approval_status || p.status) === "pending"
+    (p) => p.role === 'vendor' && (p.approval_status || p.status) === 'pending'
   );
 
   const approvedVendors = profiles.filter(
-    (p) => p.role === "vendor" && (p.approval_status || p.status) === "approved"
+    (p) => p.role === 'vendor' && (p.approval_status || p.status) === 'approved'
   );
 
   const rejectedVendors = profiles.filter(
-    (p) => p.role === "vendor" && (p.approval_status || p.status) === "rejected"
+    (p) => p.role === 'vendor' && (p.approval_status || p.status) === 'rejected'
   );
 
   if (authLoading || isLoading) {
@@ -50,7 +50,7 @@ export default function AdminApprovalsPage() {
     );
   }
 
-  if (!profile || profile.role !== "manager") return null;
+  if (!profile || profile.role !== 'manager') return null;
 
   return (
     <div className="min-h-screen bg-midnight">
@@ -70,12 +70,8 @@ export default function AdminApprovalsPage() {
             <ShieldCheck size={20} className="text-purple-accent" />
           </div>
           <div>
-            <h1 className="font-heading font-bold text-lr-white text-2xl">
-              Vendor Approvals
-            </h1>
-            <p className="text-muted text-sm">
-              Review and manage vendor applications
-            </p>
+            <h1 className="font-heading font-bold text-lr-white text-2xl">Vendor Approvals</h1>
+            <p className="text-muted text-sm">Review and manage vendor applications</p>
           </div>
         </div>
 
@@ -132,11 +128,11 @@ export default function AdminApprovalsPage() {
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-2">
                         <div className="flex items-center gap-2 text-xs text-muted">
                           <Phone size={12} className="text-teal" />
-                          {vendor.phone || "N/A"}
+                          {vendor.phone || 'N/A'}
                         </div>
                         <div className="flex items-center gap-2 text-xs text-muted">
                           <CreditCard size={12} className="text-gold" />
-                          {vendor.ein_tax_id || "N/A"}
+                          {vendor.ein_tax_id || 'N/A'}
                         </div>
                         <div className="flex items-center gap-2 text-xs text-muted">
                           <Mail size={12} className="text-purple-accent" />
@@ -147,9 +143,7 @@ export default function AdminApprovalsPage() {
                       {vendor.description && (
                         <div className="flex items-start gap-2 pt-1">
                           <FileText size={12} className="text-muted mt-0.5 shrink-0" />
-                          <p className="text-muted text-xs leading-relaxed">
-                            {vendor.description}
-                          </p>
+                          <p className="text-muted text-xs leading-relaxed">{vendor.description}</p>
                         </div>
                       )}
                     </div>
