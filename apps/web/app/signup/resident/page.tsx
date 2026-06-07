@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { User, Mail, Phone, Lock, Eye, EyeOff, ArrowRight, ChevronLeft } from 'lucide-react';
@@ -11,9 +11,6 @@ import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons';
 
 export default function ResidentSignupPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const roleParam = searchParams.get('role');
-  const isManager = roleParam === 'manager';
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -74,7 +71,7 @@ export default function ResidentSignupPage() {
         email,
         phone,
         password,
-        role: isManager ? 'manager' : 'resident',
+        role: 'resident',
       });
 
       if (authService.isSupabaseConfigured() && !session) {
@@ -116,7 +113,7 @@ export default function ResidentSignupPage() {
             priority
           />
           <h1 className="font-heading font-extrabold text-lr-white text-3xl leading-tight mb-1">
-            {isManager ? 'Manager Sign Up' : 'Resident Sign Up'}
+            Resident Sign Up
           </h1>
           <p className="text-muted text-sm">Create your account</p>
         </div>

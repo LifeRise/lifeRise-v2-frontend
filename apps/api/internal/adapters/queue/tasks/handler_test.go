@@ -51,12 +51,12 @@ func TestHandleFCMNotification(t *testing.T) {
 		data   map[string]string
 	}
 
-	fcmSender := func(ctx context.Context, tokens []string, title, body string, data map[string]string) error {
+	fcmSender := func(ctx context.Context, tokens []string, title, body string, data map[string]string) ([]string, error) {
 		captured.tokens = tokens
 		captured.title = title
 		captured.body = body
 		captured.data = data
-		return nil
+		return nil, nil
 	}
 	handler := NewHandler(nil, fcmSender, nil)
 
@@ -77,6 +77,27 @@ func TestHandleFCMNotification(t *testing.T) {
 	}
 	if captured.title != "Test Title" {
 		t.Errorf("expected title=Test Title, got %s", captured.title)
+	}
+}
+
+func TestHandleFCMNotification_NilSender(t *testing.T) {
+	handler := NewHandler(nil, nil, nil) // FCMSender is nil
+	payload, _ := json.Marshal(FCMNotificationPayload{
+		Tokens: []string{"t1"}, Title: "T", Body: "B",
+	})
+	err := handler.HandleFCMNotification(context.Background(),
+		asynq.NewTask(TypeFCMNotification, payload))
+	if err != nil {
+		t.Fatalf("nil FCMSender must not return error: %v", err)
+	}
+}
+
+func TestHandleFCMNotification_BadPayload(t *testing.T) {
+	handler := NewHandler(nil, nil, nil)
+	err := handler.HandleFCMNotification(context.Background(),
+		asynq.NewTask(TypeFCMNotification, []byte("not-json")))
+	if err == nil {
+		t.Fatal("expected error for malformed payload")
 	}
 }
 

@@ -1,31 +1,34 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Pencil, Trash2, Shield } from 'lucide-react';
-import Link from 'next/link';
+import { Pencil, Trash2 } from 'lucide-react';
 import {
   AdminPageShell,
   DataTable,
   FilterBar,
   Pagination,
   ConfirmDialog,
+  StatusPill,
 } from '@/components/admin';
 import { useAdminList, useAdminMutation } from '@/lib/api/admin/hooks';
 import { GlassCard } from '@/components/ui/GlassCard';
 
-interface Role {
+interface EventBooking {
   id: number;
-  name: string;
-  slug: string;
-  level: number;
-  description?: string;
+  event_id: number;
+  customer_id: number;
+  status: string;
+  booked_at: string;
 }
 
-export default function RolesPage() {
-  const [filters, setFilters] = useState({ search: '', page: 1 });
+export default function EventBookingsPage() {
+  const [filters, setFilters] = useState({ search: '', event_id: '', status: '', page: 1 });
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const { data, meta, isLoading, error, refresh } = useAdminList<Role>('roles', filters);
-  const { remove, isPending } = useAdminMutation<Role>('roles');
+  const { data, meta, isLoading, error, refresh } = useAdminList<EventBooking>(
+    'event-bookings',
+    filters
+  );
+  const { remove, isPending } = useAdminMutation<EventBooking>('event-bookings');
 
   const handleDelete = async () => {
     if (deleteId == null) return;
@@ -40,31 +43,42 @@ export default function RolesPage() {
 
   return (
     <AdminPageShell
-      title="Roles"
-      subtitle={`${meta?.total ?? 0} roles`}
-      action={
-        <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-accent text-white text-sm font-semibold hover:opacity-90 transition-opacity">
-          <Plus size={16} />
-          New Role
-        </button>
-      }
+      title="Event Bookings"
+      subtitle={`${meta?.total ?? 0} bookings`}
       filters={
         <FilterBar
-          searchPlaceholder="Search by name or slug..."
+          searchPlaceholder="Search..."
           onSearchChange={(search) => setFilters((f) => ({ ...f, search, page: 1 }))}
-        />
+        >
+          <select
+            value={filters.status}
+            onChange={(e) => setFilters((f) => ({ ...f, status: e.target.value, page: 1 }))}
+            className="px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-lr-white text-sm focus:outline-none focus:border-purple-accent/50"
+          >
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="accepted">Accepted</option>
+            <option value="active">Active</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </FilterBar>
       }
     >
       <GlassCard>
         <DataTable
           columns={[
-            { key: 'name', header: 'Name', render: (row) => row.name },
+            { key: 'event', header: 'Event', render: (row) => `#${row.event_id}` },
+            { key: 'customer', header: 'Customer', render: (row) => `#${row.customer_id}` },
             {
-              key: 'slug',
-              header: 'Slug',
-              render: (row) => <span className="text-muted font-mono text-xs">{row.slug}</span>,
+              key: 'status',
+              header: 'Status',
+              render: (row) => <StatusPill status={row.status} />,
             },
-            { key: 'level', header: 'Level', render: (row) => row.level },
+            {
+              key: 'booked',
+              header: 'Booked At',
+              render: (row) => new Date(row.booked_at).toLocaleString(),
+            },
           ]}
           rows={data ?? []}
           isLoading={isLoading}
@@ -72,18 +86,9 @@ export default function RolesPage() {
           onRetry={refresh}
           keyExtractor={(row) => row.id}
           rowActions={(row) => [
-            <Link
-              key="perms"
-              href={`/manager/roles/${row.id}/permissions`}
-              className="p-1.5 rounded-lg hover:bg-white/10 text-muted hover:text-lr-white transition-colors"
-              title="Manage Permissions"
-            >
-              <Shield size={14} />
-            </Link>,
             <button
               key="edit"
               className="p-1.5 rounded-lg hover:bg-white/10 text-muted hover:text-lr-white transition-colors"
-              title="Edit"
             >
               <Pencil size={14} />
             </button>,
@@ -91,7 +96,6 @@ export default function RolesPage() {
               key="delete"
               onClick={() => setDeleteId(row.id)}
               className="p-1.5 rounded-lg hover:bg-red-500/10 text-muted hover:text-red-400 transition-colors"
-              title="Delete"
             >
               <Trash2 size={14} />
             </button>,
@@ -108,8 +112,8 @@ export default function RolesPage() {
       <ConfirmDialog
         open={deleteId !== null}
         onOpenChange={(open) => !open && setDeleteId(null)}
-        title="Delete Role"
-        description="Are you sure you want to delete this role? Users assigned to this role may lose access."
+        title="Delete Booking"
+        description="Are you sure you want to delete this event booking? This action cannot be undone."
         confirmLabel="Delete"
         onConfirm={handleDelete}
         isLoading={isPending}

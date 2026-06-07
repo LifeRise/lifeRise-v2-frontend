@@ -50,9 +50,10 @@ func (f *FCMClient) SendToDevice(ctx context.Context, token string, title, body 
 }
 
 // SendToDevices sends a push notification to multiple devices using multicast.
-func (f *FCMClient) SendToDevices(ctx context.Context, tokens []string, title, body string, data map[string]string) error {
+// Returns the list of tokens that failed so callers can prune stale registrations.
+func (f *FCMClient) SendToDevices(ctx context.Context, tokens []string, title, body string, data map[string]string) ([]string, error) {
 	if len(tokens) == 0 {
-		return nil
+		return nil, nil
 	}
 
 	message := &messaging.MulticastMessage{
@@ -67,19 +68,17 @@ func (f *FCMClient) SendToDevices(ctx context.Context, tokens []string, title, b
 	//nolint:staticcheck // deprecated but requires broader refactor to replace
 	resp, err := f.client.SendMulticast(ctx, message)
 	if err != nil {
-		return fmt.Errorf("send fcm multicast: %w", err)
+		return nil, fmt.Errorf("send fcm multicast: %w", err)
 	}
 
+	var failed []string
 	if resp.FailureCount > 0 {
-		// Log failures but don't return error for partial failures
-		// Individual token failures are expected (e.g., uninstalled apps)
 		for i, r := range resp.Responses {
 			if !r.Success {
-				// Best effort: log the error but continue
-				_ = fmt.Errorf("token %s failed: %v", tokens[i], r.Error)
+				failed = append(failed, tokens[i])
 			}
 		}
 	}
 
-	return nil
+	return failed, nil
 }

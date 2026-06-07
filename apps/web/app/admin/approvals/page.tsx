@@ -58,7 +58,7 @@ export default function AdminApprovalsPage() {
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Link
-            href="/manager"
+            href="/admin"
             className="flex items-center gap-2 text-muted hover:text-lr-white transition-colors text-sm"
           >
             <ArrowLeft size={16} /> Back to Dashboard
@@ -150,12 +150,14 @@ export default function AdminApprovalsPage() {
 
                     <div className="flex items-center gap-2 sm:flex-col sm:items-end">
                       <button
+                        type="button"
                         onClick={() => approveVendor(String(vendor.id))}
                         className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-teal/10 text-teal text-xs font-semibold hover:bg-teal/20 transition-colors"
                       >
                         <CheckCircle size={14} /> Approve
                       </button>
                       <button
+                        type="button"
                         onClick={() => rejectVendor(String(vendor.id))}
                         className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-rose/10 text-rose text-xs font-semibold hover:bg-rose/20 transition-colors"
                       >

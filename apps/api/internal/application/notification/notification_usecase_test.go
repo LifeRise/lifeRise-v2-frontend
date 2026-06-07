@@ -6,8 +6,11 @@ import (
 	"time"
 
 	"github.com/hibiken/asynq"
+	"gorm.io/gorm"
 
 	"github.com/liferise/backend/internal/adapters/queue/tasks"
+	"github.com/liferise/backend/internal/infrastructure/config"
+	"github.com/liferise/backend/internal/infrastructure/database"
 )
 
 type fakeAsynqClient struct {
@@ -34,12 +37,54 @@ func (f *fakeAsynqClient) Close() error {
 	return nil
 }
 
+type fakeDeviceTokenRepo struct {
+	tokens map[string]struct{}
+}
+
+func newFakeDeviceTokenRepo() *fakeDeviceTokenRepo {
+	return &fakeDeviceTokenRepo{tokens: make(map[string]struct{})}
+}
+
+func (f *fakeDeviceTokenRepo) Upsert(_ context.Context, _ interface{}, _ uint64, token, _ string) error {
+	f.tokens[token] = struct{}{}
+	return nil
+}
+
+func (f *fakeDeviceTokenRepo) GetByUser(_ context.Context, _ interface{}, _ uint64) ([]string, error) {
+	var result []string
+	for t := range f.tokens {
+		result = append(result, t)
+	}
+	return result, nil
+}
+
+func (f *fakeDeviceTokenRepo) Delete(_ context.Context, _ interface{}, token string) error {
+	delete(f.tokens, token)
+	return nil
+}
+
+func (f *fakeDeviceTokenRepo) HasToken(token string) bool {
+	_, ok := f.tokens[token]
+	return ok
+}
+
+func newTestDB(t *testing.T) *gorm.DB {
+	db, err := database.New(&config.DatabaseConfig{
+		Driver: "sqlite",
+		URL:    "file::memory:?cache=shared",
+	}, true)
+	if err != nil {
+		t.Fatalf("failed to create test db: %v", err)
+	}
+	return db
+}
+
 func TestSendEmail(t *testing.T) {
 	client := newFakeAsynqClient()
-	uc := NewUseCase(client, nil, nil)
+	uc := NewUseCase(nil, nil, client, nil, nil, nil)
 
 	ctx := context.Background()
-	err := uc.SendEmail(ctx, "user@example.com", "Welcome", "welcome_email", map[string]string{"Name": "John"})
+	err := uc.SendEmail(ctx, 1, "user@example.com", "Welcome", "welcome_email", map[string]string{"Name": "John"}, "email")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -51,10 +96,10 @@ func TestSendEmail(t *testing.T) {
 
 func TestSendPushNotification(t *testing.T) {
 	client := newFakeAsynqClient()
-	uc := NewUseCase(client, nil, nil)
+	uc := NewUseCase(nil, nil, client, nil, nil, nil)
 
 	ctx := context.Background()
-	err := uc.SendPushNotification(ctx, []string{"token1", "token2"}, "Title", "Body", map[string]string{"key": "value"})
+	err := uc.SendPushNotification(ctx, 1, []string{"token1", "token2"}, "Title", "Body", map[string]string{"key": "value"}, "push")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -64,12 +109,26 @@ func TestSendPushNotification(t *testing.T) {
 	}
 }
 
-func TestSendBookingConfirmation(t *testing.T) {
+func TestSendPushNotification_NoTokens(t *testing.T) {
 	client := newFakeAsynqClient()
-	uc := NewUseCase(client, nil, nil)
+	uc := NewUseCase(nil, nil, client, nil, nil, nil)
 
 	ctx := context.Background()
-	err := uc.SendBookingConfirmation(ctx, "user@example.com", []string{"token1"}, 42)
+	err := uc.SendPushNotification(ctx, 1, []string{}, "Title", "Body", nil, "push")
+	if err != nil {
+		t.Fatalf("unexpected error for empty tokens: %v", err)
+	}
+	if _, ok := client.enqueued[tasks.TypeFCMNotification]; ok {
+		t.Errorf("expected no FCM task to be enqueued for empty token list")
+	}
+}
+
+func TestSendBookingConfirmation(t *testing.T) {
+	client := newFakeAsynqClient()
+	uc := NewUseCase(nil, nil, client, nil, nil, nil)
+
+	ctx := context.Background()
+	err := uc.SendBookingConfirmation(ctx, 1, "user@example.com", []string{"token1"}, 42)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -84,15 +143,45 @@ func TestSendBookingConfirmation(t *testing.T) {
 
 func TestEnqueueBookingReminder(t *testing.T) {
 	client := newFakeAsynqClient()
-	uc := NewUseCase(client, nil, nil)
+	uc := NewUseCase(nil, nil, client, nil, nil, nil)
 
 	ctx := context.Background()
-	err := uc.SendBookingReminder(ctx, "user@example.com", []string{"token1"}, 42, "2024-01-01T10:00:00Z")
+	err := uc.SendBookingReminder(ctx, 1, "user@example.com", []string{"token1"}, 42, "2024-01-01T10:00:00Z")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
 	if _, ok := client.enqueued[tasks.TypeBookingReminder]; !ok {
 		t.Errorf("expected reminder task to be enqueued")
+	}
+}
+
+func TestRegisterDeviceToken(t *testing.T) {
+	db := newTestDB(t)
+	repo := newFakeDeviceTokenRepo()
+	uc := NewUseCase(db, nil, nil, nil, nil, repo)
+
+	ctx := context.Background()
+	err := uc.RegisterDeviceToken(ctx, 1, "fcm-token-abc", "web")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !repo.HasToken("fcm-token-abc") {
+		t.Errorf("expected token to be stored")
+	}
+}
+
+func TestDeleteDeviceToken(t *testing.T) {
+	db := newTestDB(t)
+	repo := newFakeDeviceTokenRepo()
+	uc := NewUseCase(db, nil, nil, nil, nil, repo)
+
+	ctx := context.Background()
+	_ = uc.RegisterDeviceToken(ctx, 1, "fcm-token-abc", "web")
+	if err := uc.DeleteDeviceToken(ctx, "fcm-token-abc"); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if repo.HasToken("fcm-token-abc") {
+		t.Errorf("expected token to be deleted")
 	}
 }

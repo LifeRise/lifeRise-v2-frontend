@@ -31,7 +31,7 @@ const roles = [
     label: 'Property Manager',
     description: 'Oversee complex operations',
     icon: Users,
-    href: '/signup/resident?role=manager',
+    href: '/signup/manager',
     accent: '#818CF8',
     bg: 'rgba(129,140,248,0.08)',
     border: 'rgba(129,140,248,0.25)',

@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/client';
 import {
   login as apiLogin,
   signup as apiSignup,
+  signupManager as apiSignupManager,
   logout as apiLogout,
   forgotPassword as apiForgotPassword,
   resetPassword as apiResetPassword,
@@ -37,6 +38,8 @@ export const authService = {
 
   /** Email + password sign-up with email confirmation */
   async signUp(data: SignupData & { role?: string }): Promise<AuthSession> {
+    const isManager = data.role === 'manager';
+
     if (isSupabaseConfigured()) {
       const supabase = getSupabase();
       const { data: result, error } = await supabase.auth.signUp({
@@ -55,7 +58,11 @@ export const authService = {
 
       // Bridge: also create the user in the Go backend so backend login works later
       try {
-        await apiSignup(data);
+        if (isManager) {
+          await apiSignupManager(data);
+        } else {
+          await apiSignup(data);
+        }
       } catch (backendErr: unknown) {
         // User might already exist in backend, or backend might be down.
         // Supabase auth is the source of truth — don't block on backend failure.
@@ -69,7 +76,11 @@ export const authService = {
     }
 
     // Fallback: Go backend signup (mock mode auto-confirms)
-    await apiSignup(data);
+    if (isManager) {
+      await apiSignupManager(data);
+    } else {
+      await apiSignup(data);
+    }
     return { user: null, session: null };
   },
 

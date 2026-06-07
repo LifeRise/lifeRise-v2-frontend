@@ -214,6 +214,70 @@ func (uc *AuthUseCase) RegisterVendor(ctx context.Context, req RegisterVendorReq
 	return u, nil
 }
 
+// RegisterManagerRequest contains fields for manager registration.
+type RegisterManagerRequest struct {
+	FirstName string `validate:"required,max=255"`
+	LastName  string `validate:"required,max=255"`
+	Email     string `validate:"required,email,max=255"`
+	Phone     string `validate:"required,max=50"`
+	Password  string `validate:"required,min=8,max=255"`
+	Timezone  string
+}
+
+// RegisterManager creates a new manager user with complex_manager role.
+func (uc *AuthUseCase) RegisterManager(ctx context.Context, req RegisterManagerRequest) (*user.User, error) {
+	// Check email uniqueness
+	if _, err := uc.userRepo.GetByEmail(ctx, uc.db, req.Email); err == nil {
+		return nil, apperrors.ErrConflict
+	}
+
+	// Check phone uniqueness
+	if req.Phone != "" {
+		if _, err := uc.userRepo.GetByPhone(ctx, uc.db, req.Phone); err == nil {
+			return nil, fmt.Errorf("phone already registered: %w", apperrors.ErrConflict)
+		}
+	}
+
+	hash, err := auth.HashPassword(req.Password)
+	if err != nil {
+		return nil, fmt.Errorf("hash password: %w", err)
+	}
+
+	role, err := uc.userRepo.GetRoleBySlug(ctx, uc.db, "complex_manager")
+	if err != nil {
+		return nil, fmt.Errorf("fetch complex_manager role: %w", err)
+	}
+
+	u := &user.User{
+		FirstName:    req.FirstName,
+		LastName:     req.LastName,
+		Email:        req.Email,
+		Phone:        req.Phone,
+		PasswordHash: hash,
+		Timezone:     req.Timezone,
+		Status:       "active",
+		RoleID:       &role.ID,
+	}
+	if u.Timezone == "" {
+		u.Timezone = "UTC"
+	}
+
+	if err := uc.userRepo.Create(ctx, uc.db, u); err != nil {
+		return nil, fmt.Errorf("create user: %w", err)
+	}
+
+	assignment := &user.UserRoleAssignment{
+		UserID:    u.ID,
+		RoleID:    role.ID,
+		CompanyID: nil,
+	}
+	if err := uc.userRepo.CreateRoleAssignment(ctx, uc.db, assignment); err != nil {
+		return nil, fmt.Errorf("create role assignment: %w", err)
+	}
+
+	return u, nil
+}
+
 // LoginUserRequest mirrors Laravel's user login.
 type LoginUserRequest struct {
 	Email    string `validate:"required,email"`
@@ -309,9 +373,12 @@ type ResetPasswordRequest struct {
 // ForgotPassword generates a reset token/code, stores it, and sends an email.
 func (uc *AuthUseCase) ForgotPassword(ctx context.Context, req ForgotPasswordRequest, appURL string) error {
 	// Verify user exists (check both customers and users)
-	_, err := uc.customerRepo.GetByEmail(ctx, uc.db, req.Email)
-	if err != nil {
-		_, err = uc.userRepo.GetByEmail(ctx, uc.db, req.Email)
+	var userID uint64
+	c, err := uc.customerRepo.GetByEmail(ctx, uc.db, req.Email)
+	if err == nil {
+		userID = c.ID
+	} else {
+		u, err := uc.userRepo.GetByEmail(ctx, uc.db, req.Email)
 		if err != nil {
 			if errors.Is(err, apperrors.ErrNotFound) {
 				// Don't leak whether email exists
@@ -319,6 +386,7 @@ func (uc *AuthUseCase) ForgotPassword(ctx context.Context, req ForgotPasswordReq
 			}
 			return err
 		}
+		userID = u.ID
 	}
 
 	// Generate secure token and 6-digit code
@@ -347,11 +415,11 @@ func (uc *AuthUseCase) ForgotPassword(ctx context.Context, req ForgotPasswordReq
 	// Send email if notification service is available
 	if uc.notificationUC != nil {
 		resetLink := fmt.Sprintf("%s/reset-password?token=%s&code=%s", appURL, token, code)
-		_ = uc.notificationUC.SendEmail(ctx, req.Email, "Reset your LifeRise password", "password_reset", map[string]string{
+		_ = uc.notificationUC.SendEmail(ctx, userID, req.Email, "Reset your LifeRise password", "password_reset", map[string]string{
 			"reset_link": resetLink,
 			"code":       code,
 			"expires_in": "1 hour",
-		})
+		}, "system")
 	}
 
 	return nil

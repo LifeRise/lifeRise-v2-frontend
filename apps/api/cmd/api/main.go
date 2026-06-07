@@ -118,6 +118,8 @@ func main() {
 	idempotencyRepo := persistence.NewWebhookIdempotencyRepo()
 	serviceRepo := persistence.NewServiceRepo()
 	favoriteRepo := persistence.NewFavoriteRepo()
+	notificationRepo := persistence.NewNotificationRepo()
+	deviceTokenRepo := persistence.NewDeviceTokenRepo()
 	slotRepo := persistence.NewSlotRepo()
 
 	// Asynq client (task enqueuing)
@@ -149,7 +151,7 @@ func main() {
 	}
 
 	// Use Cases
-	notificationUC := appnotification.NewUseCase(asynqClient, fcmClient, emailClient)
+	notificationUC := appnotification.NewUseCase(db, notificationRepo, asynqClient, fcmClient, emailClient, deviceTokenRepo)
 
 	authUC := appuser.NewAuthUseCase(db, userRepo, customerRepo, jwtService, notificationUC)
 

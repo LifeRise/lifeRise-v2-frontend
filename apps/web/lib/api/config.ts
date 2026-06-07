@@ -13,13 +13,14 @@ const CUSTOMER_API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 const VENDOR_API = process.env.NEXT_PUBLIC_VENDOR_API_URL ?? CUSTOMER_API;
 const ADMIN_API = process.env.NEXT_PUBLIC_ADMIN_API_URL ?? CUSTOMER_API;
 
-export type FrontendRole = 'resident' | 'vendor' | 'manager';
+export type FrontendRole = 'resident' | 'vendor' | 'manager' | 'admin';
 
 export function getApiBaseUrl(role?: FrontendRole | null): string {
   switch (role) {
     case 'vendor':
       return VENDOR_API;
     case 'manager':
+    case 'admin':
       return ADMIN_API;
     case 'resident':
     default:

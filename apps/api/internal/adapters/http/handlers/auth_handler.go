@@ -76,6 +76,48 @@ type VendorRegisterRequest struct {
 	Description string `json:"description" validate:"required"`
 }
 
+// ManagerRegisterRequest mirrors manager registration validation rules.
+type ManagerRegisterRequest struct {
+	FirstName string `json:"first_name" validate:"required,max=255"`
+	LastName  string `json:"last_name" validate:"required,max=255"`
+	Email     string `json:"email" validate:"required,email,max=255"`
+	Phone     string `json:"phone" validate:"required,max=50"`
+	Password  string `json:"password" validate:"required,min=8,max=255"`
+	Timezone  string `json:"timezone,omitempty" validate:"omitempty,max=100"`
+}
+
+// RegisterManager handles manager registration.
+func (h *AuthHandler) RegisterManager(c *gin.Context) {
+	var req ManagerRegisterRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.ValidationError(c, validation.ValidationErrorsToMap(err))
+		return
+	}
+
+	u, err := h.authUC.RegisterManager(c.Request.Context(), appuser.RegisterManagerRequest{
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Email:     req.Email,
+		Phone:     req.Phone,
+		Password:  req.Password,
+		Timezone:  req.Timezone,
+	})
+	if err != nil {
+		if errors.Is(err, apperrors.ErrConflict) {
+			response.Error(c, http.StatusConflict, "The email has already been taken.", nil)
+			return
+		}
+		response.Error(c, http.StatusInternalServerError, "Registration failed.", nil)
+		return
+	}
+
+	response.Success(c, http.StatusCreated, "Manager registered successfully.", gin.H{
+		"id":    u.ID,
+		"email": u.Email,
+		"role":  "manager",
+	})
+}
+
 // RegisterVendor handles vendor registration.
 func (h *AuthHandler) RegisterVendor(c *gin.Context) {
 	var req VendorRegisterRequest

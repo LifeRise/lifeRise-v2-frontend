@@ -14,7 +14,19 @@ import (
 	firebaseadapter "github.com/liferise/backend/internal/adapters/firebase"
 	"github.com/liferise/backend/internal/adapters/queue/tasks"
 	"github.com/liferise/backend/internal/infrastructure/config"
+	"github.com/liferise/backend/internal/infrastructure/database"
+	"github.com/liferise/backend/internal/infrastructure/persistence"
 )
+
+// tokenPrunerWrapper adapts the persistence repo to the tasks.TokenPruner interface.
+type tokenPrunerWrapper struct {
+	db   interface{}
+	repo *persistence.DeviceTokenRepo
+}
+
+func (w *tokenPrunerWrapper) Delete(ctx context.Context, token string) error {
+	return w.repo.Delete(ctx, w.db, token)
+}
 
 func main() {
 	logger, _ := zap.NewProduction()
@@ -24,6 +36,17 @@ func main() {
 	if err != nil {
 		logger.Fatal("failed to load config", zap.Error(err))
 	}
+
+	// Database connection (required for token pruning)
+	db, err := database.NewFromConfig(cfg)
+	if err != nil {
+		logger.Fatal("failed to connect to database", zap.Error(err))
+	}
+
+	deviceTokenRepo := persistence.NewDeviceTokenRepo()
+
+	// Wrap the repository to satisfy the tasks.TokenPruner interface (curries db).
+	tokenPruner := &tokenPrunerWrapper{db: db, repo: deviceTokenRepo}
 
 	redisOpt := asynq.RedisClientOpt{
 		Addr:     fmt.Sprintf("%s:%d", cfg.Redis.Host, cfg.Redis.Port),
@@ -48,7 +71,7 @@ func main() {
 	})
 
 	// Firebase FCM client (optional)
-	var fcmSender func(ctx context.Context, tokens []string, title, body string, data map[string]string) error
+	var fcmSender func(ctx context.Context, tokens []string, title, body string, data map[string]string) ([]string, error)
 	if cfg.Firebase.CredentialsPath != "" {
 		fcm, err := firebaseadapter.NewFCMClient(context.Background(), cfg.Firebase.CredentialsPath)
 		if err != nil {
@@ -79,6 +102,7 @@ func main() {
 		},
 	)
 	handler.TemplatedSender = templatedSender
+	handler.TokenPruner = tokenPruner
 
 	mux := asynq.NewServeMux()
 	mux.HandleFunc(tasks.TypeEmailDelivery, handler.HandleEmailDelivery)

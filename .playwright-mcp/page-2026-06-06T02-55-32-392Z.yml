@@ -1,0 +1,67 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - img "LifeRise" [ref=e5]
+      - heading "LifeRise" [level=1] [ref=e6]
+      - paragraph [ref=e7]: Simplifying Services, Enhancing Lives
+    - generic [ref=e8]:
+      - heading "Welcome back" [level=2] [ref=e9]
+      - generic [ref=e10]:
+        - button "Residents" [ref=e11]:
+          - img [ref=e12]
+          - text: Residents
+        - button "Vendor" [ref=e16]:
+          - img [ref=e17]
+          - text: Vendor
+        - button "Manager" [ref=e19]:
+          - img [ref=e20]
+          - text: Manager
+      - generic [ref=e25]:
+        - button "Continue with Google" [ref=e26]:
+          - img [ref=e27]
+          - text: Continue with Google
+        - button "Continue with Facebook" [ref=e32]:
+          - img [ref=e33]
+          - text: Continue with Facebook
+      - generic [ref=e37]: or sign in with
+      - generic [ref=e39]:
+        - button "Password" [ref=e40]:
+          - img [ref=e41]
+          - text: Password
+        - button "Magic Link" [ref=e44]:
+          - img [ref=e45]
+          - text: Magic Link
+        - button "Phone OTP" [ref=e48]:
+          - img [ref=e49]
+          - text: Phone OTP
+      - generic [ref=e51]:
+        - generic [ref=e52]:
+          - img [ref=e53]
+          - textbox "Email address" [ref=e56]
+        - generic [ref=e57]:
+          - img [ref=e58]
+          - textbox "Password" [ref=e61]
+          - button [ref=e62]:
+            - img [ref=e63]
+        - generic [ref=e66]:
+          - generic [ref=e67] [cursor=pointer]:
+            - checkbox "Remember me" [ref=e68]
+            - text: Remember me
+          - link "Forgot password?" [ref=e69] [cursor=pointer]:
+            - /url: /forgot-password
+        - button "Sign In" [ref=e70]:
+          - text: Sign In
+          - img [ref=e71]
+    - paragraph [ref=e73]:
+      - text: Don't have an account?
+      - link "Create one free" [ref=e74] [cursor=pointer]:
+        - /url: /signup
+    - generic [ref=e75]:
+      - paragraph [ref=e76]: Demo Accounts
+      - generic [ref=e77]:
+        - paragraph [ref=e78]: "Resident: resident@liferise.demo / Resident123!"
+        - paragraph [ref=e79]: "Vendor: vendor@liferise.demo / Vendor123!"
+        - paragraph [ref=e80]: "Manager: manager@liferise.demo / Manager123!"
+        - paragraph [ref=e81]: "Pending: pending@liferise.demo / Pending123!"
+  - button "Open Next.js Dev Tools" [ref=e87] [cursor=pointer]:
+    - img [ref=e88]

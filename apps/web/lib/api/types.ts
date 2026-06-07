@@ -25,7 +25,7 @@ export interface BackendProfile {
   avatar?: string;
   timezone: string;
   status: string;
-  role: 'resident' | 'vendor' | 'manager';
+  role: 'resident' | 'vendor' | 'manager' | 'admin';
   user_type: 'customer' | 'user';
   roles: string[];
   created_at: string;
@@ -59,6 +59,25 @@ export class ApiError extends Error {
     this.status = status;
     this.errors = errors;
   }
+}
+
+// ─── Notification Types ─────────────────────────────────────────
+
+export interface BackendNotification {
+  id: number;
+  user_id: number;
+  title: string;
+  body: string;
+  type: string;
+  read_at: string | null;
+  created_at: string;
+}
+
+export interface NotificationListResponse {
+  notifications: BackendNotification[];
+  total: number;
+  page: number;
+  per_page: number;
 }
 
 // ─── Admin Dashboard Types ──────────────────────────────────────

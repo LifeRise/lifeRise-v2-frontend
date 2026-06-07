@@ -11,20 +11,22 @@ import {
   List,
   BarChart3,
   Users,
+  Briefcase,
   LogOut,
   ShieldCheck,
   MoreHorizontal,
   ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/hooks';
-import { useAppStore } from '@/lib/store';
+import { useAppStore, useUnreadCount } from '@/lib/store';
 import { ResponsiveModal } from '@/components/ui/ResponsiveModal';
+import { useNotifications } from '@/lib/api/hooks';
 
-type Role = 'resident' | 'vendor' | 'manager';
+type Role = 'resident' | 'vendor' | 'manager' | 'admin';
 
 interface LeafItem {
   icon: React.ElementType;
@@ -51,7 +53,7 @@ const mobileNav: Record<
     { icon: ShoppingBag, label: 'Services', href: '/resident/services' },
     { icon: CalendarDays, label: 'Bookings', href: '/resident/bookings' },
     { icon: LayoutDashboard, label: 'Home', href: '/resident' },
-    { icon: User, label: 'Account', href: '#', isDrawer: true },
+    { icon: User, label: 'Account', href: '#', isDrawer: true, badge: 0 },
   ],
   vendor: [
     { icon: LayoutDashboard, label: 'Dashboard', href: '/vendor' },
@@ -62,68 +64,106 @@ const mobileNav: Record<
   manager: [
     { icon: LayoutDashboard, label: 'Overview', href: '/manager' },
     { icon: BarChart3, label: 'Analytics', href: '/manager/analytics' },
-    { icon: Users, label: 'Directory', href: '/manager/residents' },
+    { icon: Users, label: 'Residents', href: '/manager/residents' },
+    { icon: Briefcase, label: 'Vendors', href: '/manager/vendors' },
+    { icon: MoreHorizontal, label: 'More', href: '#', isDrawer: true },
+  ],
+  admin: [
+    { icon: LayoutDashboard, label: 'Dashboard', href: '/admin' },
+    { icon: BarChart3, label: 'Analytics', href: '/admin/analytics' },
+    { icon: Users, label: 'Users', href: '/admin/users' },
     { icon: ShieldCheck, label: 'Approvals', href: '/admin/approvals' },
     { icon: MoreHorizontal, label: 'More', href: '#', isDrawer: true },
   ],
 };
 
+// Property manager full drawer nav
 const managerFullNav: NavItem[] = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/manager' },
   { icon: CalendarDays, label: 'Calendar', href: '/manager/calendar' },
-  { icon: ShieldCheck, label: 'Roles', href: '/manager/roles' },
-  { icon: Users, label: 'Users', href: '/manager/users' },
-  { icon: LayoutDashboard, label: 'Companies', href: '/manager/companies' },
-  { icon: ShoppingBag, label: 'Vendor Companies', href: '/manager/companies/vendor' },
-  { icon: LayoutDashboard, label: 'Affiliate Companies', href: '/manager/companies/affiliate' },
-  { icon: ShieldCheck, label: 'Complex Managers', href: '/manager/complex-managers' },
-  { icon: Users, label: 'Service Providers', href: '/manager/service-providers' },
-  { icon: Users, label: 'Customers', href: '/manager/customers' },
+  { icon: Users, label: 'Residents', href: '/manager/residents' },
+  { icon: Briefcase, label: 'Vendors', href: '/manager/vendors' },
+  { icon: BarChart3, label: 'Analytics', href: '/manager/analytics' },
   {
-    label: 'Location Management',
+    label: 'Community',
     children: [
-      { icon: LayoutDashboard, label: 'Regions', href: '/manager/locations/regions' },
-      { icon: LayoutDashboard, label: 'Cities', href: '/manager/locations/cities' },
-      { icon: LayoutDashboard, label: 'Neighborhoods', href: '/manager/locations/neighborhoods' },
-    ],
-  },
-  { icon: LayoutDashboard, label: 'App Banners', href: '/manager/banners' },
-  { icon: LayoutDashboard, label: 'Announcements', href: '/manager/announcements' },
-  { icon: LayoutDashboard, label: 'Group Events', href: '/manager/events' },
-  { icon: LayoutDashboard, label: 'Event Responses', href: '/manager/events/responses' },
-  { icon: LayoutDashboard, label: 'Waitlists', href: '/manager/waitlists' },
-  { icon: LayoutDashboard, label: 'Event Bookings', href: '/manager/events/bookings' },
-  { icon: LayoutDashboard, label: 'Bookings', href: '/manager/bookings' },
-  { icon: LayoutDashboard, label: 'Refunded Bookings', href: '/manager/bookings/refunded' },
-  { icon: LayoutDashboard, label: 'Feedbacks', href: '/manager/feedbacks' },
-  {
-    label: 'Services Management',
-    children: [
-      { icon: LayoutDashboard, label: 'Services', href: '/manager/services' },
-      { icon: LayoutDashboard, label: 'Categories', href: '/manager/services/categories' },
+      { icon: LayoutDashboard, label: 'Announcements', href: '/manager/announcements' },
+      { icon: LayoutDashboard, label: 'Group Events', href: '/manager/events' },
+      { icon: LayoutDashboard, label: 'Event Responses', href: '/manager/events/responses' },
+      { icon: LayoutDashboard, label: 'Event Bookings', href: '/manager/events/bookings' },
+      { icon: LayoutDashboard, label: 'Waitlists', href: '/manager/waitlists' },
     ],
   },
   {
-    label: 'Configuration',
+    label: 'Operations',
     children: [
-      { icon: LayoutDashboard, label: 'General', href: '/manager/settings' },
-      { icon: LayoutDashboard, label: 'Approvals', href: '/admin/approvals' },
+      { icon: LayoutDashboard, label: 'Bookings', href: '/manager/bookings' },
+      { icon: LayoutDashboard, label: 'Refunded', href: '/manager/bookings/refunded' },
+      { icon: LayoutDashboard, label: 'Feedbacks', href: '/manager/feedbacks' },
     ],
   },
-  { icon: LayoutDashboard, label: 'Manage FAQs', href: '/manager/faqs' },
-  { icon: LayoutDashboard, label: 'Support', href: '/manager/support' },
+  { icon: LayoutDashboard, label: 'Settings', href: '/manager/settings' },
+];
+
+// Platform admin full drawer nav
+const adminFullNav: NavItem[] = [
+  { icon: LayoutDashboard, label: 'Dashboard', href: '/admin' },
+  { icon: BarChart3, label: 'Analytics', href: '/admin/analytics' },
+  { icon: ShieldCheck, label: 'Roles', href: '/admin/roles' },
+  { icon: Users, label: 'Users', href: '/admin/users' },
+  {
+    label: 'Companies',
+    children: [
+      { icon: LayoutDashboard, label: 'All Companies', href: '/admin/companies' },
+      { icon: LayoutDashboard, label: 'Vendor Companies', href: '/admin/companies/vendor' },
+      { icon: LayoutDashboard, label: 'Affiliate Companies', href: '/admin/companies/affiliate' },
+    ],
+  },
+  { icon: LayoutDashboard, label: 'Complex Managers', href: '/admin/complex-managers' },
+  { icon: Users, label: 'Service Providers', href: '/admin/service-providers' },
+  { icon: Users, label: 'Customers', href: '/admin/customers' },
+  {
+    label: 'Locations',
+    children: [
+      { icon: LayoutDashboard, label: 'Regions', href: '/admin/locations/regions' },
+      { icon: LayoutDashboard, label: 'Cities', href: '/admin/locations/cities' },
+      { icon: LayoutDashboard, label: 'Neighborhoods', href: '/admin/locations/neighborhoods' },
+    ],
+  },
+  { icon: LayoutDashboard, label: 'App Banners', href: '/admin/banners' },
+  { icon: LayoutDashboard, label: 'Announcements', href: '/admin/announcements' },
+  { icon: LayoutDashboard, label: 'Group Events', href: '/admin/events' },
+  { icon: LayoutDashboard, label: 'Event Responses', href: '/admin/events/responses' },
+  { icon: LayoutDashboard, label: 'Event Bookings', href: '/admin/events/bookings' },
+  { icon: LayoutDashboard, label: 'Waitlists', href: '/admin/waitlists' },
+  { icon: LayoutDashboard, label: 'Bookings', href: '/admin/bookings' },
+  { icon: LayoutDashboard, label: 'Refunded Bookings', href: '/admin/bookings/refunded' },
+  { icon: LayoutDashboard, label: 'Feedbacks', href: '/admin/feedbacks' },
+  {
+    label: 'Services',
+    children: [
+      { icon: LayoutDashboard, label: 'Services', href: '/admin/services' },
+      { icon: LayoutDashboard, label: 'Categories', href: '/admin/services/categories' },
+    ],
+  },
+  { icon: LayoutDashboard, label: 'Manage FAQs', href: '/admin/faqs' },
+  { icon: ShieldCheck, label: 'Vendor Approvals', href: '/admin/approvals' },
+  { icon: LayoutDashboard, label: 'Support', href: '/admin/support' },
+  { icon: LayoutDashboard, label: 'Settings', href: '/admin/settings' },
 ];
 
 const accentTextClass: Record<Role, string> = {
   resident: 'text-teal',
   vendor: 'text-gold',
   manager: 'text-purple-accent',
+  admin: 'text-red-500',
 };
 
 const accentColor: Record<Role, string> = {
   resident: '#00D4AA',
   vendor: '#F5A623',
   manager: '#818CF8',
+  admin: '#EF4444',
 };
 
 function isLeafActive(pathname: string, href: string): boolean {
@@ -148,6 +188,15 @@ export default function MobileNav({ role }: { role: Role }) {
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const { profile, signOut } = useAuth();
   const setRole = useAppStore((s) => s.setRole);
+  const unreadCount = useUnreadCount();
+  const { refreshUnreadCount } = useNotifications();
+
+  useEffect(() => {
+    refreshUnreadCount();
+    // Refresh unread count every 60 seconds
+    const interval = setInterval(refreshUnreadCount, 60000);
+    return () => clearInterval(interval);
+  }, [refreshUnreadCount]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -165,13 +214,14 @@ export default function MobileNav({ role }: { role: Role }) {
         {nav.map(({ icon: Icon, label, href, badge, isDrawer }) => {
           const active =
             !isDrawer && (pathname === href || (href !== `/${role}` && pathname.startsWith(href)));
+          const displayBadge = isDrawer && role !== 'manager' ? unreadCount : badge;
           const content = (
             <>
               <div className="relative">
                 <Icon size={22} className={active ? accentTextClass[role] : 'text-muted'} />
-                {badge && badge > 0 && (
+                {displayBadge && displayBadge > 0 && (
                   <span className="absolute -top-1.5 -right-2 min-w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center px-1">
-                    {badge}
+                    {displayBadge > 99 ? '99+' : displayBadge}
                   </span>
                 )}
               </div>
@@ -192,7 +242,7 @@ export default function MobileNav({ role }: { role: Role }) {
                 type="button"
                 key={label}
                 onClick={() => {
-                  if (role === 'manager') {
+                  if (role === 'manager' || role === 'admin') {
                     setShowMoreSheet(true);
                   } else {
                     setShowAccountDrawer(true);
@@ -263,7 +313,7 @@ export default function MobileNav({ role }: { role: Role }) {
                     label: 'Notifications',
                     href: '/resident/notifications',
                     icon: CalendarDays,
-                    badge: 3,
+                    badge: unreadCount,
                   },
                   { label: 'Profile', href: '/resident/profile', icon: User },
                   { label: 'Events', href: '/resident/events', icon: CalendarDays },
@@ -303,12 +353,14 @@ export default function MobileNav({ role }: { role: Role }) {
         )}
       </AnimatePresence>
 
-      {/* More Sheet for Manager */}
+      {/* More Sheet for Manager / Admin */}
       <ResponsiveModal open={showMoreSheet} onOpenChange={setShowMoreSheet}>
         <div className="p-5 max-h-[80vh] overflow-y-auto">
-          <p className="text-xs font-bold uppercase tracking-wider text-muted mb-3">Manager Menu</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-muted mb-3">
+            {role === 'admin' ? 'Platform Menu' : 'Manager Menu'}
+          </p>
           <div className="space-y-1">
-            {managerFullNav.map((item) => {
+            {(role === 'admin' ? adminFullNav : managerFullNav).map((item) => {
               if (isGroup(item)) {
                 const isOpen = !collapsedGroups[item.label];
                 return (

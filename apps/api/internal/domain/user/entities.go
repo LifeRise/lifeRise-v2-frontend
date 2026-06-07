@@ -118,4 +118,16 @@ type PasswordReset struct {
 
 func (PasswordReset) TableName() string { return "password_resets" }
 
+// DeviceToken stores an FCM registration token for push delivery.
+type DeviceToken struct {
+	ID        uint64    `gorm:"column:id;primaryKey"`
+	UserID    uint64    `gorm:"column:user_id;not null;index"`
+	Token     string    `gorm:"column:token;size:512;not null;uniqueIndex"`
+	Platform  string    `gorm:"column:platform;size:20;not null;default:'web'"`
+	CreatedAt time.Time `gorm:"column:created_at;autoCreateTime"`
+	UpdatedAt time.Time `gorm:"column:updated_at;autoUpdateTime"`
+}
+
+func (DeviceToken) TableName() string { return "device_tokens" }
+
 // Role references in domain layer use pkg/auth.RoleSlug constants.

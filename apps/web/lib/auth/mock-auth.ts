@@ -22,7 +22,7 @@ export interface MockProfile {
   first_name: string;
   last_name: string;
   phone: string;
-  role: 'resident' | 'vendor' | 'manager';
+  role: 'resident' | 'vendor' | 'manager' | 'admin';
   approval_status: 'pending' | 'approved' | 'rejected';
   onboarding_completed: boolean;
   ein_tax_id?: string;
@@ -581,6 +581,27 @@ export function seedMockData() {
     approval_status: 'approved',
     onboarding_completed: true,
     avatar_url: 'https://ui-avatars.com/api/?name=Sarah+Mitchell',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  const adminUser = createMockUser('admin@liferise.demo', {
+    first_name: 'Platform',
+    last_name: 'Admin',
+    role: 'admin',
+    approval_status: 'approved',
+  });
+  users['admin@liferise.demo'] = { password: 'Admin123!', user: adminUser, confirmed: true };
+  profiles[adminUser.id] = {
+    id: adminUser.id,
+    email: 'admin@liferise.demo',
+    first_name: 'Platform',
+    last_name: 'Admin',
+    phone: '+1000000000',
+    role: 'admin',
+    approval_status: 'approved',
+    onboarding_completed: true,
+    avatar_url: 'https://ui-avatars.com/api/?name=Platform+Admin',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };

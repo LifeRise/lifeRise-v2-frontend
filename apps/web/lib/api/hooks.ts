@@ -12,10 +12,11 @@ import * as servicesApi from './services';
 import * as bookingsApi from './bookings';
 import * as favoritesApi from './favorites';
 import * as adminApi from './admin';
+import * as notificationsApi from './notifications';
 import type { Service } from './services';
 import type { Booking } from './bookings';
 import type { Favorite } from './favorites';
-import type { DashboardOverview } from './types';
+import type { DashboardOverview, BackendNotification } from './types';
 import {
   adaptServiceToVendor,
   adaptServiceToDetail,
@@ -26,6 +27,7 @@ import {
   apiResidentBookings as mockResidentBookings,
   apiServices as mockServices,
 } from '@/lib/mock-data';
+import { useAppStore } from '@/lib/store';
 
 // --- Services ---
 
@@ -137,6 +139,76 @@ export function useFavorites() {
   );
 
   return { favorites, isLoading, error, refresh, toggle };
+}
+
+// --- Admin Dashboard ---
+
+// --- Notifications ---
+
+export function useNotifications() {
+  const { profile } = useAuth();
+  const [notifications, setNotifications] = useState<BackendNotification[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const setUnreadCount = useAppStore((s) => s.setUnreadCount);
+
+  const refresh = useCallback(() => {
+    if (!profile) return;
+    setIsLoading(true);
+    notificationsApi
+      .listNotifications()
+      .then((res) => {
+        const list = res.notifications ?? [];
+        setNotifications(list);
+        setUnreadCount(list.filter((n) => n.read_at === null).length);
+      })
+      .catch((err) => {
+        setError(err.message);
+      })
+      .finally(() => setIsLoading(false));
+  }, [profile, setUnreadCount]);
+
+  const refreshUnreadCount = useCallback(() => {
+    if (!profile) return;
+    notificationsApi
+      .listNotifications(true, 1, 1)
+      .then((res) => {
+        setUnreadCount(res.total ?? 0);
+      })
+      .catch(() => {});
+  }, [profile, setUnreadCount]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    refresh();
+  }, [refresh]);
+
+  const markRead = useCallback(
+    async (id: number) => {
+      try {
+        await notificationsApi.markNotificationRead(id);
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n))
+        );
+        setUnreadCount(Math.max(0, useAppStore.getState().unreadCount - 1));
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Failed to mark as read');
+      }
+    },
+    [setUnreadCount]
+  );
+
+  const markAllRead = useCallback(async () => {
+    try {
+      await notificationsApi.markAllNotificationsRead();
+      setNotifications((prev) => prev.map((n) => ({ ...n, read_at: new Date().toISOString() })));
+      setUnreadCount(0);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to mark all as read');
+    }
+  }, [setUnreadCount]);
+
+  return { notifications, isLoading, error, refresh, refreshUnreadCount, markRead, markAllRead };
 }
 
 // --- Admin Dashboard ---

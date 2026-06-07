@@ -42,6 +42,23 @@ export async function signup(data: SignupData): Promise<{ id: number; email: str
 }
 
 /**
+ * Register a new manager account.
+ */
+export async function signupManager(
+  data: SignupData
+): Promise<{ id: number; email: string; role: string }> {
+  const baseUrl = getAuthBaseUrl();
+  return apiPost<{ id: number; email: string; role: string }>(
+    baseUrl,
+    '/api/manager/signup',
+    data,
+    {
+      skipAuth: true,
+    }
+  );
+}
+
+/**
  * Register a new vendor (service provider) account.
  */
 export async function signupVendor(

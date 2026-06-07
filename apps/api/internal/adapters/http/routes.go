@@ -67,6 +67,7 @@ func RegisterRoutes(r *gin.Engine, cfg *ServerConfig) {
 		// Public routes
 		api.POST("/signup", cfg.AuthHandler.Register)
 		api.POST("/vendor/signup", cfg.AuthHandler.RegisterVendor)
+		api.POST("/manager/signup", cfg.AuthHandler.RegisterManager)
 		api.POST("/login", cfg.AuthHandler.Login)
 		api.POST("/forgot-password", cfg.AuthHandler.ForgotPassword)
 		api.POST("/reset-password", cfg.AuthHandler.ResetPassword)
@@ -105,9 +106,14 @@ func RegisterRoutes(r *gin.Engine, cfg *ServerConfig) {
 		}
 
 		// Notifications (authenticated)
+		authRequired.GET("/notifications", cfg.NotificationHandler.List)
 		authRequired.POST("/notifications/email", cfg.NotificationHandler.SendEmail)
 		authRequired.POST("/notifications/push", cfg.NotificationHandler.SendPush)
 		authRequired.POST("/notifications/booking-confirmation", cfg.NotificationHandler.SendBookingConfirmation)
+		authRequired.PATCH("/notifications/:id/read", cfg.NotificationHandler.MarkRead)
+		authRequired.PATCH("/notifications/read-all", cfg.NotificationHandler.MarkAllRead)
+		authRequired.POST("/notifications/device-token", cfg.NotificationHandler.RegisterDeviceToken)
+		authRequired.DELETE("/notifications/device-token", cfg.NotificationHandler.DeleteDeviceToken)
 
 		// Admin / Vendor scoped routes
 		adminScoped := api.Group("")

@@ -30,12 +30,13 @@ import {
   HelpCircle,
   LogOut,
   ChevronDown,
+  BarChart3,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth/hooks';
-import { useAppStore } from '@/lib/store';
+import { useAppStore, useUnreadCount } from '@/lib/store';
 
-type Role = 'resident' | 'vendor' | 'manager';
+type Role = 'resident' | 'vendor' | 'manager' | 'admin';
 
 interface LeafItem {
   icon: React.ElementType;
@@ -74,61 +75,101 @@ const vendorNav: LeafItem[] = [
   { icon: Users, label: 'Profile', href: '/vendor/profile' },
 ];
 
+// Property manager nav — scoped to a single complex
 const managerNav: NavItem[] = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/manager' },
   { icon: CalendarDays, label: 'Calendar', href: '/manager/calendar' },
-  { icon: ShieldCheck, label: 'Roles', href: '/manager/roles' },
-  { icon: Users, label: 'Users', href: '/manager/users' },
-  { icon: Building2, label: 'Companies', href: '/manager/companies' },
-  { icon: Store, label: 'Vendor Companies', href: '/manager/companies/vendor' },
-  { icon: Building2, label: 'Affiliate Companies', href: '/manager/companies/affiliate' },
-  { icon: ShieldCheck, label: 'Complex Managers', href: '/manager/complex-managers' },
-  { icon: Briefcase, label: 'Service Providers', href: '/manager/service-providers' },
-  { icon: Users, label: 'Customers', href: '/manager/customers' },
+  { icon: Users, label: 'Residents', href: '/manager/residents' },
+  { icon: Briefcase, label: 'Vendors', href: '/manager/vendors' },
+  { icon: BarChart3, label: 'Analytics', href: '/manager/analytics' },
   {
-    label: 'Location Management',
+    label: 'Community',
     children: [
-      { icon: MapPin, label: 'Regions', href: '/manager/locations/regions' },
-      { icon: MapPin, label: 'Cities', href: '/manager/locations/cities' },
-      { icon: MapPin, label: 'Neighborhoods', href: '/manager/locations/neighborhoods' },
+      { icon: Megaphone, label: 'Announcements', href: '/manager/announcements' },
+      { icon: PartyPopper, label: 'Group Events', href: '/manager/events' },
+      { icon: MailCheck, label: 'Event Responses', href: '/manager/events/responses' },
+      { icon: CalendarCheck, label: 'Event Bookings', href: '/manager/events/bookings' },
+      { icon: ListChecks, label: 'Waitlists', href: '/manager/waitlists' },
     ],
   },
-  { icon: ImageIcon, label: 'App Banners', href: '/manager/banners' },
-  { icon: Megaphone, label: 'Announcements', href: '/manager/announcements' },
-  { icon: PartyPopper, label: 'Group Events', href: '/manager/events' },
-  { icon: MailCheck, label: 'Event Responses', href: '/manager/events/responses' },
-  { icon: ListChecks, label: 'Waitlists', href: '/manager/waitlists' },
-  { icon: CalendarCheck, label: 'Event Bookings', href: '/manager/events/bookings' },
-  { icon: Ticket, label: 'Bookings', href: '/manager/bookings' },
-  { icon: RotateCcw, label: 'Refunded Bookings', href: '/manager/bookings/refunded' },
-  { icon: MessageSquareQuote, label: 'Feedbacks', href: '/manager/feedbacks' },
   {
-    label: 'Services Management',
+    label: 'Operations',
     children: [
-      { icon: Wrench, label: 'Services', href: '/manager/services' },
-      { icon: Tags, label: 'Categories', href: '/manager/services/categories' },
+      { icon: Ticket, label: 'Bookings', href: '/manager/bookings' },
+      { icon: RotateCcw, label: 'Refunded', href: '/manager/bookings/refunded' },
+      { icon: MessageSquareQuote, label: 'Feedbacks', href: '/manager/feedbacks' },
     ],
   },
   {
     label: 'Configuration',
+    children: [{ icon: Settings, label: 'Settings', href: '/manager/settings' }],
+  },
+];
+
+// Platform admin nav — full LifeRise platform control
+const adminNav: NavItem[] = [
+  { icon: LayoutDashboard, label: 'Dashboard', href: '/admin' },
+  { icon: BarChart3, label: 'Analytics', href: '/admin/analytics' },
+  { icon: ShieldCheck, label: 'Roles', href: '/admin/roles' },
+  { icon: Users, label: 'Users', href: '/admin/users' },
+  {
+    label: 'Companies',
     children: [
-      { icon: Settings, label: 'General', href: '/manager/settings' },
-      { icon: Shield, label: 'Approvals', href: '/admin/approvals' },
+      { icon: Building2, label: 'All Companies', href: '/admin/companies' },
+      { icon: Store, label: 'Vendor Companies', href: '/admin/companies/vendor' },
+      { icon: Building2, label: 'Affiliate Companies', href: '/admin/companies/affiliate' },
     ],
   },
-  { icon: HelpCircle, label: 'Manage FAQs', href: '/manager/faqs' },
+  { icon: ShieldCheck, label: 'Complex Managers', href: '/admin/complex-managers' },
+  { icon: Briefcase, label: 'Service Providers', href: '/admin/service-providers' },
+  { icon: Users, label: 'Customers', href: '/admin/customers' },
+  {
+    label: 'Location Management',
+    children: [
+      { icon: MapPin, label: 'Regions', href: '/admin/locations/regions' },
+      { icon: MapPin, label: 'Cities', href: '/admin/locations/cities' },
+      { icon: MapPin, label: 'Neighborhoods', href: '/admin/locations/neighborhoods' },
+    ],
+  },
+  { icon: ImageIcon, label: 'App Banners', href: '/admin/banners' },
+  { icon: Megaphone, label: 'Announcements', href: '/admin/announcements' },
+  { icon: PartyPopper, label: 'Group Events', href: '/admin/events' },
+  { icon: MailCheck, label: 'Event Responses', href: '/admin/events/responses' },
+  { icon: ListChecks, label: 'Waitlists', href: '/admin/waitlists' },
+  { icon: CalendarCheck, label: 'Event Bookings', href: '/admin/events/bookings' },
+  { icon: Ticket, label: 'Bookings', href: '/admin/bookings' },
+  { icon: RotateCcw, label: 'Refunded Bookings', href: '/admin/bookings/refunded' },
+  { icon: MessageSquareQuote, label: 'Feedbacks', href: '/admin/feedbacks' },
+  {
+    label: 'Services',
+    children: [
+      { icon: Wrench, label: 'Services', href: '/admin/services' },
+      { icon: Tags, label: 'Categories', href: '/admin/services/categories' },
+    ],
+  },
+  { icon: HelpCircle, label: 'Manage FAQs', href: '/admin/faqs' },
+  { icon: Shield, label: 'Vendor Approvals', href: '/admin/approvals' },
+  {
+    label: 'Platform',
+    children: [
+      { icon: MessageSquareQuote, label: 'Support Tickets', href: '/admin/support' },
+      { icon: Settings, label: 'Settings', href: '/admin/settings' },
+    ],
+  },
 ];
 
 const accentColor: Record<Role, string> = {
   resident: '#00D4AA',
   vendor: '#F5A623',
   manager: '#818CF8',
+  admin: '#EF4444',
 };
 
 const accentBgClass: Record<Role, string> = {
   resident: 'bg-teal',
   vendor: 'bg-gold',
   manager: 'bg-purple-accent',
+  admin: 'bg-red-500',
 };
 
 const COLLAPSED_KEY = 'liferise_sidebar_collapsed';
@@ -164,6 +205,7 @@ export default function Sidebar({ role }: { role: Role }) {
   const router = useRouter();
   const { profile, signOut } = useAuth();
   const setRole = useAppStore((s) => s.setRole);
+  const unreadCount = useUnreadCount();
   const accent = accentColor[role];
 
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(getInitialCollapsed);
@@ -187,7 +229,12 @@ export default function Sidebar({ role }: { role: Role }) {
   const initials = profile
     ? `${profile.first_name.charAt(0)}${profile.last_name.charAt(0)}`.toUpperCase()
     : '??';
-  const complexName = role === 'vendor' ? 'LifeRise Vendor' : 'Riverside Commons';
+  const complexName =
+    role === 'vendor'
+      ? 'LifeRise Vendor'
+      : role === 'admin'
+        ? 'LifeRise Platform'
+        : 'Riverside Commons';
 
   const renderNavItem = (item: NavItem) => {
     if (isGroup(item)) {
@@ -252,6 +299,9 @@ export default function Sidebar({ role }: { role: Role }) {
     }
 
     const active = isLeafActive(pathname, item.href);
+    const isNotifications =
+      item.href === '/resident/notifications' || item.href === '/vendor/notifications';
+    const showBadge = isNotifications && unreadCount > 0;
     return (
       <Link
         key={item.href}
@@ -262,7 +312,14 @@ export default function Sidebar({ role }: { role: Role }) {
         )}
         style={active ? { color: accent, borderLeftColor: accent, background: `${accent}18` } : {}}
       >
-        <item.icon size={18} />
+        <div className="relative">
+          <item.icon size={18} />
+          {showBadge && (
+            <span className="absolute -top-1.5 -right-2 min-w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center px-1">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </div>
         {item.label}
       </Link>
     );
@@ -291,7 +348,9 @@ export default function Sidebar({ role }: { role: Role }) {
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        {role === 'manager' ? (
+        {role === 'admin' ? (
+          <>{adminNav.map(renderNavItem)}</>
+        ) : role === 'manager' ? (
           <>
             {managerNav.map(renderNavItem)}
             <div className="pt-4 mt-2 border-t border-white/[0.07]">

@@ -1,20 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, ShoppingBag, Tag, AlertTriangle, CheckCheck, Trash2, Info } from 'lucide-react';
-import { notifications } from '@/lib/mock-data';
-import type { NotificationItem } from '@/lib/types';
+import { Bell, ShoppingBag, Tag, AlertTriangle, CheckCheck, Info, Loader2 } from 'lucide-react';
+import { useNotifications } from '@/lib/api/hooks';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { staggerContainerResponsive, listItem } from '@/lib/animations';
 import { cn } from '@/lib/utils';
 
-const typeConfig = {
+const typeConfig: Record<string, { icon: React.ElementType; color: string; bg: string }> = {
   booking: { icon: ShoppingBag, color: 'text-teal', bg: 'bg-teal/10' },
+  push: { icon: ShoppingBag, color: 'text-teal', bg: 'bg-teal/10' },
   promo: { icon: Tag, color: 'text-gold', bg: 'bg-gold/10' },
   alert: { icon: AlertTriangle, color: 'text-red-400', bg: 'bg-red-400/10' },
   system: { icon: Info, color: 'text-purple-accent', bg: 'bg-purple-accent/10' },
+  email: { icon: Info, color: 'text-purple-accent', bg: 'bg-purple-accent/10' },
+  reminder: { icon: Info, color: 'text-purple-accent', bg: 'bg-purple-accent/10' },
 };
 
 function relativeTime(ts: string) {
@@ -28,19 +30,41 @@ function relativeTime(ts: string) {
 }
 
 export default function NotificationsPage() {
-  const [items, setItems] = useState<NotificationItem[]>(notifications);
+  const { notifications, isLoading, error, refresh, markRead, markAllRead } = useNotifications();
 
-  const markRead = (id: string) => {
-    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
-  };
+  // Note: bulk deletion is not supported by the backend API; only mark-all-read is available.
 
-  const markAllRead = () => {
-    setItems((prev) => prev.map((n) => ({ ...n, read: true })));
-  };
+  const unreadCount = notifications.filter((n) => n.read_at === null).length;
 
-  const clearAll = () => setItems([]);
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
-  const unreadCount = items.filter((n) => !n.read).length;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 text-teal animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-2xl mx-auto pb-24 lg:pb-8">
+        <EmptyState
+          icon={<Bell className="h-6 w-6 text-muted" />}
+          title="Something went wrong"
+          description={error}
+        />
+        <button
+          onClick={refresh}
+          className="mt-4 mx-auto block px-4 py-2 rounded-lg bg-teal/10 text-teal text-sm font-medium hover:bg-teal/20 transition-colors"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-2xl mx-auto pb-24 lg:pb-8">
@@ -58,18 +82,11 @@ export default function NotificationsPage() {
               <CheckCheck size={12} /> Mark all read
             </button>
           )}
-          {items.length > 0 && (
-            <button
-              onClick={clearAll}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/[0.06] text-muted hover:text-red-400 hover:bg-red-400/10 transition-colors flex items-center gap-1"
-            >
-              <Trash2 size={12} /> Clear
-            </button>
-          )}
+          {/* Bulk deletion is not supported by the backend API */}
         </div>
       </div>
 
-      {items.length > 0 ? (
+      {notifications.length > 0 ? (
         <motion.div
           variants={staggerContainerResponsive(0.03)}
           initial="hidden"
@@ -78,15 +95,16 @@ export default function NotificationsPage() {
           className="space-y-2"
         >
           <AnimatePresence>
-            {items.map((n) => {
+            {notifications.map((n) => {
               const config = typeConfig[n.type] || typeConfig.system;
               const Icon = config.icon;
+              const isUnread = n.read_at === null;
               return (
                 <motion.div key={n.id} variants={listItem} layout exit={{ opacity: 0, x: 40 }}>
                   <GlassCard
                     className={cn(
                       'p-3.5 transition-opacity cursor-pointer',
-                      !n.read && 'border-l-2 border-l-teal'
+                      isUnread && 'border-l-2 border-l-teal'
                     )}
                     onClick={() => markRead(n.id)}
                   >
@@ -103,12 +121,12 @@ export default function NotificationsPage() {
                         <div className="flex items-start justify-between gap-2">
                           <p className="text-sm text-lr-white font-medium">{n.title}</p>
                           <span className="text-[10px] text-muted shrink-0">
-                            {relativeTime(n.timestamp)}
+                            {relativeTime(n.created_at)}
                           </span>
                         </div>
                         <p className="text-muted text-xs mt-0.5 line-clamp-2">{n.body}</p>
                       </div>
-                      {!n.read && <div className="w-2 h-2 rounded-full bg-teal shrink-0 mt-1.5" />}
+                      {isUnread && <div className="w-2 h-2 rounded-full bg-teal shrink-0 mt-1.5" />}
                     </div>
                   </GlassCard>
                 </motion.div>

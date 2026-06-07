@@ -72,18 +72,25 @@ type TemplatedEmailSender interface {
 	SendTemplated(ctx context.Context, to, subject, template string, data map[string]string) error
 }
 
+// TokenPruner removes stale FCM tokens from storage.
+type TokenPruner interface {
+	Delete(ctx context.Context, token string) error
+}
+
 // Handler holds dependencies for processing tasks.
 type Handler struct {
 	EmailSender     func(ctx context.Context, to, subject, body string) error
 	TemplatedSender TemplatedEmailSender
-	FCMSender       func(ctx context.Context, tokens []string, title, body string, data map[string]string) error
+	// FCMSender returns failed tokens so stale registrations can be pruned.
+	FCMSender       func(ctx context.Context, tokens []string, title, body string, data map[string]string) ([]string, error)
 	ReminderHandler func(ctx context.Context, bookingID uint64, reminderType string) error
+	TokenPruner     TokenPruner
 }
 
 // NewHandler creates a task handler with the given dependencies.
 func NewHandler(
 	emailSender func(ctx context.Context, to, subject, body string) error,
-	fcmSender func(ctx context.Context, tokens []string, title, body string, data map[string]string) error,
+	fcmSender func(ctx context.Context, tokens []string, title, body string, data map[string]string) ([]string, error),
 	reminderHandler func(ctx context.Context, bookingID uint64, reminderType string) error,
 ) *Handler {
 	return &Handler{
@@ -122,7 +129,17 @@ func (h *Handler) HandleFCMNotification(ctx context.Context, t *asynq.Task) erro
 		return fmt.Errorf("unmarshal fcm payload: %w", err)
 	}
 	if h.FCMSender != nil {
-		return h.FCMSender(ctx, p.Tokens, p.Title, p.Body, p.Data)
+		failed, err := h.FCMSender(ctx, p.Tokens, p.Title, p.Body, p.Data)
+		if err != nil {
+			return err
+		}
+		// Prune stale tokens in best-effort fashion
+		if h.TokenPruner != nil {
+			for _, token := range failed {
+				_ = h.TokenPruner.Delete(ctx, token)
+			}
+		}
+		return nil
 	}
 	fmt.Printf("[FCM] tokens=%d title=%s body=%s\n", len(p.Tokens), p.Title, p.Body)
 	return nil
