@@ -182,7 +182,7 @@ function isLeafActive(pathname: string, href: string): boolean {
 export default function MobileNav({ role }: { role: Role }) {
   const pathname = usePathname();
   const router = useRouter();
-  const nav = mobileNav[role];
+  const nav = mobileNav[role] ?? [];
   const [showAccountDrawer, setShowAccountDrawer] = useState(false);
   const [showMoreSheet, setShowMoreSheet] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});

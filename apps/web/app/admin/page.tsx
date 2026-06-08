@@ -161,13 +161,13 @@ export default function AdminDashboard() {
 
   const vendorMax = Math.max(
     1,
-    ...vendorStatusOrder.map((s) => data.vendor_booking_stats[s.key] ?? 0)
+    ...vendorStatusOrder.map((s) => data.vendor_booking_stats?.[s.key] ?? 0)
   );
   const eventMax = Math.max(
     1,
-    ...eventStatusOrder.map((s) => data.event_booking_stats[s.key] ?? 0)
+    ...eventStatusOrder.map((s) => data.event_booking_stats?.[s.key] ?? 0)
   );
-  const locationMax = Math.max(1, ...(data.top_locations.map((l) => l.booking_count) ?? [0]));
+  const locationMax = Math.max(1, ...(data.top_locations ?? []).map((l) => l.booking_count));
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
@@ -276,14 +276,14 @@ export default function AdminDashboard() {
         <GlassCard>
           <div className="p-4">
             <SectionHeader title="Popular Services" className="mb-4" />
-            {data.popular_services.length === 0 ? (
+            {(data.popular_services ?? []).length === 0 ? (
               <EmptyState
                 title="No services yet"
                 description="Services will appear once residents start booking."
               />
             ) : (
               <div className="space-y-2">
-                {data.popular_services.map((svc) => (
+                {(data.popular_services ?? []).map((svc) => (
                   <div
                     key={svc.service_id}
                     className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors"
@@ -302,7 +302,7 @@ export default function AdminDashboard() {
         <GlassCard>
           <div className="p-4">
             <SectionHeader title="Most Booked Vendors" className="mb-4" />
-            {data.most_booked_vendors.length === 0 ? (
+            {(data.most_booked_vendors ?? []).length === 0 ? (
               <EmptyState title="No vendors yet" description="Vendor bookings will appear here." />
             ) : (
               <div className="space-y-2">
@@ -311,7 +311,7 @@ export default function AdminDashboard() {
                   <span>Company</span>
                   <span className="text-right">Bookings</span>
                 </div>
-                {data.most_booked_vendors.map((v) => (
+                {(data.most_booked_vendors ?? []).map((v) => (
                   <div
                     key={v.vendor_id}
                     className="grid grid-cols-3 gap-2 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors items-center"
@@ -334,14 +334,14 @@ export default function AdminDashboard() {
         <GlassCard>
           <div className="p-4">
             <SectionHeader title="Upcoming Events" className="mb-4" />
-            {data.upcoming_events.length === 0 ? (
+            {(data.upcoming_events ?? []).length === 0 ? (
               <EmptyState
                 title="No upcoming events"
                 description="Scheduled events will appear here."
               />
             ) : (
               <div className="space-y-2">
-                {data.upcoming_events.map((evt) => (
+                {(data.upcoming_events ?? []).map((evt) => (
                   <div
                     key={evt.event_id}
                     className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors"
@@ -368,7 +368,7 @@ export default function AdminDashboard() {
         <GlassCard>
           <div className="p-4">
             <SectionHeader title="Top Locations" className="mb-4" />
-            {data.top_locations.length === 0 ? (
+            {(data.top_locations ?? []).length === 0 ? (
               <EmptyState
                 icon={<MapPin size={24} className="text-muted" />}
                 title="No location data"
@@ -376,7 +376,7 @@ export default function AdminDashboard() {
               />
             ) : (
               <div className="space-y-3">
-                {data.top_locations.map((loc) => (
+                {(data.top_locations ?? []).map((loc) => (
                   <div key={loc.label} className="px-1">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-sm text-lr-white">{loc.label}</span>
