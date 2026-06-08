@@ -247,16 +247,31 @@ export const authService = {
         error?.message,
         '— trying backend fallback'
       );
+
+      try {
+        const { tokenPair, profile } = await apiLogin(creds);
+        setTokens(tokenPair.access_token, tokenPair.refresh_token);
+        return { user: null, session: null, profile };
+      } catch (backendErr: unknown) {
+        console.warn(
+          '[auth-service] Backend fallback login failed:',
+          backendErr instanceof Error ? backendErr.message : String(backendErr)
+        );
+      }
     }
 
-    // Fallback: mock auth (no Supabase configured)
-    const supabase = getSupabase();
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: creds.email,
-      password: creds.password,
-    });
-    if (error) throw new Error(error.message);
-    return { user: data.user, session: data.session };
+    // Final fallback: mock auth (only when Supabase is NOT configured)
+    if (!isSupabaseConfigured()) {
+      const supabase = getSupabase();
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: creds.email,
+        password: creds.password,
+      });
+      if (error) throw new Error(error.message);
+      return { user: data.user, session: data.session };
+    }
+
+    throw new Error('Login failed');
   },
 
   /** Magic link (OTP via email) */

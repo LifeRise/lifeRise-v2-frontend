@@ -123,7 +123,7 @@ export const mockAuth = {
     await new Promise((r) => setTimeout(r, 600));
     const users = getUsers();
     if (users[email]) {
-      throw { message: 'User already registered' };
+      throw new Error('User already registered');
     }
     const user = createMockUser(email, options?.data ?? {});
     // Auto-confirm in mock mode — there is no real email delivery system.
@@ -165,10 +165,10 @@ export const mockAuth = {
     const users = getUsers();
     const record = users[email];
     if (!record || record.password !== password) {
-      throw { message: 'Invalid login credentials' };
+      throw new Error('Invalid login credentials');
     }
     if (!record.confirmed) {
-      throw { message: 'Email not confirmed' };
+      throw new Error('Email not confirmed');
     }
     const session = createMockSession(record.user);
     setSession(session);
@@ -258,7 +258,7 @@ export const mockAuth = {
       return { data: {}, error: null };
     }
 
-    throw { message: 'Email or phone required' };
+    throw new Error('Email or phone required');
   },
 
   verifyOtp: async ({
@@ -277,7 +277,7 @@ export const mockAuth = {
     if (email) {
       const magicLinks = getItem<Record<string, string>>(MOCK_MAGIC_LINKS_KEY, {});
       if (magicLinks[email] !== token) {
-        throw { message: 'Invalid token' };
+        throw new Error('Invalid token');
       }
       delete magicLinks[email];
       setItem(MOCK_MAGIC_LINKS_KEY, magicLinks);
@@ -316,7 +316,7 @@ export const mockAuth = {
     if (phone) {
       const otpCodes = getItem<Record<string, string>>(MOCK_OTP_CODES_KEY, {});
       if (otpCodes[phone] !== token) {
-        throw { message: 'Invalid OTP code' };
+        throw new Error('Invalid OTP code');
       }
       delete otpCodes[phone];
       setItem(MOCK_OTP_CODES_KEY, otpCodes);
@@ -352,7 +352,7 @@ export const mockAuth = {
       return { data: { user: record.user, session }, error: null };
     }
 
-    throw { message: 'Email or phone required' };
+    throw new Error('Email or phone required');
   },
 
   resend: async ({
@@ -367,12 +367,12 @@ export const mockAuth = {
     if (type === 'signup' && email) {
       const pending = getItem<string[]>(MOCK_PENDING_CONFIRMATIONS_KEY, []);
       if (!pending.includes(email)) {
-        throw { message: 'User not found or already confirmed' };
+        throw new Error('User not found or already confirmed');
       }
       console.log(`[MOCK] Confirmation email resent to ${email}`);
       return { data: {}, error: null };
     }
-    throw { message: 'Unsupported resend type' };
+    throw new Error('Unsupported resend type');
   },
 
   signOut: async () => {
@@ -431,7 +431,7 @@ export const mockAuth = {
       return { data: { user: users[pendingResetEmail].user }, error: null };
     }
 
-    throw { message: 'Not authenticated' };
+    throw new Error('Not authenticated');
   },
 
   onAuthStateChange: (callback: (event: AuthChangeEvent, session: Session | null) => void) => {
@@ -488,124 +488,116 @@ export function seedMockData() {
   const users = getUsers();
   const profiles = getProfiles();
 
-  if (Object.keys(users).length > 0) return; // Already seeded
-
-  const managerUser = createMockUser('manager@liferise.demo', {
-    first_name: 'Admin',
-    last_name: 'Manager',
-    role: 'manager',
-    approval_status: 'approved',
-  });
-  users['manager@liferise.demo'] = { password: 'Manager123!', user: managerUser, confirmed: true };
-  profiles[managerUser.id] = {
-    id: managerUser.id,
-    email: 'manager@liferise.demo',
-    first_name: 'Admin',
-    last_name: 'Manager',
-    phone: '+1234567890',
-    role: 'manager',
-    approval_status: 'approved',
-    onboarding_completed: true,
-    avatar_url: 'https://ui-avatars.com/api/?name=Admin+Manager',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+  const ensureDemo = (
+    email: string,
+    password: string,
+    metadata: Record<string, unknown>,
+    buildProfile: (userId: string) => MockProfile
+  ) => {
+    if (users[email]) return;
+    const user = createMockUser(email, metadata);
+    users[email] = { password, user, confirmed: true };
+    profiles[user.id] = buildProfile(user.id);
   };
 
-  const vendorUser = createMockUser('vendor@liferise.demo', {
-    first_name: 'Marcus',
-    last_name: 'Rivers',
-    role: 'vendor',
-    approval_status: 'approved',
-  });
-  users['vendor@liferise.demo'] = { password: 'Vendor123!', user: vendorUser, confirmed: true };
-  profiles[vendorUser.id] = {
-    id: vendorUser.id,
-    email: 'vendor@liferise.demo',
-    first_name: 'Marcus',
-    last_name: 'Rivers',
-    phone: '+1234567891',
-    role: 'vendor',
-    approval_status: 'approved',
-    onboarding_completed: true,
-    ein_tax_id: '12-3456789',
-    description: 'Professional cleaning and maintenance services.',
-    avatar_url: 'https://ui-avatars.com/api/?name=Marcus+Rivers',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
+  ensureDemo(
+    'manager@liferise.demo',
+    'Manager123!',
+    { first_name: 'Admin', last_name: 'Manager', role: 'manager', approval_status: 'approved' },
+    (id) => ({
+      id,
+      email: 'manager@liferise.demo',
+      first_name: 'Admin',
+      last_name: 'Manager',
+      phone: '+1234567890',
+      role: 'manager',
+      approval_status: 'approved',
+      onboarding_completed: true,
+      avatar_url: 'https://ui-avatars.com/api/?name=Admin+Manager',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+  );
 
-  const pendingVendor = createMockUser('pending@liferise.demo', {
-    first_name: 'Sarah',
-    last_name: 'Pending',
-    role: 'vendor',
-    approval_status: 'pending',
-  });
-  users['pending@liferise.demo'] = {
-    password: 'Pending123!',
-    user: pendingVendor,
-    confirmed: true,
-  };
-  profiles[pendingVendor.id] = {
-    id: pendingVendor.id,
-    email: 'pending@liferise.demo',
-    first_name: 'Sarah',
-    last_name: 'Pending',
-    phone: '+1234567892',
-    role: 'vendor',
-    approval_status: 'pending',
-    onboarding_completed: false,
-    ein_tax_id: '98-7654321',
-    description: 'New wellness provider awaiting approval.',
-    avatar_url: 'https://ui-avatars.com/api/?name=Sarah+Pending',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
+  ensureDemo(
+    'vendor@liferise.demo',
+    'Vendor123!',
+    { first_name: 'Marcus', last_name: 'Rivers', role: 'vendor', approval_status: 'approved' },
+    (id) => ({
+      id,
+      email: 'vendor@liferise.demo',
+      first_name: 'Marcus',
+      last_name: 'Rivers',
+      phone: '+1234567891',
+      role: 'vendor',
+      approval_status: 'approved',
+      onboarding_completed: true,
+      ein_tax_id: '12-3456789',
+      description: 'Professional cleaning and maintenance services.',
+      avatar_url: 'https://ui-avatars.com/api/?name=Marcus+Rivers',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+  );
 
-  const residentUser = createMockUser('resident@liferise.demo', {
-    first_name: 'Sarah',
-    last_name: 'Mitchell',
-    role: 'resident',
-    approval_status: 'approved',
-  });
-  users['resident@liferise.demo'] = {
-    password: 'Resident123!',
-    user: residentUser,
-    confirmed: true,
-  };
-  profiles[residentUser.id] = {
-    id: residentUser.id,
-    email: 'resident@liferise.demo',
-    first_name: 'Sarah',
-    last_name: 'Mitchell',
-    phone: '+1234567893',
-    role: 'resident',
-    approval_status: 'approved',
-    onboarding_completed: true,
-    avatar_url: 'https://ui-avatars.com/api/?name=Sarah+Mitchell',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
+  ensureDemo(
+    'pending@liferise.demo',
+    'Pending123!',
+    { first_name: 'Sarah', last_name: 'Pending', role: 'vendor', approval_status: 'pending' },
+    (id) => ({
+      id,
+      email: 'pending@liferise.demo',
+      first_name: 'Sarah',
+      last_name: 'Pending',
+      phone: '+1234567892',
+      role: 'vendor',
+      approval_status: 'pending',
+      onboarding_completed: false,
+      ein_tax_id: '98-7654321',
+      description: 'New wellness provider awaiting approval.',
+      avatar_url: 'https://ui-avatars.com/api/?name=Sarah+Pending',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+  );
 
-  const adminUser = createMockUser('admin@liferise.demo', {
-    first_name: 'Platform',
-    last_name: 'Admin',
-    role: 'admin',
-    approval_status: 'approved',
-  });
-  users['admin@liferise.demo'] = { password: 'Admin123!', user: adminUser, confirmed: true };
-  profiles[adminUser.id] = {
-    id: adminUser.id,
-    email: 'admin@liferise.demo',
-    first_name: 'Platform',
-    last_name: 'Admin',
-    phone: '+1000000000',
-    role: 'admin',
-    approval_status: 'approved',
-    onboarding_completed: true,
-    avatar_url: 'https://ui-avatars.com/api/?name=Platform+Admin',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
+  ensureDemo(
+    'resident@liferise.demo',
+    'Resident123!',
+    { first_name: 'Sarah', last_name: 'Mitchell', role: 'resident', approval_status: 'approved' },
+    (id) => ({
+      id,
+      email: 'resident@liferise.demo',
+      first_name: 'Sarah',
+      last_name: 'Mitchell',
+      phone: '+1234567893',
+      role: 'resident',
+      approval_status: 'approved',
+      onboarding_completed: true,
+      avatar_url: 'https://ui-avatars.com/api/?name=Sarah+Mitchell',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+  );
+
+  ensureDemo(
+    'admin@liferise.demo',
+    'Admin123!',
+    { first_name: 'Platform', last_name: 'Admin', role: 'admin', approval_status: 'approved' },
+    (id) => ({
+      id,
+      email: 'admin@liferise.demo',
+      first_name: 'Platform',
+      last_name: 'Admin',
+      phone: '+1000000000',
+      role: 'admin',
+      approval_status: 'approved',
+      onboarding_completed: true,
+      avatar_url: 'https://ui-avatars.com/api/?name=Platform+Admin',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+  );
 
   setUsers(users);
   setProfiles(profiles);
