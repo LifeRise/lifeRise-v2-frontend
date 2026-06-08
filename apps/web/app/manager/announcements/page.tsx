@@ -10,7 +10,8 @@ import {
   ConfirmDialog,
   StatusPill,
 } from '@/components/admin';
-import { useAdminList, useAdminMutation } from '@/lib/api/admin/hooks';
+import { useAdminMutation } from '@/lib/api/admin/hooks';
+import { useSupabaseList } from '@/lib/supabase/admin-hooks';
 import { GlassCard } from '@/components/ui/GlassCard';
 
 interface Announcement {
@@ -25,10 +26,10 @@ interface Announcement {
 export default function AnnouncementsPage() {
   const [filters, setFilters] = useState({ search: '', audience: '', priority: '', page: 1 });
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const { data, meta, isLoading, error, refresh } = useAdminList<Announcement>(
-    'announcements',
-    filters
-  );
+  const { data, meta, isLoading, error, refresh } = useSupabaseList<Announcement>('announcements', {
+    ...filters,
+    searchColumn: 'title',
+  });
   const { remove, isPending } = useAdminMutation<Announcement>('announcements');
 
   const handleDelete = async () => {
