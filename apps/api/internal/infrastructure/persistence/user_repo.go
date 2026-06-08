@@ -18,7 +18,7 @@ func NewUserRepo() *UserRepo { return &UserRepo{} }
 
 func (r *UserRepo) GetByID(ctx context.Context, db *gorm.DB, id uint64) (*user.User, error) {
 	var u user.User
-	if err := db.WithContext(ctx).First(&u, id).Error; err != nil {
+	if err := db.WithContext(ctx).Preload("Role").First(&u, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperrors.ErrNotFound
 		}
@@ -134,7 +134,7 @@ func (r *UserRepo) List(ctx context.Context, db *gorm.DB, role string, status st
 	}
 
 	offset := (page - 1) * perPage
-	if err := query.Order("users.created_at DESC").Limit(perPage).Offset(offset).Find(&users).Error; err != nil {
+	if err := query.Preload("Role").Order("users.created_at DESC").Limit(perPage).Offset(offset).Find(&users).Error; err != nil {
 		return nil, 0, err
 	}
 	return users, total, nil
