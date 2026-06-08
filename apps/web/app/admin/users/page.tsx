@@ -15,7 +15,7 @@ import { GlassCard } from '@/components/ui/GlassCard';
 // import { useToast } from '@/hooks/use-toast';
 
 interface AdminUser {
-  id: string;
+  id: number;
   first_name: string;
   last_name: string;
   email: string;
@@ -27,13 +27,9 @@ interface AdminUser {
 
 export default function UsersPage() {
   const [filters, setFilters] = useState({ search: '', role: '', status: '', page: 1 });
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const { data, meta, isLoading, error, refresh } = useAdminList<AdminUser>(
-    'supabase/users',
-    filters,
-    ''
-  );
-  const { remove, isPending } = useAdminMutation<AdminUser>('supabase/users', '');
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const { data, meta, isLoading, error, refresh } = useAdminList<AdminUser>('users', filters);
+  const { remove, isPending } = useAdminMutation<AdminUser>('users');
 
   const handleDelete = async () => {
     if (deleteId == null) return;
