@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/client';
 import {
   login as apiLogin,
   signup as apiSignup,
+  signupVendor as apiSignupVendor,
   logout as apiLogout,
   forgotPassword as apiForgotPassword,
   resetPassword as apiResetPassword,
@@ -70,6 +71,49 @@ export const authService = {
 
     // Fallback: Go backend signup (mock mode auto-confirms)
     await apiSignup(data);
+    return { user: null, session: null };
+  },
+
+  /** Vendor registration — Supabase (with bridge) or direct backend or mock */
+  async signUpVendor(
+    data: SignupData & { ein_tax_id: string; description: string }
+  ): Promise<AuthSession> {
+    if (isSupabaseConfigured()) {
+      const supabase = getSupabase();
+      const { data: result, error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            first_name: data.first_name,
+            last_name: data.last_name,
+            phone: data.phone,
+            role: 'vendor',
+            // Ensures AuthProvider routes to /pending-approval even without a backend profile
+            approval_status: 'pending',
+            ein_tax_id: data.ein_tax_id,
+            description: data.description,
+          },
+        },
+      });
+      if (error) throw new Error(error.message);
+
+      // Bridge: register as vendor in Go backend so JWT login works later.
+      // Failure is non-fatal — Supabase is the source of truth here.
+      try {
+        await apiSignupVendor(data);
+      } catch (backendErr: unknown) {
+        console.warn(
+          '[auth-service] Backend vendor signup bridge failed:',
+          backendErr instanceof Error ? backendErr.message : String(backendErr)
+        );
+      }
+
+      return { user: result.user, session: result.session };
+    }
+
+    // No Supabase: go straight to the backend vendor endpoint.
+    await apiSignupVendor(data);
     return { user: null, session: null };
   },
 
