@@ -233,25 +233,24 @@ export const authService = {
           return { user: data.user, session: data.session, profile };
         } catch (backendErr: unknown) {
           console.warn(
-            '[auth-service] Backend login bridge failed:',
+            '[auth-service] Backend login bridge failed, falling back:',
             backendErr instanceof Error ? backendErr.message : String(backendErr)
           );
-          // Still return Supabase session even if backend bridge fails
-          return { user: data.user, session: data.session };
+          // Fall through to backend-only login below
         }
+      } else {
+        // Supabase login failed — log and try backend-only fallback
+        console.warn(
+          '[auth-service] Supabase login failed:',
+          error?.message,
+          '— trying backend fallback'
+        );
       }
-
-      // Supabase login failed — try backend-only fallback
-      console.warn(
-        '[auth-service] Supabase login failed:',
-        error?.message,
-        '— trying backend fallback'
-      );
 
       try {
         const { tokenPair, profile } = await apiLogin(creds);
         setTokens(tokenPair.access_token, tokenPair.refresh_token);
-        return { user: null, session: null, profile };
+        return { user: data.user ?? null, session: data.session ?? null, profile };
       } catch (backendErr: unknown) {
         console.warn(
           '[auth-service] Backend fallback login failed:',

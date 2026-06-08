@@ -20,7 +20,9 @@ import (
 	"github.com/liferise/backend/internal/adapters/http/handlers"
 	"github.com/liferise/backend/internal/adapters/http/middleware"
 	stripeAdapter "github.com/liferise/backend/internal/adapters/stripe"
+	appaudit "github.com/liferise/backend/internal/application/audit"
 	appbooking "github.com/liferise/backend/internal/application/booking"
+	appdashboard "github.com/liferise/backend/internal/application/dashboard"
 	appfavorite "github.com/liferise/backend/internal/application/favorite"
 	appnotification "github.com/liferise/backend/internal/application/notification"
 	apppayment "github.com/liferise/backend/internal/application/payment"
@@ -122,6 +124,19 @@ func main() {
 	deviceTokenRepo := persistence.NewDeviceTokenRepo()
 	slotRepo := persistence.NewSlotRepo()
 
+	// Admin repositories
+	dashboardRepo := persistence.NewDashboardRepo()
+	auditRepo := persistence.NewAuditRepo()
+	companyRepo := persistence.NewCompanyRepo()
+	announcementRepo := persistence.NewAnnouncementRepo()
+	bannerRepo := persistence.NewBannerRepo()
+	faqRepo := persistence.NewFAQRepo()
+	eventRepo := persistence.NewEventRepo()
+	locationRepo := persistence.NewLocationRepo()
+	supportRepo := persistence.NewSupportRepo()
+	waitlistRepo := persistence.NewWaitlistRepo()
+	feedbackRepo := persistence.NewFeedbackRepo()
+
 	// Asynq client (task enqueuing)
 	asynqClient := asynq.NewClient(asynq.RedisClientOpt{
 		Addr:     fmt.Sprintf("%s:%d", cfg.Redis.Host, cfg.Redis.Port),
@@ -162,6 +177,9 @@ func main() {
 	favoriteUC := appfavorite.NewUseCase(db, favoriteRepo)
 	bookingUC := appbooking.NewUseCase(db, bookingRepo, slotRepo, serviceRepo)
 
+	dashboardUC := appdashboard.NewOverviewUseCase(db, dashboardRepo)
+	auditLogger := appaudit.NewLogger(db, auditRepo)
+
 	// Handlers
 	authHandler := handlers.NewAuthHandler(authUC, cfg.App.URL)
 	bookingHandler := handlers.NewBookingHandler(bookingUC)
@@ -169,6 +187,25 @@ func main() {
 	serviceHandler := handlers.NewServiceHandler(serviceUC)
 	favoriteHandler := handlers.NewFavoriteHandler(favoriteUC)
 	notificationHandler := handlers.NewNotificationHandler(notificationUC)
+
+	// Admin handlers
+	adminDashHandler := handlers.NewAdminDashboardHandler(dashboardUC)
+	adminUserHandler := handlers.NewAdminUserHandler(db, userRepo, auditLogger, jwtService)
+	adminCompanyHandler := handlers.NewAdminCompanyHandler(db, companyRepo, auditLogger)
+	adminRoleHandler := handlers.NewAdminRoleHandler(db, userRepo, auditLogger)
+	adminAnnouncementHandler := handlers.NewAdminAnnouncementHandler(db, announcementRepo, auditLogger)
+	adminBannerHandler := handlers.NewAdminBannerHandler(db, bannerRepo, auditLogger)
+	adminFAQHandler := handlers.NewAdminFAQHandler(db, faqRepo, auditLogger)
+	adminEventHandler := handlers.NewAdminEventHandler(db, eventRepo, auditLogger)
+	adminEventBookingHandler := handlers.NewAdminEventBookingHandler(db, eventRepo, auditLogger)
+	adminEventResponseHandler := handlers.NewAdminEventResponseHandler(db, eventRepo, auditLogger)
+	adminLocationHandler := handlers.NewAdminLocationHandler(db, locationRepo, auditLogger)
+	adminServiceHandler := handlers.NewAdminServiceHandler(db, serviceRepo, auditLogger)
+	adminSupportHandler := handlers.NewAdminSupportHandler(db, supportRepo, auditLogger)
+	adminWaitlistHandler := handlers.NewAdminWaitlistHandler(db, waitlistRepo, auditLogger)
+	adminBookingHandler := handlers.NewAdminBookingHandler(db, bookingRepo, auditLogger)
+	adminCustomerHandler := handlers.NewAdminCustomerHandler(db, customerRepo, auditLogger)
+	adminFeedbackHandler := handlers.NewAdminFeedbackHandler(db, feedbackRepo, auditLogger)
 
 	r := gin.New()
 	r.Use(middleware.Recovery(logger))
@@ -184,6 +221,28 @@ func main() {
 		ServiceHandler:      serviceHandler,
 		FavoriteHandler:     favoriteHandler,
 		NotificationHandler: notificationHandler,
+	})
+
+	// Also mount admin routes so a single binary serves all roles in local dev.
+	apiGroup := r.Group("/api")
+	adapterhttp.RegisterAdminRoutes(apiGroup, jwtService, &adapterhttp.AdminHandlers{
+		Dashboard:     adminDashHandler,
+		User:          adminUserHandler,
+		Company:       adminCompanyHandler,
+		Role:          adminRoleHandler,
+		Announcement:  adminAnnouncementHandler,
+		Banner:        adminBannerHandler,
+		FAQ:           adminFAQHandler,
+		Event:         adminEventHandler,
+		EventBooking:  adminEventBookingHandler,
+		EventResponse: adminEventResponseHandler,
+		Location:      adminLocationHandler,
+		Service:       adminServiceHandler,
+		Support:       adminSupportHandler,
+		Waitlist:      adminWaitlistHandler,
+		Booking:       adminBookingHandler,
+		Customer:      adminCustomerHandler,
+		Feedback:      adminFeedbackHandler,
 	})
 
 	// Swap the startup handler for the fully-wired Gin router (zero downtime).

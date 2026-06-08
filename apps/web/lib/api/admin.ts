@@ -7,10 +7,7 @@ export async function fetchDashboardOverview(opts?: {
   signal?: AbortSignal;
 }): Promise<DashboardOverview> {
   const qs = opts?.companyId != null ? `?company_id=${opts.companyId}` : '';
-  const res = await apiGet<{ status: boolean; data: DashboardOverview }>(
-    getApiBaseUrl('manager'),
-    `/api/admin/dashboard/overview${qs}`,
-    { signal: opts?.signal }
-  );
-  return res.data;
+  return apiGet<DashboardOverview>(getApiBaseUrl('manager'), `/api/admin/dashboard/overview${qs}`, {
+    signal: opts?.signal,
+  });
 }

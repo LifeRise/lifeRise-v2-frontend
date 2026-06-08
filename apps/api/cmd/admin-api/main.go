@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
+	adapterhttp "github.com/liferise/backend/internal/adapters/http"
 	handlers "github.com/liferise/backend/internal/adapters/http/handlers"
 	"github.com/liferise/backend/internal/adapters/http/middleware"
 	stripeAdapter "github.com/liferise/backend/internal/adapters/stripe"
@@ -157,117 +158,27 @@ func main() {
 
 			authRequired.GET("/payments/:id", paymentHandler.GetPayment)
 			authRequired.POST("/payments/:id/refund", paymentHandler.Refund)
-
-			authRequired.GET("/admin/dashboard/overview", adminDashHandler.Overview)
-
-			// Admin CRUD routes
-			authRequired.GET("/admin/users", adminUserHandler.List)
-			authRequired.GET("/admin/users/:id", adminUserHandler.Get)
-			authRequired.POST("/admin/users", adminUserHandler.Create)
-			authRequired.PATCH("/admin/users/:id", adminUserHandler.Update)
-			authRequired.DELETE("/admin/users/:id", adminUserHandler.Delete)
-			authRequired.POST("/admin/users/:id/reset-password", adminUserHandler.ResetPassword)
-			authRequired.POST("/admin/users/:id/impersonate", adminUserHandler.Impersonate)
-
-			authRequired.GET("/admin/companies", adminCompanyHandler.List)
-			authRequired.GET("/admin/companies/:id", adminCompanyHandler.Get)
-			authRequired.POST("/admin/companies", adminCompanyHandler.Create)
-			authRequired.PATCH("/admin/companies/:id", adminCompanyHandler.Update)
-			authRequired.DELETE("/admin/companies/:id", adminCompanyHandler.Delete)
-			authRequired.POST("/admin/companies/:id/verify", adminCompanyHandler.Verify)
-
-			authRequired.GET("/admin/roles", adminRoleHandler.List)
-			authRequired.GET("/admin/roles/:id", adminRoleHandler.Get)
-			authRequired.POST("/admin/roles", adminRoleHandler.Create)
-			authRequired.PATCH("/admin/roles/:id", adminRoleHandler.Update)
-			authRequired.DELETE("/admin/roles/:id", adminRoleHandler.Delete)
-			authRequired.GET("/admin/roles/:id/permissions", adminRoleHandler.GetPermissions)
-			authRequired.PUT("/admin/roles/:id/permissions", adminRoleHandler.UpdatePermissions)
-
-			authRequired.GET("/admin/announcements", adminAnnouncementHandler.List)
-			authRequired.GET("/admin/announcements/:id", adminAnnouncementHandler.Get)
-			authRequired.POST("/admin/announcements", adminAnnouncementHandler.Create)
-			authRequired.PATCH("/admin/announcements/:id", adminAnnouncementHandler.Update)
-			authRequired.DELETE("/admin/announcements/:id", adminAnnouncementHandler.Delete)
-
-			authRequired.GET("/admin/app-banners", adminBannerHandler.List)
-			authRequired.GET("/admin/app-banners/:id", adminBannerHandler.Get)
-			authRequired.POST("/admin/app-banners", adminBannerHandler.Create)
-			authRequired.PATCH("/admin/app-banners/:id", adminBannerHandler.Update)
-			authRequired.DELETE("/admin/app-banners/:id", adminBannerHandler.Delete)
-
-			authRequired.GET("/admin/faqs", adminFAQHandler.List)
-			authRequired.GET("/admin/faqs/:id", adminFAQHandler.Get)
-			authRequired.POST("/admin/faqs", adminFAQHandler.Create)
-			authRequired.PATCH("/admin/faqs/:id", adminFAQHandler.Update)
-			authRequired.DELETE("/admin/faqs/:id", adminFAQHandler.Delete)
-
-			authRequired.GET("/admin/group-events", adminEventHandler.List)
-			authRequired.GET("/admin/group-events/:id", adminEventHandler.Get)
-			authRequired.POST("/admin/group-events", adminEventHandler.Create)
-			authRequired.PATCH("/admin/group-events/:id", adminEventHandler.Update)
-			authRequired.DELETE("/admin/group-events/:id", adminEventHandler.Delete)
-
-			authRequired.GET("/admin/event-bookings", adminEventBookingHandler.ListEventBookings)
-			authRequired.GET("/admin/event-bookings/:id", adminEventBookingHandler.GetEventBooking)
-			authRequired.POST("/admin/event-bookings", adminEventBookingHandler.CreateEventBooking)
-			authRequired.PATCH("/admin/event-bookings/:id", adminEventBookingHandler.UpdateEventBooking)
-			authRequired.DELETE("/admin/event-bookings/:id", adminEventBookingHandler.DeleteEventBooking)
-
-			authRequired.GET("/admin/event-responses", adminEventResponseHandler.ListEventResponses)
-			authRequired.GET("/admin/event-responses/:id", adminEventResponseHandler.GetEventResponse)
-			authRequired.POST("/admin/event-responses", adminEventResponseHandler.CreateEventResponse)
-			authRequired.PATCH("/admin/event-responses/:id", adminEventResponseHandler.UpdateEventResponse)
-			authRequired.DELETE("/admin/event-responses/:id", adminEventResponseHandler.DeleteEventResponse)
-
-			authRequired.GET("/admin/locations", adminLocationHandler.List)
-			authRequired.GET("/admin/locations/:id", adminLocationHandler.Get)
-			authRequired.POST("/admin/locations", adminLocationHandler.Create)
-			authRequired.PATCH("/admin/locations/:id", adminLocationHandler.Update)
-			authRequired.DELETE("/admin/locations/:id", adminLocationHandler.Delete)
-
-			authRequired.GET("/admin/services", adminServiceHandler.List)
-			authRequired.GET("/admin/services/:id", adminServiceHandler.Get)
-			authRequired.POST("/admin/services", adminServiceHandler.Create)
-			authRequired.PATCH("/admin/services/:id", adminServiceHandler.Update)
-			authRequired.DELETE("/admin/services/:id", adminServiceHandler.Delete)
-
-			authRequired.GET("/admin/service-categories", adminServiceHandler.ListCategories)
-			authRequired.GET("/admin/service-categories/:id", adminServiceHandler.GetCategory)
-			authRequired.POST("/admin/service-categories", adminServiceHandler.CreateCategory)
-			authRequired.PATCH("/admin/service-categories/:id", adminServiceHandler.UpdateCategory)
-			authRequired.DELETE("/admin/service-categories/:id", adminServiceHandler.DeleteCategory)
-
-			authRequired.GET("/admin/support", adminSupportHandler.List)
-			authRequired.GET("/admin/support/:id", adminSupportHandler.Get)
-			authRequired.POST("/admin/support", adminSupportHandler.Create)
-			authRequired.PATCH("/admin/support/:id", adminSupportHandler.Update)
-			authRequired.DELETE("/admin/support/:id", adminSupportHandler.Delete)
-			authRequired.POST("/admin/support/:id/messages", adminSupportHandler.CreateMessage)
-
-			authRequired.GET("/admin/waitlists", adminWaitlistHandler.List)
-			authRequired.GET("/admin/waitlists/:id", adminWaitlistHandler.Get)
-			authRequired.POST("/admin/waitlists", adminWaitlistHandler.Create)
-			authRequired.PATCH("/admin/waitlists/:id", adminWaitlistHandler.Update)
-			authRequired.DELETE("/admin/waitlists/:id", adminWaitlistHandler.Delete)
-
-			authRequired.GET("/admin/bookings", adminBookingHandler.List)
-			authRequired.GET("/admin/bookings/refunded", adminBookingHandler.ListRefunded)
-			authRequired.GET("/admin/bookings/:id", adminBookingHandler.Get)
-			authRequired.PATCH("/admin/bookings/:id", adminBookingHandler.Update)
-			authRequired.DELETE("/admin/bookings/:id", adminBookingHandler.Delete)
-
-			authRequired.GET("/admin/customers", adminCustomerHandler.List)
-			authRequired.GET("/admin/customers/:id", adminCustomerHandler.Get)
-			authRequired.POST("/admin/customers", adminCustomerHandler.Create)
-			authRequired.PATCH("/admin/customers/:id", adminCustomerHandler.Update)
-			authRequired.DELETE("/admin/customers/:id", adminCustomerHandler.Delete)
-
-			authRequired.GET("/admin/feedbacks", adminFeedbackHandler.List)
-			authRequired.GET("/admin/feedbacks/:id", adminFeedbackHandler.Get)
-			authRequired.PATCH("/admin/feedbacks/:id", adminFeedbackHandler.Update)
-			authRequired.DELETE("/admin/feedbacks/:id", adminFeedbackHandler.Delete)
 		}
+
+		adapterhttp.RegisterAdminRoutes(v1, jwtService, &adapterhttp.AdminHandlers{
+			Dashboard:     adminDashHandler,
+			User:          adminUserHandler,
+			Company:       adminCompanyHandler,
+			Role:          adminRoleHandler,
+			Announcement:  adminAnnouncementHandler,
+			Banner:        adminBannerHandler,
+			FAQ:           adminFAQHandler,
+			Event:         adminEventHandler,
+			EventBooking:  adminEventBookingHandler,
+			EventResponse: adminEventResponseHandler,
+			Location:      adminLocationHandler,
+			Service:       adminServiceHandler,
+			Support:       adminSupportHandler,
+			Waitlist:      adminWaitlistHandler,
+			Booking:       adminBookingHandler,
+			Customer:      adminCustomerHandler,
+			Feedback:      adminFeedbackHandler,
+		})
 	}
 
 	port := cfg.Server.Port
