@@ -189,6 +189,7 @@ function isLeafActive(pathname: string, href: string): boolean {
     href !== '/manager' &&
     href !== '/resident' &&
     href !== '/vendor' &&
+    href !== '/admin' &&
     pathname.startsWith(href)
   ) {
     return true;
@@ -227,7 +228,7 @@ export default function Sidebar({ role }: { role: Role }) {
   const userName = profile ? `${profile.first_name} ${profile.last_name}` : 'Guest';
   const userEmail = profile?.email ?? '';
   const initials = profile
-    ? `${profile.first_name.charAt(0)}${profile.last_name.charAt(0)}`.toUpperCase()
+    ? `${profile.first_name?.charAt(0) ?? ''}${profile.last_name?.charAt(0) ?? ''}`.toUpperCase()
     : '??';
   const complexName =
     role === 'vendor'

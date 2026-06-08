@@ -172,6 +172,7 @@ function isLeafActive(pathname: string, href: string): boolean {
     href !== '/manager' &&
     href !== '/resident' &&
     href !== '/vendor' &&
+    href !== '/admin' &&
     pathname.startsWith(href)
   ) {
     return true;

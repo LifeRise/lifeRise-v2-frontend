@@ -223,18 +223,27 @@ export function useDashboardOverview(companyId?: number) {
     setError(null);
 
     const controller = new AbortController();
+    let mounted = true;
+
     adminApi
       .fetchDashboardOverview({ companyId, signal: controller.signal })
       .then((overview) => {
+        if (!mounted) return;
         setData(overview);
       })
       .catch((err: unknown) => {
+        if (!mounted) return;
         if (err instanceof Error && err.name === 'AbortError') return;
         setError(err instanceof Error ? err.message : 'Failed to load dashboard');
       })
-      .finally(() => setIsLoading(false));
+      .finally(() => {
+        if (mounted) setIsLoading(false);
+      });
 
-    return () => controller.abort();
+    return () => {
+      mounted = false;
+      controller.abort();
+    };
   }, [companyId]);
 
   useEffect(() => {
