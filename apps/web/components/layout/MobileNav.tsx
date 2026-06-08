@@ -42,7 +42,7 @@ interface GroupItem {
 type NavItem = LeafItem | GroupItem;
 
 function isGroup(item: NavItem): item is GroupItem {
-  return 'children' in item;
+  return 'children' in item && Array.isArray(item.children);
 }
 
 const mobileNav: Record<
@@ -295,7 +295,7 @@ export default function MobileNav({ role }: { role: Role }) {
                 {profile && (
                   <div className="flex items-center gap-3 px-3 py-2 mb-2">
                     <div className="w-10 h-10 rounded-full bg-teal flex items-center justify-center text-midnight text-sm font-bold">
-                      {`${profile.first_name.charAt(0)}${profile.last_name.charAt(0)}`.toUpperCase()}
+                      {`${profile.first_name?.charAt(0) ?? ''}${profile.last_name?.charAt(0) ?? ''}`.toUpperCase()}
                     </div>
                     <div>
                       <p className="text-lr-white text-sm font-semibold">
@@ -388,7 +388,7 @@ export default function MobileNav({ role }: { role: Role }) {
                           className="overflow-hidden"
                         >
                           <div className="pl-4 space-y-0.5 border-l border-white/[0.07] ml-3">
-                            {item.children.map((child) => (
+                            {item.children?.map((child) => (
                               <Link
                                 key={child.href}
                                 href={child.href}
