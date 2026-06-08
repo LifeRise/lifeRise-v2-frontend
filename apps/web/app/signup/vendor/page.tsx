@@ -17,7 +17,7 @@ import {
   ChevronLeft,
   FileText,
 } from 'lucide-react';
-import { signupVendor } from '@/lib/api/auth';
+import { authService } from '@/lib/auth/auth-service';
 import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons';
 
 export default function VendorSignupPage() {
@@ -99,7 +99,7 @@ export default function VendorSignupPage() {
     setIsLoading(true);
 
     try {
-      await signupVendor({
+      await authService.signUpVendor({
         first_name: firstName,
         last_name: lastName,
         email,

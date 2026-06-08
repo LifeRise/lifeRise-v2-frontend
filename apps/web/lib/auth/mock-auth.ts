@@ -126,7 +126,8 @@ export const mockAuth = {
       throw { message: 'User already registered' };
     }
     const user = createMockUser(email, options?.data ?? {});
-    users[email] = { password, user, confirmed: false };
+    // Auto-confirm in mock mode — there is no real email delivery system.
+    users[email] = { password, user, confirmed: true };
     setUsers(users);
 
     // Create profile
