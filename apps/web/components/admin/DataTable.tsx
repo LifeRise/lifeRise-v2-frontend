@@ -104,7 +104,7 @@ export function DataTable<T>({
                       </td>
                     ))}
                     {rowActions && (
-                      <td className="px-4 py-3">
+                      <td key="actions" className="px-4 py-3">
                         <div className="flex items-center justify-end gap-2">{rowActions(row)}</div>
                       </td>
                     )}

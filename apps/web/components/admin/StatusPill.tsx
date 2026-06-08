@@ -23,7 +23,7 @@ interface StatusPillProps {
 }
 
 export function StatusPill({ status, className }: StatusPillProps) {
-  const normalized = status.toLowerCase().replace(/\s+/g, '_');
+  const normalized = (status ?? '').toLowerCase().replace(/\s+/g, '_');
   const style = statusStyles[normalized] ?? { bg: 'bg-white/10', text: 'text-lr-white' };
 
   return (
