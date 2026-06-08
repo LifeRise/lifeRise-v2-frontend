@@ -10,7 +10,8 @@ import {
   ConfirmDialog,
   StatusPill,
 } from '@/components/admin';
-import { useAdminList, useAdminMutation } from '@/lib/api/admin/hooks';
+import { useAdminMutation } from '@/lib/api/admin/hooks';
+import { useSupabaseList } from '@/lib/supabase/admin-hooks';
 import { GlassCard } from '@/components/ui/GlassCard';
 
 interface GroupEvent {
@@ -24,10 +25,10 @@ interface GroupEvent {
 export default function EventsPage() {
   const [filters, setFilters] = useState({ search: '', status: '', page: 1 });
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const { data, meta, isLoading, error, refresh } = useAdminList<GroupEvent>(
-    'group-events',
-    filters
-  );
+  const { data, meta, isLoading, error, refresh } = useSupabaseList<GroupEvent>('group_events', {
+    ...filters,
+    searchColumn: 'title',
+  });
   const { remove, isPending } = useAdminMutation<GroupEvent>('group-events');
 
   const handleDelete = async () => {

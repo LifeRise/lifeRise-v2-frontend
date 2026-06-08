@@ -38,14 +38,19 @@ if (config) {
 }
 
 export { firebaseApp };
+export const isFirebaseConfigured = !!firebaseApp;
 
 /** Returns the Messaging instance or null when Firebase is not configured or the browser does not support FCM. */
 export async function getFirebaseMessaging() {
   // Skip on server-side rendering
   if (typeof window === 'undefined') return null;
   if (!firebaseApp || !firebaseApp.options.projectId) return null;
-  const supported = await isSupported();
-  if (!supported) return null;
+  try {
+    const supported = await isSupported();
+    if (!supported) return null;
+  } catch {
+    return null;
+  }
   try {
     return getMessaging(firebaseApp);
   } catch {

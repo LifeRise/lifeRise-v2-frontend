@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { AdminPageShell, DataTable, FilterBar, Pagination } from '@/components/admin';
-import { useAdminList } from '@/lib/api/admin/hooks';
+import { useSupabaseList } from '@/lib/supabase/admin-hooks';
 import { GlassCard } from '@/components/ui/GlassCard';
 
 interface EventResponse {
@@ -15,8 +15,8 @@ interface EventResponse {
 
 export default function EventResponsesPage() {
   const [filters, setFilters] = useState({ search: '', event_id: '', response: '', page: 1 });
-  const { data, meta, isLoading, error, refresh } = useAdminList<EventResponse>(
-    'event-responses',
+  const { data, meta, isLoading, error, refresh } = useSupabaseList<EventResponse>(
+    'event_responses',
     filters
   );
 

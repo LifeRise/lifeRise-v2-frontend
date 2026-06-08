@@ -10,7 +10,8 @@ import {
   ConfirmDialog,
   StatusPill,
 } from '@/components/admin';
-import { useAdminList, useAdminMutation } from '@/lib/api/admin/hooks';
+import { useAdminMutation } from '@/lib/api/admin/hooks';
+import { useSupabaseList } from '@/lib/supabase/admin-hooks';
 import { GlassCard } from '@/components/ui/GlassCard';
 
 interface Waitlist {
@@ -26,7 +27,10 @@ interface Waitlist {
 export default function WaitlistsPage() {
   const [filters, setFilters] = useState({ search: '', status: '', page: 1 });
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const { data, meta, isLoading, error, refresh } = useAdminList<Waitlist>('waitlists', filters);
+  const { data, meta, isLoading, error, refresh } = useSupabaseList<Waitlist>(
+    'waitlist_entries',
+    filters
+  );
   const { remove, isPending } = useAdminMutation<Waitlist>('waitlists');
 
   const handleDelete = async () => {

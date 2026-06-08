@@ -10,7 +10,8 @@ import {
   ConfirmDialog,
   StatusPill,
 } from '@/components/admin';
-import { useAdminList, useAdminMutation } from '@/lib/api/admin/hooks';
+import { useAdminMutation } from '@/lib/api/admin/hooks';
+import { useSupabaseList } from '@/lib/supabase/admin-hooks';
 import { GlassCard } from '@/components/ui/GlassCard';
 
 interface SupportTicket {
@@ -26,7 +27,13 @@ interface SupportTicket {
 export default function SupportPage() {
   const [filters, setFilters] = useState({ search: '', status: '', priority: '', page: 1 });
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const { data, meta, isLoading, error, refresh } = useAdminList<SupportTicket>('support', filters);
+  const { data, meta, isLoading, error, refresh } = useSupabaseList<SupportTicket>(
+    'support_tickets',
+    {
+      ...filters,
+      searchColumn: 'subject',
+    }
+  );
   const { remove, isPending } = useAdminMutation<SupportTicket>('support');
 
   const handleDelete = async () => {

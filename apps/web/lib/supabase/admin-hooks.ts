@@ -29,6 +29,13 @@ export function useSupabaseList<T extends Record<string, unknown> | object>(
 
   const refresh = useCallback(() => setRefreshKey((k) => k + 1), []);
 
+  // Stable hash of non-pagination filter params so dropdown changes trigger refetch
+  const filterHash = JSON.stringify(
+    Object.entries(params)
+      .filter(([k]) => !['page', 'per_page', 'search', 'searchColumn'].includes(k))
+      .sort(([a], [b]) => a.localeCompare(b))
+  );
+
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect */
     let cancelled = false;
@@ -103,7 +110,15 @@ export function useSupabaseList<T extends Record<string, unknown> | object>(
     };
     /* eslint-enable react-hooks/set-state-in-effect */
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [table, refreshKey, params.page, params.per_page, params.search, params.searchColumn]);
+  }, [
+    table,
+    refreshKey,
+    params.page,
+    params.per_page,
+    params.search,
+    params.searchColumn,
+    filterHash,
+  ]);
 
   return { data, meta, isLoading, error, refresh };
 }

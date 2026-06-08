@@ -325,24 +325,20 @@ export const authService = {
     if (error) throw new Error(error.message);
   },
 
-  /** Request password reset (backend-first; falls back to Supabase) */
+  /** Request password reset (Supabase-first when configured; falls back to Go backend) */
   async resetPassword(email: string): Promise<void> {
-    // Always try backend first — users live in the Go DB, not Supabase Auth
-    try {
-      await apiForgotPassword(email);
+    // Supabase is the source of truth for passwords — use its reset flow directly.
+    if (isSupabaseConfigured()) {
+      const supabase = getSupabase();
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw new Error(error.message);
       return;
-    } catch (backendErr: unknown) {
-      // If backend is unavailable and Supabase is configured, fall back
-      if (isSupabaseConfigured()) {
-        const supabase = getSupabase();
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/reset-password`,
-        });
-        if (error) throw new Error(error.message);
-        return;
-      }
-      throw backendErr;
     }
+
+    // Fallback: Go backend reset flow (used when Supabase is not configured)
+    await apiForgotPassword(email);
   },
 
   /**

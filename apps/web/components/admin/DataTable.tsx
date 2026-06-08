@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { cn } from '@/lib/utils';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { AlertCircle, RefreshCw } from 'lucide-react';
@@ -105,7 +106,9 @@ export function DataTable<T>({
                     ))}
                     {rowActions && (
                       <td key="actions" className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-2">{rowActions(row)}</div>
+                        <div className="flex items-center justify-end gap-2">
+                          {React.Children.toArray(rowActions(row))}
+                        </div>
                       </td>
                     )}
                   </tr>

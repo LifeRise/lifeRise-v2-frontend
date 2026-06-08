@@ -9,7 +9,8 @@ import {
   Pagination,
   ConfirmDialog,
 } from '@/components/admin';
-import { useAdminList, useAdminMutation } from '@/lib/api/admin/hooks';
+import { useAdminMutation } from '@/lib/api/admin/hooks';
+import { useSupabaseList } from '@/lib/supabase/admin-hooks';
 import { GlassCard } from '@/components/ui/GlassCard';
 
 interface Feedback {
@@ -25,7 +26,10 @@ interface Feedback {
 export default function FeedbacksPage() {
   const [filters, setFilters] = useState({ search: '', rating_min: '', rating_max: '', page: 1 });
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const { data, meta, isLoading, error, refresh } = useAdminList<Feedback>('feedbacks', filters);
+  const { data, meta, isLoading, error, refresh } = useSupabaseList<Feedback>('feedbacks', {
+    ...filters,
+    searchColumn: 'review',
+  });
   const { remove, isPending } = useAdminMutation<Feedback>('feedbacks');
 
   const handleDelete = async () => {

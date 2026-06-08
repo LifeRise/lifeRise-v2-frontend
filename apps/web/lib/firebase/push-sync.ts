@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth/hooks';
 import { requestPushToken } from './push';
 import { apiPost } from '@/lib/api/client';
 import { CUSTOMER_API } from '@/lib/api/config';
+import { isFirebaseConfigured } from './client';
 
 /**
  * Syncs the browser's FCM push token to the backend after login.
@@ -16,11 +17,12 @@ export function usePushTokenSync() {
 
   useEffect(() => {
     if (!user) return;
+    if (!isFirebaseConfigured) return;
 
     let cancelled = false;
 
-    requestPushToken().then(
-      (token) => {
+    requestPushToken()
+      .then((token) => {
         if (cancelled || !token) return;
         // Fire-and-forget; non-critical — do not block the UI.
         apiPost<unknown>(CUSTOMER_API, '/api/notifications/device-token', {
@@ -29,11 +31,10 @@ export function usePushTokenSync() {
         }).catch(() => {
           // silent — push is best-effort
         });
-      },
-      () => {
+      })
+      .catch(() => {
         // silent — Firebase not configured or blocked by extension
-      }
-    );
+      });
 
     return () => {
       cancelled = true;

@@ -10,7 +10,8 @@ import {
   ConfirmDialog,
   StatusPill,
 } from '@/components/admin';
-import { useAdminList, useAdminMutation } from '@/lib/api/admin/hooks';
+import { useAdminMutation } from '@/lib/api/admin/hooks';
+import { useSupabaseList } from '@/lib/supabase/admin-hooks';
 import { GlassCard } from '@/components/ui/GlassCard';
 
 interface Booking {
@@ -27,7 +28,10 @@ interface Booking {
 export default function BookingsPage() {
   const [filters, setFilters] = useState({ search: '', status: '', page: 1 });
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const { data, meta, isLoading, error, refresh } = useAdminList<Booking>('bookings', filters);
+  const { data, meta, isLoading, error, refresh } = useSupabaseList<Booking>('bookings', {
+    ...filters,
+    searchColumn: 'booking_number',
+  });
   const { remove, isPending } = useAdminMutation<Booking>('bookings');
 
   const handleDelete = async () => {
