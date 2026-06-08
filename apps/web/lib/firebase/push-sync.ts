@@ -19,16 +19,21 @@ export function usePushTokenSync() {
 
     let cancelled = false;
 
-    requestPushToken().then((token) => {
-      if (cancelled || !token) return;
-      // Fire-and-forget; non-critical — do not block the UI.
-      apiPost<unknown>(CUSTOMER_API, '/api/notifications/device-token', {
-        token,
-        platform: 'web',
-      }).catch(() => {
-        // silent — push is best-effort
-      });
-    });
+    requestPushToken().then(
+      (token) => {
+        if (cancelled || !token) return;
+        // Fire-and-forget; non-critical — do not block the UI.
+        apiPost<unknown>(CUSTOMER_API, '/api/notifications/device-token', {
+          token,
+          platform: 'web',
+        }).catch(() => {
+          // silent — push is best-effort
+        });
+      },
+      () => {
+        // silent — Firebase not configured or blocked by extension
+      }
+    );
 
     return () => {
       cancelled = true;

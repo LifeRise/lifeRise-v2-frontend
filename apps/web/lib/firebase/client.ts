@@ -43,7 +43,7 @@ export { firebaseApp };
 export async function getFirebaseMessaging() {
   // Skip on server-side rendering
   if (typeof window === 'undefined') return null;
-  if (!firebaseApp) return null;
+  if (!firebaseApp || !firebaseApp.options.projectId) return null;
   const supported = await isSupported();
   if (!supported) return null;
   try {
