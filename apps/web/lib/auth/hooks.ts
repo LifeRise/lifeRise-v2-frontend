@@ -74,6 +74,41 @@ function buildProfileFromSupabaseUser(supabaseUser: SupabaseUser): Profile {
   };
 }
 
+/**
+ * Query public.profiles via Supabase so the returned profile matches the DB row
+ * rather than potentially stale user_metadata.
+ */
+async function resolveSupabaseProfile(supabaseUser: SupabaseUser): Promise<Profile> {
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', supabaseUser.id)
+      .single();
+
+    if (!error && data) {
+      return {
+        id: 0,
+        email: data.email,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        phone: data.phone ?? '',
+        avatar: data.avatar_url,
+        timezone: 'UTC',
+        status: data.approval_status !== 'approved' ? data.approval_status : 'active',
+        role: data.role,
+        user_type: 'customer',
+        roles: ['customer'],
+        created_at: data.created_at,
+      };
+    }
+  } catch {
+    // Fallback to metadata if query fails
+  }
+  return buildProfileFromSupabaseUser(supabaseUser);
+}
+
 /** Global flag so init() only runs once across all component instances */
 let globalInitStarted = false;
 
@@ -125,11 +160,14 @@ export function useAuth() {
       } = await supabase.auth.getSession();
       if (session?.user && mounted) {
         setUser(buildUserFromSupabaseUser(session.user));
-        setProfile(buildProfileFromSupabaseUser(session.user));
-        if (session.user.user_metadata?.role) {
-          setRole(session.user.user_metadata.role as BackendProfile['role']);
+        const resolvedProfile = await resolveSupabaseProfile(session.user);
+        if (mounted) {
+          setProfile(resolvedProfile);
+          if (resolvedProfile.role) {
+            setRole(resolvedProfile.role);
+          }
+          setIsLoading(false);
         }
-        setIsLoading(false);
       } else if (mounted) {
         setIsLoading(false);
       }
@@ -137,12 +175,14 @@ export function useAuth() {
       // Listen for auth changes (real Supabase or mock)
       const {
         data: { subscription },
-      } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
         if (newSession?.user) {
           setUser(buildUserFromSupabaseUser(newSession.user));
-          setProfile(buildProfileFromSupabaseUser(newSession.user));
-          if (newSession.user.user_metadata?.role) {
-            setRole(newSession.user.user_metadata.role as BackendProfile['role']);
+          const resolvedProfile = await resolveSupabaseProfile(newSession.user);
+          if (!mounted) return;
+          setProfile(resolvedProfile);
+          if (resolvedProfile.role) {
+            setRole(resolvedProfile.role);
           }
         } else if (!getAccessToken()) {
           setUser(null);
@@ -175,7 +215,7 @@ export function useAuth() {
         if (sbUser) {
           // Supabase login succeeded
           const u = buildUserFromSupabaseUser(sbUser);
-          const p = backendProfile ?? buildProfileFromSupabaseUser(sbUser);
+          const p = backendProfile ?? (await resolveSupabaseProfile(sbUser));
           setUser(u);
           setProfile(p);
           if (p.role) setRole(p.role);

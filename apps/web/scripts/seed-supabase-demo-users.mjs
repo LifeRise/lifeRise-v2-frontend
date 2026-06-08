@@ -178,7 +178,11 @@ async function seed() {
       const { error: updateErr } = await supabase.auth.admin.updateUserById(existing.id, {
         password: demo.password,
         email_confirm: true,
-        user_metadata: demo.user_metadata,
+        user_metadata: {
+          ...demo.user_metadata,
+          role: demo.profile.role,
+          approval_status: demo.profile.approval_status,
+        },
       });
       if (updateErr) {
         console.error(`[${demo.email}] Update failed:`, updateErr.message);
@@ -190,7 +194,11 @@ async function seed() {
         email: demo.email,
         password: demo.password,
         email_confirm: true,
-        user_metadata: demo.user_metadata,
+        user_metadata: {
+          ...demo.user_metadata,
+          role: demo.profile.role,
+          approval_status: demo.profile.approval_status,
+        },
       });
       if (createErr) {
         console.error(`[${demo.email}] Creation failed:`, createErr.message);
