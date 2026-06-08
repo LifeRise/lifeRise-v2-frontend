@@ -87,9 +87,15 @@ func (h *AuthHandler) Profile(c *gin.Context) {
 
 // mapBackendRoleToFrontend converts backend role slugs to frontend roles.
 func mapBackendRoleToFrontend(userType string, roles []string) string {
-	// Check for manager roles first
+	// Check for admin first
+	for _, r := range roles {
+		if r == string(auth.RoleSuperAdmin) {
+			return "admin"
+		}
+	}
+
+	// Check for manager roles
 	managerRoles := map[string]bool{
-		string(auth.RoleSuperAdmin):     true,
 		string(auth.RoleSales):          true,
 		string(auth.RolePMO):            true,
 		string(auth.RoleComplexManager): true,
