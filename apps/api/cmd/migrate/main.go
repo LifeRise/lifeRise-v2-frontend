@@ -22,15 +22,20 @@ func main() {
 		os.Exit(1)
 	}
 
-	dsn := fmt.Sprintf(
-		"postgres://%s:%s@%s:%d/%s?sslmode=%s",
-		cfg.Database.Username,
-		cfg.Database.Password,
-		cfg.Database.Host,
-		cfg.Database.Port,
-		cfg.Database.Database,
-		cfg.Database.SSLMode,
-	)
+	var dsn string
+	if cfg.Database.URL != "" {
+		dsn = cfg.Database.URL
+	} else {
+		dsn = fmt.Sprintf(
+			"postgres://%s:%s@%s:%d/%s?sslmode=%s",
+			cfg.Database.Username,
+			cfg.Database.Password,
+			cfg.Database.Host,
+			cfg.Database.Port,
+			cfg.Database.Database,
+			cfg.Database.SSLMode,
+		)
+	}
 
 	m, err := migrate.New(
 		"file://migrations",
