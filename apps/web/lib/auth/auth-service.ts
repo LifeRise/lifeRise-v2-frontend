@@ -79,7 +79,7 @@ export const authService = {
   /** Email + password sign-up with email confirmation */
   async signUp(data: SignupData & { role?: string }): Promise<AuthSession> {
     const role = (data.role ?? 'resident') as ProfileRole;
-    const isManager = role === 'manager';
+    const isManager = role === 'manager' || role === 'admin';
 
     if (isSupabaseConfigured()) {
       const supabase = getSupabase();

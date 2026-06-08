@@ -64,6 +64,7 @@ The app uses a **three-tier authentication chain** (evaluated in priority order)
 - Resident: `resident@liferise.demo` / `Resident123!`
 - Vendor: `vendor@liferise.demo` / `Vendor123!`
 - Manager: `manager@liferise.demo` / `Manager123!`
+- Admin: `admin@liferise.demo` / `Admin123!`
 - Pending vendor: `pending@liferise.demo` / `Pending123!`
 
 ## Technology Stack
