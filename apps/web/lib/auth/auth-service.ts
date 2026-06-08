@@ -131,6 +131,8 @@ export const authService = {
           '[auth-service] Backend signup bridge failed:',
           backendErr instanceof Error ? backendErr.message : String(backendErr)
         );
+        // Re-throw so the UI can show the actual error when Supabase is not the primary auth.
+        if (!isSupabaseConfigured()) throw backendErr;
       }
 
       return { user: result.user, session: result.session };

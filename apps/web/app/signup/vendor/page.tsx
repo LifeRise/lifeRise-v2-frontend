@@ -43,11 +43,10 @@ export default function VendorSignupPage() {
   };
 
   const formatPhone = (value: string) => {
-    let cleaned = value.replace(/[^\d+]/g, '');
-    cleaned = cleaned.replace(/\+/g, '');
-    cleaned = `+${cleaned}`;
-    if (cleaned.length > 13) cleaned = cleaned.slice(0, 13);
-    return cleaned;
+    const digits = value.replace(/\D/g, '');
+    if (!digits) return '';
+    const withPlus = `+${digits}`;
+    return withPlus.length > 13 ? withPlus.slice(0, 13) : withPlus;
   };
 
   const validate = () => {
@@ -115,7 +114,14 @@ export default function VendorSignupPage() {
         router.push('/login');
       }, 1500);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Signup failed. Please try again.');
+      console.error('[VendorSignup] Registration failed:', err);
+      const msg =
+        err instanceof Error
+          ? err.message
+          : typeof err === 'object' && err !== null && 'message' in err
+            ? String((err as Record<string, unknown>).message)
+            : 'Signup failed. Please try again.';
+      setError(msg);
       setIsLoading(false);
     }
   };
