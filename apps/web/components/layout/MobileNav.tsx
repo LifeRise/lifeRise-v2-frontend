@@ -45,6 +45,19 @@ function isGroup(item: NavItem): item is GroupItem {
   return 'children' in item && Array.isArray(item.children);
 }
 
+/** Defensive map that logs instead of crashing when the value is not an array. */
+function safeMap<T, R>(
+  arr: T[] | undefined | null,
+  fn: (item: T, index: number) => R,
+  label: string
+): R[] {
+  if (!Array.isArray(arr)) {
+    console.error(`[MobileNav] expected array for "${label}" but got:`, arr);
+    return [];
+  }
+  return arr.map(fn);
+}
+
 const mobileNav: Record<
   Role,
   { icon: React.ElementType; label: string; href: string; badge?: number; isDrawer?: boolean }[]
@@ -213,8 +226,9 @@ export default function MobileNav({ role }: { role: Role }) {
   return (
     <>
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 glass-dark border-t border-white/[0.07] flex items-center justify-around px-2 py-2 safe-area-pb">
-        {Array.isArray(nav) &&
-          nav.map(({ icon: Icon, label, href, badge, isDrawer }) => {
+        {safeMap(
+          nav,
+          ({ icon: Icon, label, href, badge, isDrawer }) => {
             const active =
               !isDrawer &&
               (pathname === href || (href !== `/${role}` && pathname.startsWith(href)));
@@ -271,7 +285,9 @@ export default function MobileNav({ role }: { role: Role }) {
                 {content}
               </Link>
             );
-          })}
+          },
+          'mobile-nav'
+        )}
       </nav>
 
       {/* Account Drawer for Resident */}
@@ -312,32 +328,36 @@ export default function MobileNav({ role }: { role: Role }) {
                 <p className="text-xs font-bold uppercase tracking-wider text-muted px-3 mb-2">
                   Account
                 </p>
-                {[
-                  {
-                    label: 'Notifications',
-                    href: '/resident/notifications',
-                    icon: CalendarDays,
-                    badge: unreadCount,
-                  },
-                  { label: 'Profile', href: '/resident/profile', icon: User },
-                  { label: 'Events', href: '/resident/events', icon: CalendarDays },
-                  { label: 'Favorites', href: '/resident/favorites', icon: ShoppingBag },
-                ].map(({ label, href, icon: Icon, badge }) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    onClick={() => setShowAccountDrawer(false)}
-                    className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-muted hover:text-lr-white hover:bg-white/5 transition-colors relative"
-                  >
-                    <Icon size={18} />
-                    {label}
-                    {badge && badge > 0 && (
-                      <span className="ml-auto min-w-4.5 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center px-1">
-                        {badge}
-                      </span>
-                    )}
-                  </Link>
-                ))}
+                {safeMap(
+                  [
+                    {
+                      label: 'Notifications',
+                      href: '/resident/notifications',
+                      icon: CalendarDays,
+                      badge: unreadCount,
+                    },
+                    { label: 'Profile', href: '/resident/profile', icon: User },
+                    { label: 'Events', href: '/resident/events', icon: CalendarDays },
+                    { label: 'Favorites', href: '/resident/favorites', icon: ShoppingBag },
+                  ],
+                  ({ label, href, icon: Icon, badge }) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={() => setShowAccountDrawer(false)}
+                      className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-muted hover:text-lr-white hover:bg-white/5 transition-colors relative"
+                    >
+                      <Icon size={18} />
+                      {label}
+                      {badge && badge > 0 && (
+                        <span className="ml-auto min-w-4.5 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center px-1">
+                          {badge}
+                        </span>
+                      )}
+                    </Link>
+                  ),
+                  'account-drawer'
+                )}
                 <div className="border-t border-white/[0.07] my-2" />
                 <button
                   type="button"
@@ -364,8 +384,9 @@ export default function MobileNav({ role }: { role: Role }) {
             {role === 'admin' ? 'Platform Menu' : 'Manager Menu'}
           </p>
           <div className="space-y-1">
-            {Array.isArray(role === 'admin' ? adminFullNav : managerFullNav) &&
-              (role === 'admin' ? adminFullNav : managerFullNav).map((item) => {
+            {safeMap(
+              role === 'admin' ? adminFullNav : managerFullNav,
+              (item) => {
                 if (isGroup(item)) {
                   const isOpen = !collapsedGroups[item.label];
                   return (
@@ -393,22 +414,26 @@ export default function MobileNav({ role }: { role: Role }) {
                             className="overflow-hidden"
                           >
                             <div className="pl-4 space-y-0.5 border-l border-white/[0.07] ml-3">
-                              {item.children?.map((child) => (
-                                <Link
-                                  key={child.href}
-                                  href={child.href}
-                                  onClick={() => setShowMoreSheet(false)}
-                                  className={cn(
-                                    'flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium',
-                                    isLeafActive(pathname, child.href)
-                                      ? 'text-purple-accent bg-purple-accent/10'
-                                      : 'text-muted hover:text-lr-white hover:bg-white/5'
-                                  )}
-                                >
-                                  <child.icon size={16} />
-                                  {child.label}
-                                </Link>
-                              ))}
+                              {safeMap(
+                                item.children,
+                                (child) => (
+                                  <Link
+                                    key={child.href}
+                                    href={child.href}
+                                    onClick={() => setShowMoreSheet(false)}
+                                    className={cn(
+                                      'flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium',
+                                      isLeafActive(pathname, child.href)
+                                        ? 'text-purple-accent bg-purple-accent/10'
+                                        : 'text-muted hover:text-lr-white hover:bg-white/5'
+                                    )}
+                                  >
+                                    <child.icon size={16} />
+                                    {child.label}
+                                  </Link>
+                                ),
+                                'group-children'
+                              )}
                             </div>
                           </motion.div>
                         )}
@@ -433,7 +458,9 @@ export default function MobileNav({ role }: { role: Role }) {
                     {item.label}
                   </Link>
                 );
-              })}
+              },
+              'more-sheet'
+            )}
           </div>
           <div className="border-t border-white/[0.07] my-3" />
           <button

@@ -25,7 +25,16 @@ const config = getFirebaseConfig();
 
 let firebaseApp: FirebaseApp | null = null;
 if (config) {
-  firebaseApp = getApps().length ? getApps()[0] : initializeApp(config);
+  try {
+    const existing = getApps().find(
+      (a) => a.name === '[DEFAULT]' && a.options.projectId === config.projectId
+    );
+    firebaseApp = existing ?? initializeApp(config);
+  } catch {
+    // Browser extensions may initialize Firebase with bad config.
+    // Swallow so push notifications gracefully degrade to no-op.
+    firebaseApp = null;
+  }
 }
 
 export { firebaseApp };
@@ -37,5 +46,9 @@ export async function getFirebaseMessaging() {
   if (!firebaseApp) return null;
   const supported = await isSupported();
   if (!supported) return null;
-  return getMessaging(firebaseApp);
+  try {
+    return getMessaging(firebaseApp);
+  } catch {
+    return null;
+  }
 }
