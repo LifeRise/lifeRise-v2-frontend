@@ -14,7 +14,7 @@ import { useAdminList, useAdminMutation } from '@/lib/api/admin/hooks';
 import { GlassCard } from '@/components/ui/GlassCard';
 
 interface Customer {
-  id: number;
+  id: string;
   first_name: string;
   last_name: string;
   email: string;
@@ -25,9 +25,13 @@ interface Customer {
 
 export default function CustomersPage() {
   const [filters, setFilters] = useState({ search: '', status: '', page: 1 });
-  const [deleteId, setDeleteId] = useState<number | null>(null);
-  const { data, meta, isLoading, error, refresh } = useAdminList<Customer>('customers', filters);
-  const { remove, isPending } = useAdminMutation<Customer>('customers');
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const { data, meta, isLoading, error, refresh } = useAdminList<Customer>(
+    'supabase/customers',
+    filters,
+    ''
+  );
+  const { remove, isPending } = useAdminMutation<Customer>('supabase/customers', '');
 
   const handleDelete = async () => {
     if (deleteId == null) return;

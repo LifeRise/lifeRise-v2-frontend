@@ -33,7 +33,7 @@ export interface Paginated<T> {
   meta: PaginationMeta;
 }
 
-const baseUrl = getApiBaseUrl('manager');
+const defaultBaseUrl = getApiBaseUrl('manager');
 
 function buildQuery(params: ListParams): string {
   const sp = new URLSearchParams();
@@ -46,30 +46,32 @@ function buildQuery(params: ListParams): string {
   return qs ? `?${qs}` : '';
 }
 
-export function createAdminClient<T>(resource: string) {
+export function createAdminClient<T>(resource: string, baseUrl?: string) {
+  const resolvedBase = baseUrl ?? defaultBaseUrl;
+
   return {
     list(params: ListParams = {}): Promise<Paginated<T>> {
-      return apiGet<Paginated<T>>(baseUrl, `/api/admin/${resource}${buildQuery(params)}`);
+      return apiGet<Paginated<T>>(resolvedBase, `/api/admin/${resource}${buildQuery(params)}`);
     },
 
-    get(id: number): Promise<T> {
-      return apiGet<T>(baseUrl, `/api/admin/${resource}/${id}`);
+    get(id: number | string): Promise<T> {
+      return apiGet<T>(resolvedBase, `/api/admin/${resource}/${id}`);
     },
 
     create(body: unknown): Promise<T> {
-      return apiPost<T>(baseUrl, `/api/admin/${resource}`, body);
+      return apiPost<T>(resolvedBase, `/api/admin/${resource}`, body);
     },
 
-    update(id: number, body: unknown): Promise<T> {
-      return apiPatch<T>(baseUrl, `/api/admin/${resource}/${id}`, body);
+    update(id: number | string, body: unknown): Promise<T> {
+      return apiPatch<T>(resolvedBase, `/api/admin/${resource}/${id}`, body);
     },
 
-    remove(id: number): Promise<void> {
-      return apiDelete<void>(baseUrl, `/api/admin/${resource}/${id}`);
+    remove(id: number | string): Promise<void> {
+      return apiDelete<void>(resolvedBase, `/api/admin/${resource}/${id}`);
     },
 
     exportCsv(params: ListParams = {}): Promise<Blob> {
-      const url = `${baseUrl}/api/admin/${resource}/export.csv${buildQuery(params)}`;
+      const url = `${resolvedBase}/api/admin/${resource}/export.csv${buildQuery(params)}`;
       return fetch(url, {
         headers: {
           Authorization: `Bearer ${typeof window !== 'undefined' ? (localStorage.getItem('liferise_access_token') ?? '') : ''}`,

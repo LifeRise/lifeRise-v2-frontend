@@ -24,8 +24,12 @@ interface Role {
 export default function RolesPage() {
   const [filters, setFilters] = useState({ search: '', page: 1 });
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const { data, meta, isLoading, error, refresh } = useAdminList<Role>('roles', filters);
-  const { remove, isPending } = useAdminMutation<Role>('roles');
+  const { data, meta, isLoading, error, refresh } = useAdminList<Role>(
+    'supabase/roles',
+    filters,
+    ''
+  );
+  const { remove, isPending } = useAdminMutation<Role>('supabase/roles', '');
 
   const handleDelete = async () => {
     if (deleteId == null) return;

@@ -63,7 +63,7 @@ export function useDashboardOverview(companyId?: number) {
   return { data, isLoading, error, refresh };
 }
 
-export function useAdminList<T>(resource: string, params: ListParams) {
+export function useAdminList<T>(resource: string, params: ListParams, baseUrl?: string) {
   const [data, setData] = useState<T[] | null>(null);
   const [meta, setMeta] = useState<Paginated<T>['meta'] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -79,7 +79,7 @@ export function useAdminList<T>(resource: string, params: ListParams) {
     let cancelled = false;
     setIsLoading(true);
     setError(null);
-    createAdminClient<T>(resource)
+    createAdminClient<T>(resource, baseUrl)
       .list(params)
       .then((res) => {
         if (cancelled) return;
@@ -100,12 +100,12 @@ export function useAdminList<T>(resource: string, params: ListParams) {
     };
     /* eslint-enable react-hooks/set-state-in-effect */
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resource, refreshKey, params.page, params.per_page, params.search]);
+  }, [resource, baseUrl, refreshKey, params.page, params.per_page, params.search]);
 
   return { data, meta, isLoading, error, refresh };
 }
 
-export function useAdminItem<T>(resource: string, id: number | null) {
+export function useAdminItem<T>(resource: string, id: number | null, baseUrl?: string) {
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -124,7 +124,7 @@ export function useAdminItem<T>(resource: string, id: number | null) {
     let cancelled = false;
     setIsLoading(true);
     setError(null);
-    createAdminClient<T>(resource)
+    createAdminClient<T>(resource, baseUrl)
       .get(id)
       .then((res) => {
         if (!cancelled) setData(res);
@@ -139,16 +139,16 @@ export function useAdminItem<T>(resource: string, id: number | null) {
       cancelled = true;
     };
     /* eslint-enable react-hooks/set-state-in-effect */
-  }, [resource, id, refreshKey]);
+  }, [resource, baseUrl, id, refreshKey]);
 
   return { data, isLoading, error, refresh };
 }
 
-export function useAdminMutation<T>(resource: string) {
+export function useAdminMutation<T>(resource: string, baseUrl?: string) {
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const client = createAdminClient<T>(resource);
+  const client = createAdminClient<T>(resource, baseUrl);
 
   const create = useCallback(
     async (body: unknown) => {
@@ -168,11 +168,11 @@ export function useAdminMutation<T>(resource: string) {
   );
 
   const update = useCallback(
-    async (id: number, body: unknown) => {
+    async (id: number | string, body: unknown) => {
       setIsPending(true);
       setError(null);
       try {
-        return await client.update(id, body);
+        return await client.update(id as number, body);
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Update failed';
         setError(msg);
@@ -185,11 +185,11 @@ export function useAdminMutation<T>(resource: string) {
   );
 
   const remove = useCallback(
-    async (id: number) => {
+    async (id: number | string) => {
       setIsPending(true);
       setError(null);
       try {
-        await client.remove(id);
+        await client.remove(id as number);
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Delete failed';
         setError(msg);
