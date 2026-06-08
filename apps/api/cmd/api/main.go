@@ -157,12 +157,23 @@ func main() {
 		}
 	}
 
-	// SMTP email client (optional)
+	// Email client (SMTP or Resend)
 	var emailClient appnotification.EmailClient
-	if cfg.Mail.Host != "" {
-		smtpClient := emailadapter.NewSMTPClient(cfg.Mail)
-		emailClient = emailadapter.NewTemplateSender(smtpClient)
-		logger.Info("smtp email client configured", zap.String("host", cfg.Mail.Host))
+	switch cfg.Mail.Driver {
+	case "resend":
+		if cfg.Mail.ResendAPIKey != "" {
+			resendClient := emailadapter.NewResendClient(cfg.Mail.ResendAPIKey, cfg.Mail.FromAddress, cfg.Mail.FromName)
+			emailClient = emailadapter.NewTemplateSender(resendClient)
+			logger.Info("resend email client configured")
+		} else {
+			logger.Warn("resend driver selected but LIFERISE_MAIL_RESEND_API_KEY is empty")
+		}
+	default:
+		if cfg.Mail.Host != "" {
+			smtpClient := emailadapter.NewSMTPClient(cfg.Mail)
+			emailClient = emailadapter.NewTemplateSender(smtpClient)
+			logger.Info("smtp email client configured", zap.String("host", cfg.Mail.Host))
+		}
 	}
 
 	// Use Cases

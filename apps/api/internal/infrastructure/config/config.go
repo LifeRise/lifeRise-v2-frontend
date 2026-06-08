@@ -99,16 +99,17 @@ type FirebaseConfig struct {
 	MeasurementID     string `mapstructure:"measurement_id"`
 }
 
-// MailConfig holds SMTP email delivery settings.
+// MailConfig holds email delivery settings (SMTP or Resend).
 type MailConfig struct {
-	Driver      string `mapstructure:"driver"`
-	Host        string `mapstructure:"host"`
-	Port        int    `mapstructure:"port"`
-	Username    string `mapstructure:"username"`
-	Password    string `mapstructure:"password"`
-	Encryption  string `mapstructure:"encryption"`
-	FromAddress string `mapstructure:"from_address"`
-	FromName    string `mapstructure:"from_name"`
+	Driver       string `mapstructure:"driver"`
+	Host         string `mapstructure:"host"`
+	Port         int    `mapstructure:"port"`
+	Username     string `mapstructure:"username"`
+	Password     string `mapstructure:"password"`
+	Encryption   string `mapstructure:"encryption"`
+	FromAddress  string `mapstructure:"from_address"`
+	FromName     string `mapstructure:"from_name"`
+	ResendAPIKey string `mapstructure:"resend_api_key"`
 }
 
 // AsynqConfig holds Asynq Redis configuration.

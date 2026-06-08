@@ -4,13 +4,19 @@ import (
 	"context"
 )
 
-// TemplateSender wraps SMTPClient to implement notification.EmailClient.
+// templatedSender is implemented by both SMTPClient and ResendClient.
+type templatedSender interface {
+	Send(ctx context.Context, to, subject, body string) error
+	SendTemplated(ctx context.Context, to, subject, template string, data map[string]string) error
+}
+
+// TemplateSender wraps an email client to implement notification.EmailClient.
 type TemplateSender struct {
-	client *SMTPClient
+	client templatedSender
 }
 
 // NewTemplateSender creates a template email sender adapter.
-func NewTemplateSender(client *SMTPClient) *TemplateSender {
+func NewTemplateSender(client templatedSender) *TemplateSender {
 	return &TemplateSender{client: client}
 }
 

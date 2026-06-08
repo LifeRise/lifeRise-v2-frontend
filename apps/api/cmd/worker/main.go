@@ -82,14 +82,26 @@ func main() {
 		}
 	}
 
-	// SMTP email client (optional)
+	// Email client (SMTP or Resend)
 	var emailSender func(ctx context.Context, to, subject, body string) error
 	var templatedSender tasks.TemplatedEmailSender
-	if cfg.Mail.Host != "" {
-		smtpClient := emailadapter.NewSMTPClient(cfg.Mail)
-		emailSender = smtpClient.Send
-		templatedSender = emailadapter.NewTemplateSender(smtpClient)
-		logger.Info("smtp email client configured", zap.String("host", cfg.Mail.Host))
+	switch cfg.Mail.Driver {
+	case "resend":
+		if cfg.Mail.ResendAPIKey != "" {
+			resendClient := emailadapter.NewResendClient(cfg.Mail.ResendAPIKey, cfg.Mail.FromAddress, cfg.Mail.FromName)
+			emailSender = resendClient.Send
+			templatedSender = emailadapter.NewTemplateSender(resendClient)
+			logger.Info("resend email client configured")
+		} else {
+			logger.Warn("resend driver selected but LIFERISE_MAIL_RESEND_API_KEY is empty")
+		}
+	default:
+		if cfg.Mail.Host != "" {
+			smtpClient := emailadapter.NewSMTPClient(cfg.Mail)
+			emailSender = smtpClient.Send
+			templatedSender = emailadapter.NewTemplateSender(smtpClient)
+			logger.Info("smtp email client configured", zap.String("host", cfg.Mail.Host))
+		}
 	}
 
 	// Task handlers with real dependencies injected
