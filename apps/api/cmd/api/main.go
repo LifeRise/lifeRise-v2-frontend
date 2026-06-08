@@ -204,7 +204,7 @@ func main() {
 	adminUserHandler := handlers.NewAdminUserHandler(db, userRepo, auditLogger, jwtService)
 	adminCompanyHandler := handlers.NewAdminCompanyHandler(db, companyRepo, auditLogger)
 	adminRoleHandler := handlers.NewAdminRoleHandler(db, userRepo, auditLogger)
-	adminAnnouncementHandler := handlers.NewAdminAnnouncementHandler(db, announcementRepo, auditLogger)
+	adminAnnouncementHandler := handlers.NewAdminAnnouncementHandler(db, announcementRepo, auditLogger, notificationUC)
 	adminBannerHandler := handlers.NewAdminBannerHandler(db, bannerRepo, auditLogger)
 	adminFAQHandler := handlers.NewAdminFAQHandler(db, faqRepo, auditLogger)
 	adminEventHandler := handlers.NewAdminEventHandler(db, eventRepo, auditLogger)

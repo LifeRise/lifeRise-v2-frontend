@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -9,6 +11,7 @@ import (
 	"gorm.io/gorm"
 
 	appaudit "github.com/liferise/backend/internal/application/audit"
+	appnotification "github.com/liferise/backend/internal/application/notification"
 	"github.com/liferise/backend/internal/domain/announcement"
 	"github.com/liferise/backend/internal/domain/audit"
 	"github.com/liferise/backend/internal/infrastructure/pagination"
@@ -22,11 +25,12 @@ type AdminAnnouncementHandler struct {
 	db               *gorm.DB
 	announcementRepo *persistence.AnnouncementRepo
 	auditLogger      *appaudit.Logger
+	notificationUC   *appnotification.UseCase
 }
 
 // NewAdminAnnouncementHandler creates a new AdminAnnouncementHandler.
-func NewAdminAnnouncementHandler(db *gorm.DB, announcementRepo *persistence.AnnouncementRepo, auditLogger *appaudit.Logger) *AdminAnnouncementHandler {
-	return &AdminAnnouncementHandler{db: db, announcementRepo: announcementRepo, auditLogger: auditLogger}
+func NewAdminAnnouncementHandler(db *gorm.DB, announcementRepo *persistence.AnnouncementRepo, auditLogger *appaudit.Logger, notificationUC *appnotification.UseCase) *AdminAnnouncementHandler {
+	return &AdminAnnouncementHandler{db: db, announcementRepo: announcementRepo, auditLogger: auditLogger, notificationUC: notificationUC}
 }
 
 // CreateAnnouncementRequest defines the body for creating an announcement.
@@ -89,7 +93,7 @@ func (h *AdminAnnouncementHandler) Get(c *gin.Context) {
 	response.Success(c, http.StatusOK, "Announcement retrieved.", item)
 }
 
-// Create creates a new announcement.
+// Create creates a new announcement and emails the target audience.
 func (h *AdminAnnouncementHandler) Create(c *gin.Context) {
 	var req CreateAnnouncementRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -136,7 +140,72 @@ func (h *AdminAnnouncementHandler) Create(c *gin.Context) {
 	claims := extractClaims(c)
 	_ = h.auditLogger.RecordMutation(c.Request.Context(), c.Request, claims, audit.ActionCreate, "announcements", a.ID, nil, a)
 
+	// Fire-and-forget: enqueue emails to the target audience
+	if h.notificationUC != nil {
+		go h.sendAnnouncementEmails(c.Request.Context(), a)
+	}
+
 	response.Success(c, http.StatusCreated, "Announcement created.", a)
+}
+
+// sendAnnouncementEmails enqueues emails to the target audience asynchronously.
+func (h *AdminAnnouncementHandler) sendAnnouncementEmails(ctx context.Context, a announcement.Announcement) {
+	emails, err := h.resolveRecipientEmails(ctx, a.Audience)
+	if err != nil {
+		return
+	}
+
+	for _, email := range emails {
+		_ = h.notificationUC.SendEmail(ctx, 0, email, a.Title, "announcement", map[string]string{
+			"title": a.Title,
+			"body":  a.Body,
+		}, "announcement")
+	}
+}
+
+// resolveRecipientEmails returns email addresses for the given audience.
+func (h *AdminAnnouncementHandler) resolveRecipientEmails(ctx context.Context, audience string) ([]string, error) {
+	switch audience {
+	case "residents":
+		return h.queryCustomerEmails(ctx)
+	case "vendors":
+		return h.queryVendorEmails(ctx)
+	case "all":
+		customers, err := h.queryCustomerEmails(ctx)
+		if err != nil {
+			return nil, err
+		}
+		vendors, err := h.queryVendorEmails(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return append(customers, vendors...), nil
+	default:
+		return nil, fmt.Errorf("unknown audience: %s", audience)
+	}
+}
+
+func (h *AdminAnnouncementHandler) queryCustomerEmails(ctx context.Context) ([]string, error) {
+	var emails []string
+	err := h.db.WithContext(ctx).Model(&struct {
+		Email string
+	}{}).
+		Table("customers").
+		Where("deleted_at IS NULL AND status = ?", "active").
+		Pluck("email", &emails).Error
+	return emails, err
+}
+
+func (h *AdminAnnouncementHandler) queryVendorEmails(ctx context.Context) ([]string, error) {
+	var emails []string
+	err := h.db.WithContext(ctx).
+		Table("users").
+		Select("DISTINCT users.email").
+		Joins("JOIN user_role_assignments ON user_role_assignments.user_id = users.id").
+		Joins("JOIN roles ON roles.id = user_role_assignments.role_id").
+		Where("users.deleted_at IS NULL AND users.status = ? AND roles.slug = ?", "active", "service_provider").
+		Pluck("email", &emails).Error
+	return emails, err
 }
 
 // Update updates an announcement.

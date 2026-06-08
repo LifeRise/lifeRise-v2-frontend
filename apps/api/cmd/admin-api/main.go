@@ -10,8 +10,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hibiken/asynq"
 	"go.uber.org/zap"
 
+	emailadapter "github.com/liferise/backend/internal/adapters/email"
+	firebaseadapter "github.com/liferise/backend/internal/adapters/firebase"
 	adapterhttp "github.com/liferise/backend/internal/adapters/http"
 	handlers "github.com/liferise/backend/internal/adapters/http/handlers"
 	"github.com/liferise/backend/internal/adapters/http/middleware"
@@ -19,6 +22,7 @@ import (
 	appaudit "github.com/liferise/backend/internal/application/audit"
 	appbooking "github.com/liferise/backend/internal/application/booking"
 	appdashboard "github.com/liferise/backend/internal/application/dashboard"
+	appnotification "github.com/liferise/backend/internal/application/notification"
 	apppayment "github.com/liferise/backend/internal/application/payment"
 	appservice "github.com/liferise/backend/internal/application/service"
 	appuser "github.com/liferise/backend/internal/application/user"
@@ -91,6 +95,49 @@ func main() {
 	supportRepo := persistence.NewSupportRepo()
 	waitlistRepo := persistence.NewWaitlistRepo()
 	feedbackRepo := persistence.NewFeedbackRepo()
+	notificationRepo := persistence.NewNotificationRepo()
+	deviceTokenRepo := persistence.NewDeviceTokenRepo()
+
+	// Asynq client (task enqueuing for emails)
+	asynqClient := asynq.NewClient(asynq.RedisClientOpt{
+		Addr:     fmt.Sprintf("%s:%d", cfg.Redis.Host, cfg.Redis.Port),
+		Password: cfg.Redis.Password,
+		DB:       cfg.Redis.DB,
+	})
+	defer asynqClient.Close()
+
+	// Firebase FCM client (optional)
+	var fcmClient appnotification.FCMClient
+	if cfg.Firebase.CredentialsPath != "" {
+		fcm, err := firebaseadapter.NewFCMClient(context.Background(), cfg.Firebase.CredentialsPath)
+		if err != nil {
+			logger.Warn("failed to initialize firebase fcm client; push notifications disabled", zap.Error(err))
+		} else {
+			fcmClient = fcm
+			logger.Info("firebase fcm client initialized")
+		}
+	}
+
+	// Email client (SMTP or Resend)
+	var emailClient appnotification.EmailClient
+	switch cfg.Mail.Driver {
+	case "resend":
+		if cfg.Mail.ResendAPIKey != "" {
+			resendClient := emailadapter.NewResendClient(cfg.Mail.ResendAPIKey, cfg.Mail.FromAddress, cfg.Mail.FromName)
+			emailClient = emailadapter.NewTemplateSender(resendClient)
+			logger.Info("resend email client configured")
+		} else {
+			logger.Warn("resend driver selected but LIFERISE_MAIL_RESEND_API_KEY is empty")
+		}
+	default:
+		if cfg.Mail.Host != "" {
+			smtpClient := emailadapter.NewSMTPClient(cfg.Mail)
+			emailClient = emailadapter.NewTemplateSender(smtpClient)
+			logger.Info("smtp email client configured", zap.String("host", cfg.Mail.Host))
+		}
+	}
+
+	notificationUC := appnotification.NewUseCase(db, notificationRepo, asynqClient, fcmClient, emailClient, deviceTokenRepo)
 
 	authHandler := handlers.NewAuthHandler(authUC, cfg.App.URL)
 	bookingHandler := handlers.NewBookingHandler(bookingUC)
@@ -100,7 +147,7 @@ func main() {
 	adminUserHandler := handlers.NewAdminUserHandler(db, userRepo, auditLogger, jwtService)
 	adminCompanyHandler := handlers.NewAdminCompanyHandler(db, companyRepo, auditLogger)
 	adminRoleHandler := handlers.NewAdminRoleHandler(db, userRepo, auditLogger)
-	adminAnnouncementHandler := handlers.NewAdminAnnouncementHandler(db, announcementRepo, auditLogger)
+	adminAnnouncementHandler := handlers.NewAdminAnnouncementHandler(db, announcementRepo, auditLogger, notificationUC)
 	adminBannerHandler := handlers.NewAdminBannerHandler(db, bannerRepo, auditLogger)
 	adminFAQHandler := handlers.NewAdminFAQHandler(db, faqRepo, auditLogger)
 	adminEventHandler := handlers.NewAdminEventHandler(db, eventRepo, auditLogger)
