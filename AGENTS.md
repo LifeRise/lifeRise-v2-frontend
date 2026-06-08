@@ -321,7 +321,7 @@ create table profiles (
   first_name text,
   last_name text,
   phone text,
-  role text not null check (role in ('resident', 'vendor', 'manager')),
+  role text not null check (role in ('resident', 'vendor', 'manager', 'admin')),
   approval_status text not null default 'pending' check (approval_status in ('pending', 'approved', 'rejected')),
   onboarding_completed boolean default false,
   ein_tax_id text,
@@ -332,7 +332,18 @@ create table profiles (
 );
 ```
 
-Also enable Email provider and Google OAuth in Supabase Authentication settings, and create a trigger on `auth.users` insert to auto-create profile rows.
+Also enable Email provider and Google OAuth in Supabase Authentication settings, and create a trigger on `auth.users` insert to auto-create profile rows (optional — the `/api/profile` route handles this at runtime).
+
+#### Seeding Demo Accounts into Supabase
+
+The Go-backend migrations seed demo accounts into the backend DB only. To make those same accounts available through Supabase Auth (so they appear in `auth.users` and `public.profiles`), run:
+
+```bash
+cd apps/web
+npm run seed:supabase
+```
+
+This requires `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `apps/web/.env.local`. It creates (or updates) all 8 demo users and upserts matching rows in `public.profiles`.
 
 ### Route Protection
 
