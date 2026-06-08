@@ -183,7 +183,8 @@ function isLeafActive(pathname: string, href: string): boolean {
 export default function MobileNav({ role }: { role: Role }) {
   const pathname = usePathname();
   const router = useRouter();
-  const nav = mobileNav[role] ?? [];
+  const navRaw = mobileNav[role];
+  const nav = Array.isArray(navRaw) ? navRaw : [];
   const [showAccountDrawer, setShowAccountDrawer] = useState(false);
   const [showMoreSheet, setShowMoreSheet] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
@@ -212,63 +213,65 @@ export default function MobileNav({ role }: { role: Role }) {
   return (
     <>
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 glass-dark border-t border-white/[0.07] flex items-center justify-around px-2 py-2 safe-area-pb">
-        {nav.map(({ icon: Icon, label, href, badge, isDrawer }) => {
-          const active =
-            !isDrawer && (pathname === href || (href !== `/${role}` && pathname.startsWith(href)));
-          const displayBadge = isDrawer && role !== 'manager' ? unreadCount : badge;
-          const content = (
-            <>
-              <div className="relative">
-                <Icon size={22} className={active ? accentTextClass[role] : 'text-muted'} />
-                {displayBadge && displayBadge > 0 && (
-                  <span className="absolute -top-1.5 -right-2 min-w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center px-1">
-                    {displayBadge > 99 ? '99+' : displayBadge}
-                  </span>
-                )}
-              </div>
-              <span
-                className={cn(
-                  'text-[10px] font-medium',
-                  active ? accentTextClass[role] : 'text-muted'
-                )}
-              >
-                {label}
-              </span>
-            </>
-          );
+        {Array.isArray(nav) &&
+          nav.map(({ icon: Icon, label, href, badge, isDrawer }) => {
+            const active =
+              !isDrawer &&
+              (pathname === href || (href !== `/${role}` && pathname.startsWith(href)));
+            const displayBadge = isDrawer && role !== 'manager' ? unreadCount : badge;
+            const content = (
+              <>
+                <div className="relative">
+                  <Icon size={22} className={active ? accentTextClass[role] : 'text-muted'} />
+                  {displayBadge && displayBadge > 0 && (
+                    <span className="absolute -top-1.5 -right-2 min-w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center px-1">
+                      {displayBadge > 99 ? '99+' : displayBadge}
+                    </span>
+                  )}
+                </div>
+                <span
+                  className={cn(
+                    'text-[10px] font-medium',
+                    active ? accentTextClass[role] : 'text-muted'
+                  )}
+                >
+                  {label}
+                </span>
+              </>
+            );
 
-          if (isDrawer) {
+            if (isDrawer) {
+              return (
+                <button
+                  type="button"
+                  key={label}
+                  onClick={() => {
+                    if (role === 'manager' || role === 'admin') {
+                      setShowMoreSheet(true);
+                    } else {
+                      setShowAccountDrawer(true);
+                    }
+                  }}
+                  className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all opacity-50 hover:opacity-100"
+                >
+                  {content}
+                </button>
+              );
+            }
+
             return (
-              <button
-                type="button"
-                key={label}
-                onClick={() => {
-                  if (role === 'manager' || role === 'admin') {
-                    setShowMoreSheet(true);
-                  } else {
-                    setShowAccountDrawer(true);
-                  }
-                }}
-                className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all opacity-50 hover:opacity-100"
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  'flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all relative',
+                  active ? 'opacity-100' : 'opacity-50'
+                )}
               >
                 {content}
-              </button>
+              </Link>
             );
-          }
-
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                'flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all relative',
-                active ? 'opacity-100' : 'opacity-50'
-              )}
-            >
-              {content}
-            </Link>
-          );
-        })}
+          })}
       </nav>
 
       {/* Account Drawer for Resident */}
@@ -361,75 +364,76 @@ export default function MobileNav({ role }: { role: Role }) {
             {role === 'admin' ? 'Platform Menu' : 'Manager Menu'}
           </p>
           <div className="space-y-1">
-            {(role === 'admin' ? adminFullNav : managerFullNav).map((item) => {
-              if (isGroup(item)) {
-                const isOpen = !collapsedGroups[item.label];
-                return (
-                  <div key={item.label}>
-                    <button
-                      type="button"
-                      onClick={() => toggleGroup(item.label)}
-                      className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-muted hover:text-lr-white hover:bg-white/5 transition-colors"
-                    >
-                      <span>{item.label}</span>
-                      <motion.div
-                        animate={{ rotate: isOpen ? 180 : 0 }}
-                        transition={{ duration: 0.2 }}
+            {Array.isArray(role === 'admin' ? adminFullNav : managerFullNav) &&
+              (role === 'admin' ? adminFullNav : managerFullNav).map((item) => {
+                if (isGroup(item)) {
+                  const isOpen = !collapsedGroups[item.label];
+                  return (
+                    <div key={item.label}>
+                      <button
+                        type="button"
+                        onClick={() => toggleGroup(item.label)}
+                        className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-muted hover:text-lr-white hover:bg-white/5 transition-colors"
                       >
-                        <ChevronDown size={14} />
-                      </motion.div>
-                    </button>
-                    <AnimatePresence initial={false}>
-                      {isOpen && (
+                        <span>{item.label}</span>
                         <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
+                          animate={{ rotate: isOpen ? 180 : 0 }}
                           transition={{ duration: 0.2 }}
-                          className="overflow-hidden"
                         >
-                          <div className="pl-4 space-y-0.5 border-l border-white/[0.07] ml-3">
-                            {item.children?.map((child) => (
-                              <Link
-                                key={child.href}
-                                href={child.href}
-                                onClick={() => setShowMoreSheet(false)}
-                                className={cn(
-                                  'flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium',
-                                  isLeafActive(pathname, child.href)
-                                    ? 'text-purple-accent bg-purple-accent/10'
-                                    : 'text-muted hover:text-lr-white hover:bg-white/5'
-                                )}
-                              >
-                                <child.icon size={16} />
-                                {child.label}
-                              </Link>
-                            ))}
-                          </div>
+                          <ChevronDown size={14} />
                         </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                );
-              }
+                      </button>
+                      <AnimatePresence initial={false}>
+                        {isOpen && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="pl-4 space-y-0.5 border-l border-white/[0.07] ml-3">
+                              {item.children?.map((child) => (
+                                <Link
+                                  key={child.href}
+                                  href={child.href}
+                                  onClick={() => setShowMoreSheet(false)}
+                                  className={cn(
+                                    'flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium',
+                                    isLeafActive(pathname, child.href)
+                                      ? 'text-purple-accent bg-purple-accent/10'
+                                      : 'text-muted hover:text-lr-white hover:bg-white/5'
+                                  )}
+                                >
+                                  <child.icon size={16} />
+                                  {child.label}
+                                </Link>
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                }
 
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setShowMoreSheet(false)}
-                  className={cn(
-                    'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium',
-                    isLeafActive(pathname, item.href)
-                      ? 'text-purple-accent bg-purple-accent/10'
-                      : 'text-muted hover:text-lr-white hover:bg-white/5'
-                  )}
-                >
-                  <item.icon size={18} />
-                  {item.label}
-                </Link>
-              );
-            })}
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setShowMoreSheet(false)}
+                    className={cn(
+                      'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium',
+                      isLeafActive(pathname, item.href)
+                        ? 'text-purple-accent bg-purple-accent/10'
+                        : 'text-muted hover:text-lr-white hover:bg-white/5'
+                    )}
+                  >
+                    <item.icon size={18} />
+                    {item.label}
+                  </Link>
+                );
+              })}
           </div>
           <div className="border-t border-white/[0.07] my-3" />
           <button
