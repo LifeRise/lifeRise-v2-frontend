@@ -259,15 +259,14 @@ export const authService = {
       }
     }
 
-    // Final fallback: mock auth (only when Supabase is NOT configured)
-    if (!isSupabaseConfigured()) {
-      const supabase = getSupabase();
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: creds.email,
-        password: creds.password,
-      });
-      if (error) throw new Error(error.message);
-      return { user: data.user, session: data.session };
+    // Final fallback: mock auth (works in demo/offline mode regardless of config)
+    const supabase = getSupabase();
+    const { data: mockData, error: mockError } = await supabase.auth.signInWithPassword({
+      email: creds.email,
+      password: creds.password,
+    });
+    if (!mockError && mockData.user) {
+      return { user: mockData.user, session: mockData.session };
     }
 
     throw new Error('Login failed');
