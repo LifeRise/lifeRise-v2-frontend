@@ -38,6 +38,7 @@ export interface BackendProfile {
 export interface LoginCredentials {
   email: string;
   password: string;
+  supabase_access_token?: string;
 }
 
 export interface SignupData {

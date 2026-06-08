@@ -1,0 +1,212 @@
+{"level":"info","ts":1780956454.6026723,"caller":"api/main.go:95","msg":"listening (startup mode)","addr":"0.0.0.0:8080"}
+{"level":"warn","ts":1780956455.3210702,"caller":"api/main.go:153","msg":"failed to initialize firebase fcm client; push notifications disabled","error":"initialize firebase messaging: project ID is required to access Firebase Cloud Messaging client"}
+{"level":"warn","ts":1780956455.3210702,"caller":"api/main.go:169","msg":"resend driver selected but LIFERISE_MAIL_RESEND_API_KEY is empty"}
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /docs/swagger.yaml        --> github.com/liferise/backend/internal/adapters/http.RegisterRoutes.(*RouterGroup).StaticFile.func4 (6 handlers)
+[GIN-debug] HEAD   /docs/swagger.yaml        --> github.com/liferise/backend/internal/adapters/http.RegisterRoutes.(*RouterGroup).StaticFile.func4 (6 handlers)
+[GIN-debug] GET    /api/documentation        --> github.com/liferise/backend/internal/adapters/http.RegisterRoutes.func1 (6 handlers)
+[GIN-debug] GET    /health                   --> github.com/liferise/backend/internal/adapters/http.RegisterRoutes.func2 (6 handlers)
+[GIN-debug] POST   /api/signup               --> github.com/liferise/backend/internal/adapters/http/handlers.(*AuthHandler).Register-fm (6 handlers)
+[GIN-debug] POST   /api/vendor/signup        --> github.com/liferise/backend/internal/adapters/http/handlers.(*AuthHandler).RegisterVendor-fm (6 handlers)
+[GIN-debug] POST   /api/manager/signup       --> github.com/liferise/backend/internal/adapters/http/handlers.(*AuthHandler).RegisterManager-fm (6 handlers)
+[GIN-debug] POST   /api/login                --> github.com/liferise/backend/internal/adapters/http/handlers.(*AuthHandler).Login-fm (6 handlers)
+[GIN-debug] POST   /api/forgot-password      --> github.com/liferise/backend/internal/adapters/http/handlers.(*AuthHandler).ForgotPassword-fm (6 handlers)
+[GIN-debug] POST   /api/reset-password       --> github.com/liferise/backend/internal/adapters/http/handlers.(*AuthHandler).ResetPassword-fm (6 handlers)
+[GIN-debug] POST   /api/refresh-token        --> github.com/liferise/backend/internal/adapters/http/handlers.(*AuthHandler).RefreshToken-fm (6 handlers)
+[GIN-debug] GET    /api/services             --> github.com/liferise/backend/internal/adapters/http/handlers.(*ServiceHandler).List-fm (6 handlers)
+[GIN-debug] GET    /api/services/:id         --> github.com/liferise/backend/internal/adapters/http/handlers.(*ServiceHandler).Get-fm (6 handlers)
+[GIN-debug] GET    /api/services/:id/slots   --> github.com/liferise/backend/internal/adapters/http/handlers.(*ServiceHandler).GetSlots-fm (6 handlers)
+[GIN-debug] GET    /api/profile              --> github.com/liferise/backend/internal/adapters/http/handlers.(*AuthHandler).Profile-fm (7 handlers)
+[GIN-debug] POST   /api/logout               --> github.com/liferise/backend/internal/adapters/http/handlers.(*AuthHandler).Logout-fm (7 handlers)
+[GIN-debug] GET    /api/bookings             --> github.com/liferise/backend/internal/adapters/http/handlers.(*BookingHandler).List-fm (7 handlers)
+[GIN-debug] POST   /api/bookings             --> github.com/liferise/backend/internal/adapters/http/handlers.(*BookingHandler).Create-fm (7 handlers)
+[GIN-debug] GET    /api/bookings/:id         --> github.com/liferise/backend/internal/adapters/http/handlers.(*BookingHandler).Get-fm (7 handlers)
+[GIN-debug] PATCH  /api/bookings/:id/status  --> github.com/liferise/backend/internal/adapters/http/handlers.(*BookingHandler).UpdateStatus-fm (7 handlers)
+[GIN-debug] POST   /api/bookings/:id/reschedule --> github.com/liferise/backend/internal/adapters/http/handlers.(*BookingHandler).Reschedule-fm (7 handlers)
+[GIN-debug] POST   /api/payments/intent      --> github.com/liferise/backend/internal/adapters/http/handlers.(*PaymentHandler).CreatePaymentIntent-fm (7 handlers)
+[GIN-debug] POST   /api/payments/intent/:id/confirm --> github.com/liferise/backend/internal/adapters/http/handlers.(*PaymentHandler).ConfirmPaymentIntent-fm (7 handlers)
+[GIN-debug] GET    /api/payments/:id         --> github.com/liferise/backend/internal/adapters/http/handlers.(*PaymentHandler).GetPayment-fm (7 handlers)
+[GIN-debug] POST   /api/payments/:id/refund  --> github.com/liferise/backend/internal/adapters/http/handlers.(*PaymentHandler).Refund-fm (7 handlers)
+[GIN-debug] POST   /api/payments/release/:booking_id --> github.com/liferise/backend/internal/adapters/http/handlers.(*PaymentHandler).ReleasePayment-fm (7 handlers)
+[GIN-debug] GET    /api/favorites            --> github.com/liferise/backend/internal/adapters/http/handlers.(*FavoriteHandler).List-fm (7 handlers)
+[GIN-debug] POST   /api/favorites/toggle     --> github.com/liferise/backend/internal/adapters/http/handlers.(*FavoriteHandler).Toggle-fm (7 handlers)
+[GIN-debug] DELETE /api/favorites/:id        --> github.com/liferise/backend/internal/adapters/http/handlers.(*FavoriteHandler).Delete-fm (7 handlers)
+[GIN-debug] GET    /api/notifications        --> github.com/liferise/backend/internal/adapters/http/handlers.(*NotificationHandler).List-fm (7 handlers)
+[GIN-debug] POST   /api/notifications/email  --> github.com/liferise/backend/internal/adapters/http/handlers.(*NotificationHandler).SendEmail-fm (7 handlers)
+[GIN-debug] POST   /api/notifications/push   --> github.com/liferise/backend/internal/adapters/http/handlers.(*NotificationHandler).SendPush-fm (7 handlers)
+[GIN-debug] POST   /api/notifications/booking-confirmation --> github.com/liferise/backend/internal/adapters/http/handlers.(*NotificationHandler).SendBookingConfirmation-fm (7 handlers)
+[GIN-debug] PATCH  /api/notifications/:id/read --> github.com/liferise/backend/internal/adapters/http/handlers.(*NotificationHandler).MarkRead-fm (7 handlers)
+[GIN-debug] PATCH  /api/notifications/read-all --> github.com/liferise/backend/internal/adapters/http/handlers.(*NotificationHandler).MarkAllRead-fm (7 handlers)
+[GIN-debug] POST   /api/notifications/device-token --> github.com/liferise/backend/internal/adapters/http/handlers.(*NotificationHandler).RegisterDeviceToken-fm (7 handlers)
+[GIN-debug] DELETE /api/notifications/device-token --> github.com/liferise/backend/internal/adapters/http/handlers.(*NotificationHandler).DeleteDeviceToken-fm (7 handlers)
+[GIN-debug] POST   /api/services             --> github.com/liferise/backend/internal/adapters/http/handlers.(*ServiceHandler).Create-fm (8 handlers)
+[GIN-debug] PATCH  /api/services/:id         --> github.com/liferise/backend/internal/adapters/http/handlers.(*ServiceHandler).Update-fm (8 handlers)
+[GIN-debug] DELETE /api/services/:id         --> github.com/liferise/backend/internal/adapters/http/handlers.(*ServiceHandler).Delete-fm (8 handlers)
+[GIN-debug] POST   /webhooks/stripe          --> github.com/liferise/backend/internal/adapters/http/handlers.(*PaymentHandler).Webhook-fm (6 handlers)
+[GIN-debug] GET    /api/admin/dashboard/overview --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminDashboardHandler).Overview-fm (8 handlers)
+[GIN-debug] GET    /api/admin/users          --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminUserHandler).List-fm (8 handlers)
+[GIN-debug] GET    /api/admin/users/:id      --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminUserHandler).Get-fm (8 handlers)
+[GIN-debug] POST   /api/admin/users          --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminUserHandler).Create-fm (8 handlers)
+[GIN-debug] PATCH  /api/admin/users/:id      --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminUserHandler).Update-fm (8 handlers)
+[GIN-debug] DELETE /api/admin/users/:id      --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminUserHandler).Delete-fm (8 handlers)
+[GIN-debug] POST   /api/admin/users/:id/reset-password --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminUserHandler).ResetPassword-fm (8 handlers)
+[GIN-debug] POST   /api/admin/users/:id/impersonate --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminUserHandler).Impersonate-fm (8 handlers)
+[GIN-debug] GET    /api/admin/companies      --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminCompanyHandler).List-fm (8 handlers)
+[GIN-debug] GET    /api/admin/companies/:id  --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminCompanyHandler).Get-fm (8 handlers)
+[GIN-debug] POST   /api/admin/companies      --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminCompanyHandler).Create-fm (8 handlers)
+[GIN-debug] PATCH  /api/admin/companies/:id  --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminCompanyHandler).Update-fm (8 handlers)
+[GIN-debug] DELETE /api/admin/companies/:id  --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminCompanyHandler).Delete-fm (8 handlers)
+[GIN-debug] POST   /api/admin/companies/:id/verify --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminCompanyHandler).Verify-fm (8 handlers)
+[GIN-debug] GET    /api/admin/roles          --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminRoleHandler).List-fm (8 handlers)
+[GIN-debug] GET    /api/admin/roles/:id      --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminRoleHandler).Get-fm (8 handlers)
+[GIN-debug] POST   /api/admin/roles          --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminRoleHandler).Create-fm (8 handlers)
+[GIN-debug] PATCH  /api/admin/roles/:id      --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminRoleHandler).Update-fm (8 handlers)
+[GIN-debug] DELETE /api/admin/roles/:id      --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminRoleHandler).Delete-fm (8 handlers)
+[GIN-debug] GET    /api/admin/roles/:id/permissions --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminRoleHandler).GetPermissions-fm (8 handlers)
+[GIN-debug] PUT    /api/admin/roles/:id/permissions --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminRoleHandler).UpdatePermissions-fm (8 handlers)
+[GIN-debug] GET    /api/admin/announcements  --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminAnnouncementHandler).List-fm (8 handlers)
+[GIN-debug] GET    /api/admin/announcements/:id --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminAnnouncementHandler).Get-fm (8 handlers)
+[GIN-debug] POST   /api/admin/announcements  --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminAnnouncementHandler).Create-fm (8 handlers)
+[GIN-debug] PATCH  /api/admin/announcements/:id --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminAnnouncementHandler).Update-fm (8 handlers)
+[GIN-debug] DELETE /api/admin/announcements/:id --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminAnnouncementHandler).Delete-fm (8 handlers)
+[GIN-debug] GET    /api/admin/app-banners    --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminBannerHandler).List-fm (8 handlers)
+[GIN-debug] GET    /api/admin/app-banners/:id --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminBannerHandler).Get-fm (8 handlers)
+[GIN-debug] POST   /api/admin/app-banners    --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminBannerHandler).Create-fm (8 handlers)
+[GIN-debug] PATCH  /api/admin/app-banners/:id --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminBannerHandler).Update-fm (8 handlers)
+[GIN-debug] DELETE /api/admin/app-banners/:id --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminBannerHandler).Delete-fm (8 handlers)
+[GIN-debug] GET    /api/admin/faqs           --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminFAQHandler).List-fm (8 handlers)
+[GIN-debug] GET    /api/admin/faqs/:id       --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminFAQHandler).Get-fm (8 handlers)
+[GIN-debug] POST   /api/admin/faqs           --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminFAQHandler).Create-fm (8 handlers)
+[GIN-debug] PATCH  /api/admin/faqs/:id       --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminFAQHandler).Update-fm (8 handlers)
+[GIN-debug] DELETE /api/admin/faqs/:id       --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminFAQHandler).Delete-fm (8 handlers)
+[GIN-debug] GET    /api/admin/group-events   --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminEventHandler).List-fm (8 handlers)
+[GIN-debug] GET    /api/admin/group-events/:id --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminEventHandler).Get-fm (8 handlers)
+[GIN-debug] POST   /api/admin/group-events   --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminEventHandler).Create-fm (8 handlers)
+[GIN-debug] PATCH  /api/admin/group-events/:id --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminEventHandler).Update-fm (8 handlers)
+[GIN-debug] DELETE /api/admin/group-events/:id --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminEventHandler).Delete-fm (8 handlers)
+[GIN-debug] GET    /api/admin/event-bookings --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminEventBookingHandler).ListEventBookings-fm (8 handlers)
+[GIN-debug] GET    /api/admin/event-bookings/:id --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminEventBookingHandler).GetEventBooking-fm (8 handlers)
+[GIN-debug] POST   /api/admin/event-bookings --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminEventBookingHandler).CreateEventBooking-fm (8 handlers)
+[GIN-debug] PATCH  /api/admin/event-bookings/:id --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminEventBookingHandler).UpdateEventBooking-fm (8 handlers)
+[GIN-debug] DELETE /api/admin/event-bookings/:id --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminEventBookingHandler).DeleteEventBooking-fm (8 handlers)
+[GIN-debug] GET    /api/admin/event-responses --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminEventResponseHandler).ListEventResponses-fm (8 handlers)
+[GIN-debug] GET    /api/admin/event-responses/:id --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminEventResponseHandler).GetEventResponse-fm (8 handlers)
+[GIN-debug] POST   /api/admin/event-responses --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminEventResponseHandler).CreateEventResponse-fm (8 handlers)
+[GIN-debug] PATCH  /api/admin/event-responses/:id --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminEventResponseHandler).UpdateEventResponse-fm (8 handlers)
+[GIN-debug] DELETE /api/admin/event-responses/:id --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminEventResponseHandler).DeleteEventResponse-fm (8 handlers)
+[GIN-debug] GET    /api/admin/locations      --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminLocationHandler).List-fm (8 handlers)
+[GIN-debug] GET    /api/admin/locations/:id  --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminLocationHandler).Get-fm (8 handlers)
+[GIN-debug] POST   /api/admin/locations      --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminLocationHandler).Create-fm (8 handlers)
+[GIN-debug] PATCH  /api/admin/locations/:id  --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminLocationHandler).Update-fm (8 handlers)
+[GIN-debug] DELETE /api/admin/locations/:id  --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminLocationHandler).Delete-fm (8 handlers)
+[GIN-debug] GET    /api/admin/services       --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminServiceHandler).List-fm (8 handlers)
+[GIN-debug] GET    /api/admin/services/:id   --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminServiceHandler).Get-fm (8 handlers)
+[GIN-debug] POST   /api/admin/services       --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminServiceHandler).Create-fm (8 handlers)
+[GIN-debug] PATCH  /api/admin/services/:id   --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminServiceHandler).Update-fm (8 handlers)
+[GIN-debug] DELETE /api/admin/services/:id   --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminServiceHandler).Delete-fm (8 handlers)
+[GIN-debug] GET    /api/admin/service-categories --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminServiceHandler).ListCategories-fm (8 handlers)
+[GIN-debug] GET    /api/admin/service-categories/:id --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminServiceHandler).GetCategory-fm (8 handlers)
+[GIN-debug] POST   /api/admin/service-categories --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminServiceHandler).CreateCategory-fm (8 handlers)
+[GIN-debug] PATCH  /api/admin/service-categories/:id --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminServiceHandler).UpdateCategory-fm (8 handlers)
+[GIN-debug] DELETE /api/admin/service-categories/:id --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminServiceHandler).DeleteCategory-fm (8 handlers)
+[GIN-debug] GET    /api/admin/support        --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminSupportHandler).List-fm (8 handlers)
+[GIN-debug] GET    /api/admin/support/:id    --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminSupportHandler).Get-fm (8 handlers)
+[GIN-debug] POST   /api/admin/support        --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminSupportHandler).Create-fm (8 handlers)
+[GIN-debug] PATCH  /api/admin/support/:id    --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminSupportHandler).Update-fm (8 handlers)
+[GIN-debug] DELETE /api/admin/support/:id    --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminSupportHandler).Delete-fm (8 handlers)
+[GIN-debug] POST   /api/admin/support/:id/messages --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminSupportHandler).CreateMessage-fm (8 handlers)
+[GIN-debug] GET    /api/admin/waitlists      --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminWaitlistHandler).List-fm (8 handlers)
+[GIN-debug] GET    /api/admin/waitlists/:id  --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminWaitlistHandler).Get-fm (8 handlers)
+[GIN-debug] POST   /api/admin/waitlists      --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminWaitlistHandler).Create-fm (8 handlers)
+[GIN-debug] PATCH  /api/admin/waitlists/:id  --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminWaitlistHandler).Update-fm (8 handlers)
+[GIN-debug] DELETE /api/admin/waitlists/:id  --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminWaitlistHandler).Delete-fm (8 handlers)
+[GIN-debug] GET    /api/admin/bookings       --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminBookingHandler).List-fm (8 handlers)
+[GIN-debug] GET    /api/admin/bookings/refunded --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminBookingHandler).ListRefunded-fm (8 handlers)
+[GIN-debug] GET    /api/admin/bookings/:id   --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminBookingHandler).Get-fm (8 handlers)
+[GIN-debug] PATCH  /api/admin/bookings/:id   --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminBookingHandler).Update-fm (8 handlers)
+[GIN-debug] DELETE /api/admin/bookings/:id   --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminBookingHandler).Delete-fm (8 handlers)
+[GIN-debug] GET    /api/admin/customers      --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminCustomerHandler).List-fm (8 handlers)
+[GIN-debug] GET    /api/admin/customers/:id  --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminCustomerHandler).Get-fm (8 handlers)
+[GIN-debug] POST   /api/admin/customers      --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminCustomerHandler).Create-fm (8 handlers)
+[GIN-debug] PATCH  /api/admin/customers/:id  --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminCustomerHandler).Update-fm (8 handlers)
+[GIN-debug] DELETE /api/admin/customers/:id  --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminCustomerHandler).Delete-fm (8 handlers)
+[GIN-debug] GET    /api/admin/feedbacks      --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminFeedbackHandler).List-fm (8 handlers)
+[GIN-debug] GET    /api/admin/feedbacks/:id  --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminFeedbackHandler).Get-fm (8 handlers)
+[GIN-debug] PATCH  /api/admin/feedbacks/:id  --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminFeedbackHandler).Update-fm (8 handlers)
+[GIN-debug] DELETE /api/admin/feedbacks/:id  --> github.com/liferise/backend/internal/adapters/http/handlers.(*AdminFeedbackHandler).Delete-fm (8 handlers)
+{"level":"info","ts":1780956455.322121,"caller":"api/main.go:261","msg":"customer API server ready","addr":"0.0.0.0:8080"}
+{"level":"warn","ts":1780956457.5343244,"caller":"middleware/logging.go:62","msg":"Client error","request_id":"c1cb306e-7231-4f7b-840b-5d9ac9e9ffaf","client_ip":"::1","method":"GET","path":"/api/login","status":404,"latency":0,"body_size":-1,"user_agent":"curl/8.18.0"}
+
+2026/06/08 16:07:44 [31;1mC:/Users/ib310/Documents/LifeRise/LifeRise-Enterprise/apps/api/internal/infrastructure/persistence/customer_repo.go:32 [35;1mrecord not found
+[0m[33m[195.127ms] [34;1m[rows:0][0m SELECT * FROM "customers" WHERE email = 'b3lous.ilya@gmail.com' AND "customers"."deleted_at" IS NULL ORDER BY "customers"."id" LIMIT 1
+
+2026/06/08 16:07:44 [31;1mC:/Users/ib310/Documents/LifeRise/LifeRise-Enterprise/apps/api/internal/infrastructure/persistence/user_repo.go:32 [35;1mrecord not found
+[0m[33m[127.037ms] [34;1m[rows:0][0m SELECT * FROM "users" WHERE email = 'b3lous.ilya@gmail.com' AND "users"."deleted_at" IS NULL ORDER BY "users"."id" LIMIT 1
+{"level":"warn","ts":1780956464.2748532,"caller":"middleware/logging.go:62","msg":"Client error","request_id":"961b5c7c-a889-40f4-996b-bc7053ef82bc","client_ip":"::1","method":"POST","path":"/api/login","status":401,"latency":0.5847604,"body_size":49,"user_agent":"node"}
+
+2026/06/08 16:08:38 [31;1mC:/Users/ib310/Documents/LifeRise/LifeRise-Enterprise/apps/api/internal/infrastructure/persistence/customer_repo.go:32 [35;1mrecord not found
+[0m[33m[126.096ms] [34;1m[rows:0][0m SELECT * FROM "customers" WHERE email = 'admin@liferise.demo' AND "customers"."deleted_at" IS NULL ORDER BY "customers"."id" LIMIT 1
+
+2026/06/08 16:08:38 [32mC:/Users/ib310/Documents/LifeRise/LifeRise-Enterprise/apps/api/internal/infrastructure/persistence/user_repo.go:32
+[0m[33m[63.596ms] [34;1m[rows:1][0m SELECT * FROM "users" WHERE email = 'admin@liferise.demo' AND "users"."deleted_at" IS NULL ORDER BY "users"."id" LIMIT 1
+
+2026/06/08 16:08:38 [32mC:/Users/ib310/Documents/LifeRise/LifeRise-Enterprise/apps/api/internal/infrastructure/persistence/user_repo.go:57 [33mSLOW SQL >= 200ms
+[0m[31;1m[319.524ms] [33m[rows:1][35m UPDATE "users" SET "first_name"='Platform',"last_name"='Admin',"email"='admin@liferise.demo',"phone"='+1000000000',"password"='$2a$10$E3wcDQuO3m/20ILwEHg9f.KZ0y34M3Y7naXtKbjO7rykAd.rlpyfu',"role_id"=1,"email_verified_at"='2026-06-08 14:00:45.502',"phone_verified_at"=NULL,"timezone"='UTC',"locale"='en',"avatar"=NULL,"status"='active',"remember_token"=NULL,"last_login_at"='2026-06-08 22:08:38.09',"settings"=NULL,"created_at"='2026-06-08 14:00:45.502',"updated_at"='2026-06-08 16:08:38.159',"deleted_at"=NULL WHERE "users"."deleted_at" IS NULL AND "id" = 8[0m
+
+2026/06/08 16:08:38 [32mC:/Users/ib310/Documents/LifeRise/LifeRise-Enterprise/apps/api/internal/infrastructure/persistence/user_repo.go:85
+[0m[33m[125.454ms] [34;1m[rows:1][0m SELECT * FROM "roles" WHERE "roles"."id" = 1 AND "roles"."deleted_at" IS NULL
+
+2026/06/08 16:08:38 [32mC:/Users/ib310/Documents/LifeRise/LifeRise-Enterprise/apps/api/internal/infrastructure/persistence/user_repo.go:85 [33mSLOW SQL >= 200ms
+[0m[31;1m[258.101ms] [33m[rows:1][35m SELECT * FROM "user_role_assignments" WHERE user_id = 8[0m
+
+2026/06/08 16:08:38 [32mC:/Users/ib310/Documents/LifeRise/LifeRise-Enterprise/apps/api/internal/infrastructure/persistence/user_repo.go:77
+[0m[33m[129.819ms] [34;1m[rows:20][0m SELECT * FROM "role_permissions" WHERE "role_permissions"."role_id" = 1
+
+2026/06/08 16:08:39 [32mC:/Users/ib310/Documents/LifeRise/LifeRise-Enterprise/apps/api/internal/infrastructure/persistence/user_repo.go:77
+[0m[33m[145.749ms] [34;1m[rows:20][0m SELECT * FROM "permissions" WHERE "permissions"."id" IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20) AND "permissions"."deleted_at" IS NULL
+
+2026/06/08 16:08:39 [32mC:/Users/ib310/Documents/LifeRise/LifeRise-Enterprise/apps/api/internal/infrastructure/persistence/user_repo.go:77 [33mSLOW SQL >= 200ms
+[0m[31;1m[401.717ms] [33m[rows:1][35m SELECT * FROM "roles" WHERE "roles"."id" = 1 AND "roles"."deleted_at" IS NULL ORDER BY "roles"."id" LIMIT 1[0m
+{"level":"info","ts":1780956519.0694106,"caller":"middleware/logging.go:64","msg":"Request completed","request_id":"70d3c570-036a-4644-8459-e136638639a1","client_ip":"::1","method":"POST","path":"/api/login","status":200,"latency":1.282638,"body_size":1135,"user_agent":"node"}
+
+2026/06/08 16:08:39 [32mC:/Users/ib310/Documents/LifeRise/LifeRise-Enterprise/apps/api/internal/infrastructure/persistence/user_repo.go:21
+[0m[33m[65.691ms] [34;1m[rows:1][0m SELECT * FROM "roles" WHERE "roles"."id" = 1 AND "roles"."deleted_at" IS NULL
+
+2026/06/08 16:08:39 [32mC:/Users/ib310/Documents/LifeRise/LifeRise-Enterprise/apps/api/internal/infrastructure/persistence/user_repo.go:21
+[0m[33m[190.983ms] [34;1m[rows:1][0m SELECT * FROM "users" WHERE "users"."id" = 8 AND "users"."deleted_at" IS NULL ORDER BY "users"."id" LIMIT 1
+{"level":"info","ts":1780956519.2650511,"caller":"middleware/logging.go:64","msg":"Request completed","request_id":"171c7a32-19a4-4f1a-9c43-b7d399a27155","client_ip":"::1","method":"GET","path":"/api/profile","status":200,"latency":0.1923766,"body_size":281,"user_agent":"node"}
+
+2026/06/08 16:09:36 [31;1mC:/Users/ib310/Documents/LifeRise/LifeRise-Enterprise/apps/api/internal/infrastructure/persistence/customer_repo.go:32 [35;1mrecord not found
+[0m[33m[127.765ms] [34;1m[rows:0][0m SELECT * FROM "customers" WHERE email = 'b3lous.ilya@gmail.com' AND "customers"."deleted_at" IS NULL ORDER BY "customers"."id" LIMIT 1
+
+2026/06/08 16:09:36 [32mC:/Users/ib310/Documents/LifeRise/LifeRise-Enterprise/apps/api/internal/infrastructure/persistence/user_repo.go:32
+[0m[33m[64.273ms] [34;1m[rows:1][0m SELECT * FROM "users" WHERE email = 'b3lous.ilya@gmail.com' AND "users"."deleted_at" IS NULL ORDER BY "users"."id" LIMIT 1
+
+2026/06/08 16:09:36 [32mC:/Users/ib310/Documents/LifeRise/LifeRise-Enterprise/apps/api/internal/infrastructure/persistence/user_repo.go:57
+[0m[33m[192.223ms] [34;1m[rows:1][0m UPDATE "users" SET "first_name"='Ilya',"last_name"='B3lous',"email"='b3lous.ilya@gmail.com',"phone"='',"password"='$2a$10$uSRJw4KB9NO0gk4Ui7sWhOllqw/thT.YDcGpgTO2FCCNuq/ARzq1i',"role_id"=1,"email_verified_at"=NULL,"phone_verified_at"=NULL,"timezone"='UTC',"locale"='en',"avatar"=NULL,"status"='active',"remember_token"=NULL,"last_login_at"='2026-06-08 22:09:36.738',"settings"=NULL,"created_at"='2026-06-08 22:09:29.09',"updated_at"='2026-06-08 16:09:36.801',"deleted_at"=NULL WHERE "users"."deleted_at" IS NULL AND "id" = 10
+
+2026/06/08 16:09:37 [32mC:/Users/ib310/Documents/LifeRise/LifeRise-Enterprise/apps/api/internal/infrastructure/persistence/user_repo.go:85
+[0m[33m[63.047ms] [34;1m[rows:1][0m SELECT * FROM "roles" WHERE "roles"."id" = 1 AND "roles"."deleted_at" IS NULL
+
+2026/06/08 16:09:37 [32mC:/Users/ib310/Documents/LifeRise/LifeRise-Enterprise/apps/api/internal/infrastructure/persistence/user_repo.go:85
+[0m[33m[127.564ms] [34;1m[rows:1][0m SELECT * FROM "user_role_assignments" WHERE user_id = 10
+
+2026/06/08 16:09:37 [32mC:/Users/ib310/Documents/LifeRise/LifeRise-Enterprise/apps/api/internal/infrastructure/persistence/user_repo.go:77
+[0m[33m[63.339ms] [34;1m[rows:20][0m SELECT * FROM "role_permissions" WHERE "role_permissions"."role_id" = 1
+
+2026/06/08 16:09:37 [32mC:/Users/ib310/Documents/LifeRise/LifeRise-Enterprise/apps/api/internal/infrastructure/persistence/user_repo.go:77
+[0m[33m[66.278ms] [34;1m[rows:20][0m SELECT * FROM "permissions" WHERE "permissions"."id" IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20) AND "permissions"."deleted_at" IS NULL
+
+2026/06/08 16:09:37 [32mC:/Users/ib310/Documents/LifeRise/LifeRise-Enterprise/apps/api/internal/infrastructure/persistence/user_repo.go:77 [33mSLOW SQL >= 200ms
+[0m[31;1m[219.771ms] [33m[rows:1][35m SELECT * FROM "roles" WHERE "roles"."id" = 1 AND "roles"."deleted_at" IS NULL ORDER BY "roles"."id" LIMIT 1[0m
+{"level":"info","ts":1780956577.2792432,"caller":"middleware/logging.go:64","msg":"Request completed","request_id":"341d322f-cc0b-4fed-bc9c-df77889bd641","client_ip":"::1","method":"POST","path":"/api/login","status":200,"latency":0.8476149,"body_size":1140,"user_agent":"node"}
+
+2026/06/08 16:09:37 [32mC:/Users/ib310/Documents/LifeRise/LifeRise-Enterprise/apps/api/internal/infrastructure/persistence/user_repo.go:21
+[0m[33m[68.008ms] [34;1m[rows:1][0m SELECT * FROM "roles" WHERE "roles"."id" = 1 AND "roles"."deleted_at" IS NULL
+
+2026/06/08 16:09:37 [32mC:/Users/ib310/Documents/LifeRise/LifeRise-Enterprise/apps/api/internal/infrastructure/persistence/user_repo.go:21
+[0m[33m[131.739ms] [34;1m[rows:1][0m SELECT * FROM "users" WHERE "users"."id" = 10 AND "users"."deleted_at" IS NULL ORDER BY "users"."id" LIMIT 1
+{"level":"info","ts":1780956577.4147322,"caller":"middleware/logging.go:64","msg":"Request completed","request_id":"fca1f00b-0746-462d-8a47-2383e851a18c","client_ip":"::1","method":"GET","path":"/api/profile","status":200,"latency":0.131739,"body_size":270,"user_agent":"node"}

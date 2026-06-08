@@ -252,7 +252,7 @@ func setupAuthUC(t *testing.T) (*appuser.AuthUseCase, *fakeCustomerRepo, *fakeUs
 	})
 	custRepo := newFakeCustomerRepo()
 	usrRepo := newFakeUserRepo()
-	uc := appuser.NewAuthUseCase(nil, usrRepo, custRepo, jwtService, nil)
+	uc := appuser.NewAuthUseCase(nil, usrRepo, custRepo, jwtService, nil, "", "")
 	return uc, custRepo, usrRepo
 }
 

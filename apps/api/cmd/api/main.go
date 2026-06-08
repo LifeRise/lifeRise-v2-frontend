@@ -179,7 +179,7 @@ func main() {
 	// Use Cases
 	notificationUC := appnotification.NewUseCase(db, notificationRepo, asynqClient, fcmClient, emailClient, deviceTokenRepo)
 
-	authUC := appuser.NewAuthUseCase(db, userRepo, customerRepo, jwtService, notificationUC)
+	authUC := appuser.NewAuthUseCase(db, userRepo, customerRepo, jwtService, notificationUC, cfg.Supabase.ProjectURL, cfg.Supabase.AnonKey)
 
 	stripeClient := stripeAdapter.NewClient(cfg.Stripe.SecretKey, cfg.Stripe.WebhookSecret)
 	stripeUC := apppayment.NewStripeUseCase(db, stripeClient, paymentRepo, bookingRepo, connectRepo, idempotencyRepo)

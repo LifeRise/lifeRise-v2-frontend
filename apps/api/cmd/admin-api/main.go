@@ -67,7 +67,7 @@ func main() {
 
 	userRepo := persistence.NewUserRepo()
 	customerRepo := persistence.NewCustomerRepo()
-	authUC := appuser.NewAuthUseCase(db, userRepo, customerRepo, jwtService, nil)
+	authUC := appuser.NewAuthUseCase(db, userRepo, customerRepo, jwtService, nil, cfg.Supabase.ProjectURL, cfg.Supabase.AnonKey)
 
 	bookingRepo := persistence.NewBookingRepo()
 	paymentRepo := persistence.NewPaymentRepo()

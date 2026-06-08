@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	appuser "github.com/liferise/backend/internal/application/user"
+	"github.com/liferise/backend/pkg/auth"
 	apperrors "github.com/liferise/backend/pkg/errors"
 	"github.com/liferise/backend/pkg/response"
 	"github.com/liferise/backend/pkg/validation"
@@ -153,9 +154,12 @@ func (h *AuthHandler) RegisterVendor(c *gin.Context) {
 }
 
 // LoginRequest mirrors Laravel's login validation.
+// When SupabaseAccessToken is provided, Password is ignored and the user is
+// looked up by email after verifying the token with Supabase Auth.
 type LoginRequest struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required"`
+	Email               string `json:"email" validate:"omitempty,email"`
+	Password            string `json:"password" validate:"omitempty"`
+	SupabaseAccessToken string `json:"supabase_access_token,omitempty"`
 }
 
 // Login handles customer/user login.
@@ -166,17 +170,13 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	// Try customer login first
-	pair, _, err := h.authUC.LoginCustomer(c.Request.Context(), appuser.LoginCustomerRequest{
-		Email:    req.Email,
-		Password: req.Password,
-	})
-	if err != nil {
-		// Try user login as fallback
-		pair, _, err = h.authUC.LoginUser(c.Request.Context(), appuser.LoginUserRequest{
-			Email:    req.Email,
-			Password: req.Password,
-		})
+	var pair *auth.TokenPair
+	var err error
+
+	// If a Supabase access token is provided, verify it with Supabase Auth
+	// and look up the user by email without checking the local password.
+	if req.SupabaseAccessToken != "" {
+		pair, _, err = h.authUC.LoginWithSupabaseToken(c.Request.Context(), req.SupabaseAccessToken)
 		if err != nil {
 			if errors.Is(err, apperrors.ErrInvalidCredentials) {
 				response.Error(c, http.StatusUnauthorized, "Invalid credentials.", nil)
@@ -184,6 +184,36 @@ func (h *AuthHandler) Login(c *gin.Context) {
 			}
 			response.Error(c, http.StatusInternalServerError, "Login failed.", nil)
 			return
+		}
+	} else {
+		// Legacy password-based login
+		if req.Email == "" || req.Password == "" {
+			response.ValidationError(c, map[string][]string{
+				"email":    {"required"},
+				"password": {"required"},
+			})
+			return
+		}
+
+		// Try customer login first
+		pair, _, err = h.authUC.LoginCustomer(c.Request.Context(), appuser.LoginCustomerRequest{
+			Email:    req.Email,
+			Password: req.Password,
+		})
+		if err != nil {
+			// Try user login as fallback
+			pair, _, err = h.authUC.LoginUser(c.Request.Context(), appuser.LoginUserRequest{
+				Email:    req.Email,
+				Password: req.Password,
+			})
+			if err != nil {
+				if errors.Is(err, apperrors.ErrInvalidCredentials) {
+					response.Error(c, http.StatusUnauthorized, "Invalid credentials.", nil)
+					return
+				}
+				response.Error(c, http.StatusInternalServerError, "Login failed.", nil)
+				return
+			}
 		}
 	}
 

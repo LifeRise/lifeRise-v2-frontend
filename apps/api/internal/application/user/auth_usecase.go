@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"gorm.io/datatypes"
@@ -21,11 +22,13 @@ import (
 
 // AuthUseCase handles authentication flows for both Users and Customers.
 type AuthUseCase struct {
-	db             *gorm.DB
-	userRepo       user.Repository
-	customerRepo   customer.Repository
-	jwtService     *auth.Service
-	notificationUC *appnotification.UseCase
+	db              *gorm.DB
+	userRepo        user.Repository
+	customerRepo    customer.Repository
+	jwtService      *auth.Service
+	notificationUC  *appnotification.UseCase
+	supabaseURL     string
+	supabaseAnonKey string
 }
 
 // NewAuthUseCase creates a new AuthUseCase.
@@ -35,13 +38,17 @@ func NewAuthUseCase(
 	customerRepo customer.Repository,
 	jwtService *auth.Service,
 	notificationUC *appnotification.UseCase,
+	supabaseURL string,
+	supabaseAnonKey string,
 ) *AuthUseCase {
 	return &AuthUseCase{
-		db:             db,
-		userRepo:       userRepo,
-		customerRepo:   customerRepo,
-		jwtService:     jwtService,
-		notificationUC: notificationUC,
+		db:              db,
+		userRepo:        userRepo,
+		customerRepo:    customerRepo,
+		jwtService:      jwtService,
+		notificationUC:  notificationUC,
+		supabaseURL:     supabaseURL,
+		supabaseAnonKey: supabaseAnonKey,
 	}
 }
 
@@ -303,6 +310,122 @@ func (uc *AuthUseCase) LoginUser(ctx context.Context, req LoginUserRequest) (*au
 	_ = uc.userRepo.Update(ctx, uc.db, u)
 
 	// Build RBAC claims
+	assignments, err := uc.userRepo.GetUserRoleAssignments(ctx, uc.db, u.ID)
+	if err != nil {
+		return nil, nil, fmt.Errorf("fetch role assignments: %w", err)
+	}
+
+	var roles []string
+	var permissions []string
+	var roleAssignments []auth.RoleAssignment
+
+	for _, a := range assignments {
+		if a.Role == nil {
+			continue
+		}
+		roles = append(roles, a.Role.Slug)
+		roleAssignments = append(roleAssignments, auth.RoleAssignment{
+			Role:      a.Role.Slug,
+			CompanyID: a.CompanyID,
+		})
+
+		perms, err := uc.userRepo.GetPermissionsByRoleID(ctx, uc.db, a.RoleID)
+		if err != nil {
+			continue
+		}
+		for _, p := range perms {
+			permissions = append(permissions, p.Slug)
+		}
+	}
+
+	claims := auth.Claims{
+		UserID:          u.ID,
+		UserType:        "user",
+		Roles:           roles,
+		Permissions:     permissions,
+		RoleAssignments: roleAssignments,
+		Timezone:        u.Timezone,
+	}
+
+	pair, err := uc.jwtService.GenerateTokenPair(claims)
+	if err != nil {
+		return nil, nil, fmt.Errorf("generate token pair: %w", err)
+	}
+
+	return pair, u, nil
+}
+
+// LoginWithSupabaseToken authenticates a user by verifying their Supabase access token,
+// looking them up by email in the local DB, and issuing a LifeRise JWT pair.
+// This eliminates the need to keep passwords in sync between Supabase Auth and the Go backend.
+func (uc *AuthUseCase) LoginWithSupabaseToken(ctx context.Context, supabaseToken string) (*auth.TokenPair, interface{}, error) {
+	if uc.supabaseURL == "" || uc.supabaseAnonKey == "" {
+		return nil, nil, errors.New("supabase is not configured on the backend")
+	}
+
+	// Verify token with Supabase Auth API
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, uc.supabaseURL+"/auth/v1/user", nil)
+	if err != nil {
+		return nil, nil, fmt.Errorf("build supabase request: %w", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+supabaseToken)
+	req.Header.Set("apikey", uc.supabaseAnonKey)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, nil, fmt.Errorf("supabase request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, nil, apperrors.ErrInvalidCredentials
+	}
+
+	var payload struct {
+		Email string `json:"email"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&payload); err != nil {
+		return nil, nil, fmt.Errorf("decode supabase response: %w", err)
+	}
+	if payload.Email == "" {
+		return nil, nil, apperrors.ErrInvalidCredentials
+	}
+
+	// Try customer first, then user — same fallback order as password login
+	c, err := uc.customerRepo.GetByEmail(ctx, uc.db, payload.Email)
+	if err == nil {
+		c.LastLoginAt = func() *time.Time { t := time.Now().UTC(); return &t }()
+		_ = uc.customerRepo.Update(ctx, uc.db, c)
+
+		claims := auth.Claims{
+			UserID:   c.ID,
+			UserType: "customer",
+			Roles:    []string{string(auth.RoleCustomer)},
+			Timezone: c.Timezone,
+		}
+		pair, err := uc.jwtService.GenerateTokenPair(claims)
+		if err != nil {
+			return nil, nil, fmt.Errorf("generate token pair: %w", err)
+		}
+		return pair, c, nil
+	}
+
+	if !errors.Is(err, apperrors.ErrNotFound) {
+		return nil, nil, err
+	}
+
+	// Try user (vendor/manager/admin)
+	u, err := uc.userRepo.GetByEmail(ctx, uc.db, payload.Email)
+	if err != nil {
+		if errors.Is(err, apperrors.ErrNotFound) {
+			return nil, nil, apperrors.ErrInvalidCredentials
+		}
+		return nil, nil, err
+	}
+
+	u.LastLoginAt = func() *time.Time { t := time.Now().UTC(); return &t }()
+	_ = uc.userRepo.Update(ctx, uc.db, u)
+
 	assignments, err := uc.userRepo.GetUserRoleAssignments(ctx, uc.db, u.ID)
 	if err != nil {
 		return nil, nil, fmt.Errorf("fetch role assignments: %w", err)

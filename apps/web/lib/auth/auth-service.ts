@@ -217,7 +217,8 @@ export const authService = {
     creds: LoginCredentials
   ): Promise<AuthSession & { profile?: BackendProfile }> {
     // Strategy: try Supabase first (for users created via Supabase),
-    // but if that fails, fall back to Go backend login (for backend-only demo accounts).
+    // then bridge to Go backend using the Supabase access token so the
+    // backend never needs to verify the password locally.
     if (isSupabaseConfigured()) {
       const supabase = getSupabase();
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -225,10 +226,14 @@ export const authService = {
         password: creds.password,
       });
 
-      if (!error && data.user) {
-        // Supabase login succeeded — bridge to backend for API JWT
+      if (!error && data.user && data.session) {
+        // Supabase login succeeded — bridge to backend using the Supabase token
         try {
-          const { tokenPair, profile } = await apiLogin(creds);
+          const { tokenPair, profile } = await apiLogin({
+            email: creds.email,
+            password: creds.password,
+            supabase_access_token: data.session.access_token,
+          });
           setTokens(tokenPair.access_token, tokenPair.refresh_token);
           return { user: data.user, session: data.session, profile };
         } catch (backendErr: unknown) {
