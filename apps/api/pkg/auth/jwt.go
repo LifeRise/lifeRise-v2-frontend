@@ -67,7 +67,6 @@ func (s *Service) GenerateTokenPair(claims Claims) (*TokenPair, error) {
 
 	accessClaims := claims
 	accessClaims.RegisteredClaims = jwt.RegisteredClaims{
-		Subject:   fmt.Sprintf("%d", claims.UserID),
 		Issuer:    s.config.Issuer,
 		IssuedAt:  jwt.NewNumericDate(now),
 		NotBefore: jwt.NewNumericDate(now),
