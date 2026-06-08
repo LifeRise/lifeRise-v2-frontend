@@ -599,6 +599,63 @@ export function seedMockData() {
     })
   );
 
+  ensureDemo(
+    'matthew@liferisesolutions.com',
+    'Admin123!',
+    { first_name: 'Matthew', last_name: 'LifeRise', role: 'admin', approval_status: 'approved' },
+    (id) => ({
+      id,
+      email: 'matthew@liferisesolutions.com',
+      first_name: 'Matthew',
+      last_name: 'LifeRise',
+      phone: '+1000000001',
+      role: 'admin',
+      approval_status: 'approved',
+      onboarding_completed: true,
+      avatar_url: 'https://ui-avatars.com/api/?name=Matthew+LifeRise',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+  );
+
+  ensureDemo(
+    'b3lous.ilya@gmail.com',
+    'Admin123!',
+    { first_name: 'Ilya', last_name: 'B3lous', role: 'admin', approval_status: 'approved' },
+    (id) => ({
+      id,
+      email: 'b3lous.ilya@gmail.com',
+      first_name: 'Ilya',
+      last_name: 'B3lous',
+      phone: '+1000000002',
+      role: 'admin',
+      approval_status: 'approved',
+      onboarding_completed: true,
+      avatar_url: 'https://ui-avatars.com/api/?name=Ilya+B3lous',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+  );
+
+  ensureDemo(
+    'thesage@northstarcoding.com',
+    'Admin123!',
+    { first_name: 'The', last_name: 'Sage', role: 'admin', approval_status: 'approved' },
+    (id) => ({
+      id,
+      email: 'thesage@northstarcoding.com',
+      first_name: 'The',
+      last_name: 'Sage',
+      phone: '+1000000003',
+      role: 'admin',
+      approval_status: 'approved',
+      onboarding_completed: true,
+      avatar_url: 'https://ui-avatars.com/api/?name=The+Sage',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+  );
+
   setUsers(users);
   setProfiles(profiles);
 }
