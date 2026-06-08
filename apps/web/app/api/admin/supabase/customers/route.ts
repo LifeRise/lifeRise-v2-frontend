@@ -43,8 +43,23 @@ interface PaginatedResponse<T> {
 }
 
 export async function GET(req: NextRequest) {
-  if (!supabaseUrl || !serviceRoleKey) {
-    return NextResponse.json({ error: 'Supabase is not configured' }, { status: 503 });
+  if (!supabaseUrl) {
+    return NextResponse.json(
+      {
+        error:
+          'Supabase URL is not configured. Add NEXT_PUBLIC_SUPABASE_URL to apps/web/.env.local',
+      },
+      { status: 503 }
+    );
+  }
+  if (!serviceRoleKey) {
+    return NextResponse.json(
+      {
+        error:
+          'Supabase service role key is not configured. Add SUPABASE_SERVICE_ROLE_KEY to apps/web/.env.local',
+      },
+      { status: 503 }
+    );
   }
 
   const { searchParams } = new URL(req.url);
