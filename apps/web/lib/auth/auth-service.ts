@@ -25,6 +25,45 @@ const BACKEND_RESET_CODE_KEY = 'liferise_backend_reset_code';
 
 const isSupabaseConfigured = () => !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 
+// ─── Supabase public.profiles persistence ────────────────────────────────────
+
+type ProfileRole = 'resident' | 'vendor' | 'manager' | 'admin';
+
+interface ProfilePayload {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  role: ProfileRole;
+  approval_status: 'pending' | 'approved' | 'rejected';
+  ein_tax_id?: string;
+  description?: string;
+}
+
+/**
+ * Upserts a row into public.profiles via the /api/profile server route,
+ * which uses the Supabase service-role key (bypasses RLS).
+ * Non-fatal: logs a warning on failure rather than blocking sign-up.
+ */
+async function persistSupabaseProfile(payload: ProfilePayload): Promise<void> {
+  const res = await fetch('/api/profile', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    let message = `Profile API returned ${res.status}`;
+    try {
+      const body = (await res.json()) as { error?: string };
+      if (body.error) message = body.error;
+    } catch {
+      // ignore JSON parse errors on error responses
+    }
+    throw new Error(message);
+  }
+}
+
 function getSupabase() {
   return createClient();
 }
@@ -39,7 +78,8 @@ export const authService = {
 
   /** Email + password sign-up with email confirmation */
   async signUp(data: SignupData & { role?: string }): Promise<AuthSession> {
-    const isManager = data.role === 'manager';
+    const role = (data.role ?? 'resident') as ProfileRole;
+    const isManager = role === 'manager';
 
     if (isSupabaseConfigured()) {
       const supabase = getSupabase();
@@ -51,13 +91,33 @@ export const authService = {
             first_name: data.first_name,
             last_name: data.last_name,
             phone: data.phone,
-            role: data.role || 'resident',
+            role,
           },
         },
       });
       if (error) throw new Error(error.message);
 
-      // Bridge: also create the user in the Go backend so backend login works later
+      // Persist profile to public.profiles via service-role API route (non-fatal).
+      if (result.user) {
+        try {
+          await persistSupabaseProfile({
+            id: result.user.id,
+            email: data.email,
+            first_name: data.first_name,
+            last_name: data.last_name,
+            phone: data.phone,
+            role,
+            approval_status: 'approved',
+          });
+        } catch (profileErr: unknown) {
+          console.warn(
+            '[auth-service] Supabase profile persistence failed:',
+            profileErr instanceof Error ? profileErr.message : String(profileErr)
+          );
+        }
+      }
+
+      // Bridge: also create the user in the Go backend so backend login works later.
       try {
         if (isManager) {
           await apiSignupManager(data);
@@ -108,6 +168,28 @@ export const authService = {
         },
       });
       if (error) throw new Error(error.message);
+
+      // Persist vendor profile to public.profiles — includes EIN and description (non-fatal).
+      if (result.user) {
+        try {
+          await persistSupabaseProfile({
+            id: result.user.id,
+            email: data.email,
+            first_name: data.first_name,
+            last_name: data.last_name,
+            phone: data.phone,
+            role: 'vendor',
+            approval_status: 'pending',
+            ein_tax_id: data.ein_tax_id,
+            description: data.description,
+          });
+        } catch (profileErr: unknown) {
+          console.warn(
+            '[auth-service] Supabase vendor profile persistence failed:',
+            profileErr instanceof Error ? profileErr.message : String(profileErr)
+          );
+        }
+      }
 
       // Bridge: register as vendor in Go backend so JWT login works later.
       // Failure is non-fatal — Supabase is the source of truth here.
