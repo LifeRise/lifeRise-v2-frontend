@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { BackendProfile } from '@/lib/api/types';
 
-export type Role = 'resident' | 'vendor' | 'manager' | null;
+export type Role = 'resident' | 'vendor' | 'manager' | 'admin' | null;
 
 export interface AuthUser {
   id: string | number;

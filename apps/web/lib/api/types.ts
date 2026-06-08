@@ -25,7 +25,7 @@ export interface BackendProfile {
   avatar?: string;
   timezone: string;
   status: string;
-  role: 'resident' | 'vendor' | 'manager';
+  role: 'resident' | 'vendor' | 'manager' | 'admin';
   user_type: 'customer' | 'user';
   roles: string[];
   created_at: string;

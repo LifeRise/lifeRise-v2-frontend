@@ -47,11 +47,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Redirect from auth pages to dashboard
       if (pathname === '/login' || pathname === '/signup' || pathname.startsWith('/signup/')) {
         const dest =
-          profile.role === 'manager'
-            ? '/manager'
-            : profile.role === 'vendor'
-              ? '/vendor'
-              : '/resident';
+          profile.role === 'admin'
+            ? '/admin'
+            : profile.role === 'manager'
+              ? '/manager'
+              : profile.role === 'vendor'
+                ? '/vendor'
+                : '/resident';
         router.push(dest);
         return;
       }
@@ -65,7 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         router.push('/resident');
         return;
       }
-      if (pathname.startsWith('/admin') && profile.role !== 'manager') {
+      if (pathname.startsWith('/admin') && profile.role !== 'admin') {
         router.push('/resident');
         return;
       }

@@ -1,5 +1,5 @@
 // ─── Base ───────────────────────────────────────────────────────
-export type Role = 'resident' | 'vendor' | 'manager' | null;
+export type Role = 'resident' | 'vendor' | 'manager' | 'admin' | null;
 
 export type BookingStatus = 'confirmed' | 'pending' | 'completed' | 'cancelled';
 export type KanbanColumn = 'new' | 'accepted' | 'inProgress';
