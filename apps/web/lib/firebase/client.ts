@@ -26,25 +26,32 @@ const config = getFirebaseConfig();
 let firebaseApp: FirebaseApp | null = null;
 if (config) {
   try {
-    const existing = getApps().find(
-      (a) => a.name === '[DEFAULT]' && a.options.projectId === config.projectId
-    );
-    firebaseApp = existing ?? initializeApp(config);
+    // Do NOT reuse an existing app — browser extensions may have initialised
+    // Firebase with an incomplete config, which causes cryptic errors from
+    // Firebase Installations later. If [DEFAULT] already exists, skip.
+    const existing = getApps().find((a) => a.name === '[DEFAULT]');
+    if (!existing) {
+      firebaseApp = initializeApp(config);
+    }
   } catch {
-    // Browser extensions may initialize Firebase with bad config.
+    // Browser extensions may initialise Firebase with bad config.
     // Swallow so push notifications gracefully degrade to no-op.
     firebaseApp = null;
   }
 }
 
 export { firebaseApp };
-export const isFirebaseConfigured = !!firebaseApp;
+
+/** Runtime check — safer than a module-level constant for HMR / stale builds. */
+export function isFirebaseConfigured(): boolean {
+  return !!firebaseApp && !!firebaseApp.options.projectId;
+}
 
 /** Returns the Messaging instance or null when Firebase is not configured or the browser does not support FCM. */
 export async function getFirebaseMessaging() {
   // Skip on server-side rendering
   if (typeof window === 'undefined') return null;
-  if (!firebaseApp || !firebaseApp.options.projectId) return null;
+  if (!isFirebaseConfigured()) return null;
   try {
     const supported = await isSupported();
     if (!supported) return null;
@@ -52,7 +59,7 @@ export async function getFirebaseMessaging() {
     return null;
   }
   try {
-    return getMessaging(firebaseApp);
+    return getMessaging(firebaseApp!);
   } catch {
     return null;
   }

@@ -17,7 +17,7 @@ export function usePushTokenSync() {
 
   useEffect(() => {
     if (!user) return;
-    if (!isFirebaseConfigured) return;
+    if (!isFirebaseConfigured()) return;
 
     let cancelled = false;
 
