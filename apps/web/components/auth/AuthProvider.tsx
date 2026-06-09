@@ -5,6 +5,9 @@ import { useRouter, usePathname } from 'next/navigation';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth/hooks';
 import { usePushTokenSync } from '@/lib/firebase/push-sync';
+import type { BackendProfile } from '@/lib/api/types';
+
+// ── Route classification ────────────────────────────────────────────────────
 
 const publicRoutes = [
   '/',
@@ -25,6 +28,85 @@ function isPublicRoute(pathname: string): boolean {
   );
 }
 
+// ── Portal helpers ──────────────────────────────────────────────────────────
+
+/** All valid backend roles. Used to detect unrecognized roles defensively. */
+const VALID_ROLES: ReadonlyArray<BackendProfile['role']> = [
+  'admin',
+  'manager',
+  'vendor',
+  'resident',
+];
+
+/**
+ * Maps a backend profile role to the user's home portal path.
+ * Unknown/missing roles default to '/resident'.
+ */
+function portalForRole(role: BackendProfile['role'] | undefined | null): string {
+  switch (role) {
+    case 'admin':
+      return '/admin';
+    case 'manager':
+      return '/manager';
+    case 'vendor':
+      return '/vendor';
+    default:
+      return '/resident';
+  }
+}
+
+/**
+ * Returns the portal prefix that owns a given pathname, or null if the
+ * pathname does not belong to any restricted portal.
+ */
+function portalForPath(pathname: string): string | null {
+  if (pathname.startsWith('/admin')) return '/admin';
+  if (pathname.startsWith('/manager')) return '/manager';
+  if (pathname.startsWith('/vendor')) return '/vendor';
+  if (pathname.startsWith('/resident')) return '/resident';
+  return null;
+}
+
+/**
+ * Returns true if the given role is permitted to access the given portal.
+ *
+ * Special case: /admin/approvals is a shared vendor-management page that
+ * managers are allowed to reach even though the route is under /admin.
+ */
+function canAccessPortal(portal: string, role: BackendProfile['role'], pathname: string): boolean {
+  switch (portal) {
+    case '/admin':
+      if (pathname === '/admin/approvals' && role === 'manager') return true;
+      return role === 'admin';
+    case '/manager':
+      return role === 'manager';
+    case '/vendor':
+      return role === 'vendor';
+    case '/resident':
+      return role === 'resident';
+    default:
+      return true;
+  }
+}
+
+/** Human-readable portal name used in toast messages. */
+function portalLabel(portal: string): string {
+  switch (portal) {
+    case '/admin':
+      return 'Admin';
+    case '/manager':
+      return 'Manager';
+    case '/vendor':
+      return 'Vendor';
+    case '/resident':
+      return 'Resident';
+    default:
+      return 'requested';
+  }
+}
+
+// ── Loading screen ──────────────────────────────────────────────────────────
+
 function LoadingScreen() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-midnight">
@@ -36,13 +118,16 @@ function LoadingScreen() {
   );
 }
 
+// ── AuthProvider ────────────────────────────────────────────────────────────
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { user, profile, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+
   // Returns true on the client (after hydration) and false during SSR.
-  // This avoids hydration mismatches because the server and the first client
-  // render both see `false`, then subsequent client renders see `true`.
+  // This avoids hydration mismatches: server and the first client render both
+  // see `false`; subsequent client renders see `true`.
   const mounted = useSyncExternalStore(
     () => () => {},
     () => true,
@@ -56,6 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const isPublic = isPublicRoute(pathname);
 
+    // ── Guard 1: Unauthenticated user on a protected route ────────────────
     if (!user && !isPublic) {
       toast.info('Please sign in to access this page.', {
         description: 'Redirecting to login…',
@@ -66,7 +152,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (user && profile) {
-      // Vendor pending approval
+      // ── Guard 2: Vendor pending approval ───────────────────────────────
       if (
         profile.role === 'vendor' &&
         profile.status !== 'active' &&
@@ -76,40 +162,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Redirect from auth pages to dashboard
+      // ── Guard 3: Authenticated user visiting auth/signup pages ──────────
       if (pathname === '/login' || pathname === '/signup' || pathname.startsWith('/signup/')) {
-        const dest =
-          profile.role === 'admin'
-            ? '/admin'
-            : profile.role === 'manager'
-              ? '/manager'
-              : profile.role === 'vendor'
-                ? '/vendor'
-                : '/resident';
-        router.push(dest);
+        router.push(portalForRole(profile.role));
         return;
       }
 
-      // Role-based route guards
-      // /admin/approvals is a manager page, not admin-only
-      if (
-        pathname.startsWith('/admin') &&
-        pathname !== '/admin/approvals' &&
-        profile.role !== 'admin'
-      ) {
-        toast.error('You do not have permission to access this page.');
-        router.push('/resident');
-        return;
-      }
-      if (pathname.startsWith('/manager') && profile.role !== 'manager') {
-        toast.error('You do not have permission to access this page.');
-        router.push('/resident');
-        return;
-      }
-      if (pathname.startsWith('/vendor') && profile.role !== 'vendor') {
-        toast.error('You do not have permission to access this page.');
-        router.push('/resident');
-        return;
+      // ── Guard 4: Strict portal access control ───────────────────────────
+      const currentPortal = portalForPath(pathname);
+      if (currentPortal !== null) {
+        // Defensive check: if the backend returns an unrecognized role, fall
+        // back to the Resident portal rather than letting the user through.
+        if (!VALID_ROLES.includes(profile.role)) {
+          toast.warning('Your account role could not be determined.', {
+            description: 'Redirecting to the Resident portal as a fallback.',
+            duration: 5000,
+          });
+          router.push('/resident');
+          return;
+        }
+
+        if (!canAccessPortal(currentPortal, profile.role, pathname)) {
+          const label = portalLabel(currentPortal);
+          const home = portalForRole(profile.role);
+          toast.error('Access Denied', {
+            description: `You do not have permission to access the ${label} portal. Redirecting you to your portal…`,
+            duration: 5000,
+          });
+          router.push(home);
+          return;
+        }
       }
     }
   }, [user, profile, isLoading, pathname, router]);
@@ -133,13 +215,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return <LoadingScreen />;
     }
 
-    // 3. User is authenticated but profile hasn't resolved yet on a
-    //    role-restricted route. Without a profile we cannot verify role-based
-    //    access — keep showing loading until the profile is available.
-    const isRoleProtected =
-      pathname.startsWith('/admin') ||
-      pathname.startsWith('/manager') ||
-      pathname.startsWith('/vendor');
+    // 3. User is authenticated but profile hasn't resolved yet on any portal
+    //    route. Without a profile we cannot verify role-based access — keep
+    //    showing loading until the profile is available.
+    //    NOTE: portalForPath covers /admin, /manager, /vendor, AND /resident.
+    const isRoleProtected = portalForPath(pathname) !== null;
 
     if (!isLoading && user && !profile && isRoleProtected) {
       return <LoadingScreen />;
