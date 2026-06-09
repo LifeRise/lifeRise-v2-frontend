@@ -394,6 +394,43 @@ export const mockAuth = {
     return { data: { user: session?.user ?? null }, error: null };
   },
 
+  exchangeCodeForSession: async (authCode: string) => {
+    await new Promise((r) => setTimeout(r, 400));
+    // In mock mode, simulate a successful PKCE exchange by creating a
+    // session for the pending-reset user (if any).
+    const pendingResetEmail = getItem<string | null>(MOCK_PENDING_RESET_KEY, null);
+    const users = getUsers();
+    if (pendingResetEmail && users[pendingResetEmail]) {
+      const session = createMockSession(users[pendingResetEmail].user);
+      setSession(session);
+      notify('SIGNED_IN', session);
+      return {
+        data: {
+          session,
+          user: users[pendingResetEmail].user,
+          redirectType: 'recovery',
+        },
+        error: null,
+      };
+    }
+    // If no pending reset, treat the code as a magic-link style sign-in
+    const mockEmail = `mock-${authCode.slice(0, 8)}@example.com`;
+    let record = users[mockEmail];
+    if (!record) {
+      const user = createMockUser(mockEmail, {});
+      users[mockEmail] = { password: 'mock-password', user, confirmed: true };
+      setUsers(users);
+      record = users[mockEmail];
+    }
+    const session = createMockSession(record.user);
+    setSession(session);
+    notify('SIGNED_IN', session);
+    return {
+      data: { session, user: record.user, redirectType: null },
+      error: null,
+    };
+  },
+
   resetPasswordForEmail: async (email: string, options?: { redirectTo?: string }) => {
     await new Promise((r) => setTimeout(r, 600));
     const users = getUsers();

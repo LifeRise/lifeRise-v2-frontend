@@ -26,10 +26,18 @@ export function createClient(): SupabaseClient {
   if (browserClient) return browserClient;
 
   if (!supabaseUrl || !supabaseAnonKey) {
+    if (typeof window !== 'undefined') {
+      console.warn(
+        '[Supabase] Creating mock client — NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY is empty.'
+      );
+    }
     browserClient = createMockClient();
     return browserClient;
   }
 
+  if (typeof window !== 'undefined') {
+    console.log('[Supabase] Creating real browser client for', supabaseUrl);
+  }
   browserClient = createBrowserClient(supabaseUrl, supabaseAnonKey);
   return browserClient;
 }
