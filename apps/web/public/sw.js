@@ -3,7 +3,7 @@
   Versioned cache strategy with automatic update support.
   Bump BUILD_ID below for each production release.
 */
-const BUILD_ID = '20260529-001';
+const BUILD_ID = '20260608-001';
 const CACHE_NAME = `liferise-${BUILD_ID}`;
 const SHELL_ROUTES = [
   '/',
@@ -71,10 +71,11 @@ self.addEventListener('fetch', (event) => {
   // Skip non-HTTP schemes (chrome-extension, blob, data, etc.)
   if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
 
-  // Skip API calls to the backend — never cache those
-  if (url.hostname === 'localhost' && url.port === '8080') return;
-  if (url.hostname === 'localhost' && url.port === '8081') return;
-  if (url.hostname === 'localhost' && url.port === '8082') return;
+  // Skip API calls — never cache backend, Supabase, or any external data requests
+  if (url.pathname.startsWith('/api/')) return;
+  if (url.hostname === 'localhost' && ['8080', '8081', '8082'].includes(url.port)) return;
+  if (url.hostname.includes('railway.app')) return;
+  if (url.hostname.includes('supabase.co')) return;
 
   const isNavigation = request.mode === 'navigate';
 

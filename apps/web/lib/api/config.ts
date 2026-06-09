@@ -13,6 +13,13 @@ const CUSTOMER_API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 const VENDOR_API = process.env.NEXT_PUBLIC_VENDOR_API_URL ?? CUSTOMER_API;
 const ADMIN_API = process.env.NEXT_PUBLIC_ADMIN_API_URL ?? CUSTOMER_API;
 
+// Diagnostic logging to help debug env var issues in development
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+  console.log('[api/config] NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
+  console.log('[api/config] CUSTOMER_API:', CUSTOMER_API);
+  console.log('[api/config] ADMIN_API:', ADMIN_API);
+}
+
 export type FrontendRole = 'resident' | 'vendor' | 'manager' | 'admin';
 
 export function getApiBaseUrl(role?: FrontendRole | null): string {
