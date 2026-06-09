@@ -174,11 +174,20 @@ export function useAuth() {
                 setProfile(p);
                 if (p?.role) setRole(p.role as Profile['role']);
               }
+              if (mounted) setIsLoading(false);
+              return;
             } catch {
-              if (mounted) setProfile(null);
+              // The backend rejected the JWT (expired, different signing key,
+              // or endpoint unavailable). Clear the stale token and fall
+              // through to Supabase session recovery below — the user's
+              // Supabase session may still be valid even if the backend token
+              // is not. Do NOT dispatch auth-expired here; that is reserved
+              // for post-login requests where a confirmed valid session later
+              // becomes unrecoverable.
+              clearTokens();
+              if (mounted) setUser(null);
+              // fall through to step 2 (Supabase session path)
             }
-            if (mounted) setIsLoading(false);
-            return;
           }
         }
 

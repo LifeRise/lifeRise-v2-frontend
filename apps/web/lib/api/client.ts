@@ -115,19 +115,31 @@ export async function apiRequest<T>(
 
   // Auto-refresh on 401
   if (res.status === 401 && !skipAuth) {
-    const newToken = await refreshAccessToken(baseUrl);
-    if (newToken) {
-      headers.set('Authorization', `Bearer ${newToken}`);
-      res = await fetch(url, { ...fetchOptions, headers });
-    } else {
-      // Refresh also failed — session is unrecoverable. Clear tokens and
-      // notify the auth layer so the Zustand store resets and the user is
-      // redirected to /login without being stuck in an authenticated state.
-      clearTokens();
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('liferise:auth-expired'));
+    // Only attempt a token refresh when we actually have a refresh token.
+    // If no refresh token exists (e.g. the user authenticated via Supabase
+    // only and no backend JWT was issued), the 401 just means this specific
+    // API endpoint requires backend auth that is not present. In that case
+    // we must NOT dispatch liferise:auth-expired — the user's Supabase
+    // session may still be perfectly valid and we'd be incorrectly kicking
+    // them out.
+    const hasRefreshToken = !!getRefreshToken();
+    if (hasRefreshToken) {
+      const newToken = await refreshAccessToken(baseUrl);
+      if (newToken) {
+        headers.set('Authorization', `Bearer ${newToken}`);
+        res = await fetch(url, { ...fetchOptions, headers });
+      } else {
+        // Refresh also failed — the session is unrecoverable. Clear tokens
+        // and notify the auth layer so the Zustand store resets and the user
+        // is redirected to /login without being stuck in an authenticated state.
+        clearTokens();
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('liferise:auth-expired'));
+        }
       }
     }
+    // If hasRefreshToken === false: fall through; the 401 is treated as a
+    // normal ApiError (thrown below) without touching auth state.
   }
 
   const json: ApiResponse<T> = await res.json().catch(() => ({
