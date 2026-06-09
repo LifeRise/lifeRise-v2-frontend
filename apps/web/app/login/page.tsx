@@ -29,12 +29,16 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       const { profile } = await signIn({ email, password });
+      // Use the role returned by the Go backend profile endpoint as the
+      // source of truth. AuthProvider will re-verify on arrival, so this
+      // redirect only needs to be a best-effort initial navigation.
+      const role = profile?.role;
       const dest =
-        profile.role === 'admin'
+        role === 'admin'
           ? '/admin'
-          : profile.role === 'manager'
+          : role === 'manager'
             ? '/manager'
-            : profile.role === 'vendor'
+            : role === 'vendor'
               ? '/vendor'
               : '/resident';
       router.push(dest);

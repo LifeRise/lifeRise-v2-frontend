@@ -7,10 +7,26 @@ import { fetchProfile, login as apiLogin, logout as apiLogout } from '@/lib/api/
 import { createClient } from '@/lib/supabase/client';
 import { useAppStore } from '@/lib/store';
 import type { BackendProfile, LoginCredentials } from '@/lib/api/types';
+import type { FrontendRole } from '@/lib/api/config';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 // Re-export Profile type for backward compatibility
 export type Profile = BackendProfile;
+
+/**
+ * Derives the frontend portal role from raw JWT claims (no DB round-trip).
+ * Mirrors the `mapBackendRoleToFrontend` logic in the Go profile handler so
+ * we can call `fetchProfile` against the correct API base URL on the very
+ * first request — before the profile response tells us the role.
+ */
+function frontendRoleFromToken(userType: string, roles: string[]): FrontendRole {
+  if (userType === 'user') {
+    if (roles.includes('admin')) return 'admin';
+    if (roles.some((r) => ['sales', 'pmo', 'complex_manager'].includes(r))) return 'manager';
+    if (roles.includes('service_provider')) return 'vendor';
+  }
+  return 'resident';
+}
 
 export interface AuthUser {
   id: string | number;
@@ -148,7 +164,19 @@ export function useAuth() {
           const u = buildUserFromToken(token);
           if (u) {
             if (mounted) setUser(u);
-            await refreshProfile();
+            // Derive the frontend role directly from the token claims so we
+            // call fetchProfile against the correct API base URL without
+            // relying on the stale `profile` closure (which is null here).
+            const tokenRole = frontendRoleFromToken(u.userType, u.roles);
+            try {
+              const p = await fetchProfile(tokenRole);
+              if (mounted) {
+                setProfile(p);
+                if (p?.role) setRole(p.role as Profile['role']);
+              }
+            } catch {
+              if (mounted) setProfile(null);
+            }
             if (mounted) setIsLoading(false);
             return;
           }
@@ -205,7 +233,7 @@ export function useAuth() {
       mounted = false;
       supabaseSubscription?.unsubscribe();
     };
-  }, [refreshProfile, setIsLoading, setProfile, setRole, setUser]);
+  }, [setIsLoading, setProfile, setRole, setUser]);
 
   const signIn = useCallback(
     async (creds: LoginCredentials) => {

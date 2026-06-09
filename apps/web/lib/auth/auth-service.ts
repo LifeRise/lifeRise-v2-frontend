@@ -140,6 +140,7 @@ export const authService = {
       }
 
       // Bridge: also create the user in the Go backend so backend login works later.
+      // Failure is non-fatal — Supabase is the source of truth for auth.
       try {
         if (isManager) {
           await apiSignupManager(data);
@@ -148,13 +149,11 @@ export const authService = {
         }
       } catch (backendErr: unknown) {
         // User might already exist in backend, or backend might be down.
-        // Supabase auth is the source of truth — don't block on backend failure.
+        // Log but do not rethrow — Supabase signup already succeeded.
         console.warn(
-          '[auth-service] Backend signup bridge failed:',
+          '[auth-service] Backend signup bridge failed (non-fatal):',
           backendErr instanceof Error ? backendErr.message : String(backendErr)
         );
-        // Re-throw so the UI can show the actual error when Supabase is not the primary auth.
-        if (!isSupabaseConfigured()) throw backendErr;
       }
 
       return { user: result.user, session: result.session };
@@ -238,55 +237,79 @@ export const authService = {
   async signInWithPassword(
     creds: LoginCredentials
   ): Promise<AuthSession & { profile?: BackendProfile }> {
-    // Strategy: try Supabase first (for users created via Supabase),
-    // then bridge to Go backend using the Supabase access token so the
-    // backend never needs to verify the password locally.
     if (isSupabaseConfigured()) {
       const supabase = getSupabase();
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data: sbData, error: sbError } = await supabase.auth.signInWithPassword({
         email: creds.email,
         password: creds.password,
       });
 
-      if (!error && data.user && data.session) {
-        // Supabase login succeeded — bridge to backend using the Supabase token
+      if (!sbError && sbData.user && sbData.session) {
+        // ── Path A: Supabase succeeded ──────────────────────────────────────
+        // Try bridging to the Go backend via the Supabase access token
+        // (preferred — no local password stored in the backend DB).
         try {
           const { tokenPair, profile } = await apiLogin({
             email: creds.email,
             password: creds.password,
-            supabase_access_token: data.session.access_token,
+            supabase_access_token: sbData.session.access_token,
           });
           setTokens(tokenPair.access_token, tokenPair.refresh_token);
-          return { user: data.user, session: data.session, profile };
-        } catch (backendErr: unknown) {
+          return { user: sbData.user, session: sbData.session, profile };
+        } catch (bridgeErr: unknown) {
           console.warn(
-            '[auth-service] Backend login bridge failed, falling back:',
-            backendErr instanceof Error ? backendErr.message : String(backendErr)
+            '[auth-service] Backend token bridge failed:',
+            bridgeErr instanceof Error ? bridgeErr.message : String(bridgeErr)
           );
-          // Fall through to backend-only login below
         }
-      } else {
-        // Supabase login failed — log and try backend-only fallback
+
+        // Retry backend with password in case the token bridge route is
+        // unavailable (e.g. backend running without Supabase env vars).
+        try {
+          const { tokenPair, profile } = await apiLogin(creds);
+          setTokens(tokenPair.access_token, tokenPair.refresh_token);
+          return { user: sbData.user, session: sbData.session, profile };
+        } catch (passwordErr: unknown) {
+          console.warn(
+            '[auth-service] Backend password fallback failed:',
+            passwordErr instanceof Error ? passwordErr.message : String(passwordErr)
+          );
+        }
+
+        // Both backend paths failed but Supabase auth succeeded.
+        // Return the Supabase user without a backend JWT — hooks.ts will
+        // resolve the profile from public.profiles for the role-based redirect.
         console.warn(
-          '[auth-service] Supabase login failed:',
-          error?.message,
-          '— trying backend fallback'
+          '[auth-service] Backend unreachable after Supabase login. ' +
+            'Proceeding with Supabase-only session — API calls will require backend.'
         );
+        return { user: sbData.user, session: sbData.session };
       }
 
+      // ── Path B: Supabase failed — try direct backend login ─────────────
+      console.warn(
+        '[auth-service] Supabase login failed:',
+        sbError?.message,
+        '— trying backend-only login'
+      );
       try {
         const { tokenPair, profile } = await apiLogin(creds);
         setTokens(tokenPair.access_token, tokenPair.refresh_token);
-        return { user: data.user ?? null, session: data.session ?? null, profile };
+        return { user: null, session: null, profile };
       } catch (backendErr: unknown) {
         console.warn(
-          '[auth-service] Backend fallback login failed:',
+          '[auth-service] Backend-only login also failed:',
           backendErr instanceof Error ? backendErr.message : String(backendErr)
         );
       }
+
+      // Both Supabase and backend failed — surface the Supabase error message.
+      throw new Error(sbError?.message || 'Login failed');
     }
 
-    // Final fallback: mock auth (works in demo/offline mode regardless of config)
+    // ── No Supabase configured — mock or direct backend ──────────────────
+    // Uses the mock Supabase client in demo/offline mode, or a real but
+    // unconfigured client (which falls through to the throw below).
     const supabase = getSupabase();
     const { data: mockData, error: mockError } = await supabase.auth.signInWithPassword({
       email: creds.email,
@@ -296,7 +319,7 @@ export const authService = {
       return { user: mockData.user, session: mockData.session };
     }
 
-    throw new Error('Login failed');
+    throw new Error(mockError?.message || 'Login failed');
   },
 
   /** Magic link (OTP via email) */

@@ -98,9 +98,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user, profile, isLoading, pathname, router]);
 
-  // While auth state is initializing on a protected route, show a loading
-  // screen instead of flashing the protected page content.
-  if (isLoading && !isPublicRoute(pathname)) {
+  const isPublic = isPublicRoute(pathname);
+
+  // 1. While auth state is initializing on a protected route, show a loading
+  //    screen instead of flashing the protected page content.
+  if (isLoading && !isPublic) {
+    return <LoadingScreen />;
+  }
+
+  // 2. SECURITY: Auth resolved but user is not authenticated on a protected
+  //    route. The useEffect has already fired router.push('/login') but
+  //    Next.js navigation is async — block rendering until navigation
+  //    completes so protected content never flashes to unauthenticated users.
+  if (!isLoading && !user && !isPublic) {
+    return <LoadingScreen />;
+  }
+
+  // 3. User is authenticated but profile hasn't resolved yet on a
+  //    role-restricted route. Without a profile we cannot verify role-based
+  //    access — keep showing loading until the profile is available.
+  const isRoleProtected =
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/manager') ||
+    pathname.startsWith('/vendor');
+
+  if (!isLoading && user && !profile && isRoleProtected) {
     return <LoadingScreen />;
   }
 
