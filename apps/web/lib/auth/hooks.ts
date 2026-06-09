@@ -255,8 +255,16 @@ export function useAuth() {
           await authService.signInWithPassword(creds);
 
         if (sbUser) {
-          // Supabase login succeeded
-          const u = buildUserFromSupabaseUser(sbUser);
+          // Supabase login succeeded.
+          // Prefer building AuthUser from the backend JWT claims so that
+          // user.userType and user.roles in Zustand match the JWT exactly
+          // ('user' / ['admin'] rather than 'customer' / ['customer'] which
+          // buildUserFromSupabaseUser would produce). Falls back to building
+          // from the Supabase user if no JWT was stored (backend unreachable).
+          const token = getAccessToken();
+          const u = token
+            ? (buildUserFromToken(token) ?? buildUserFromSupabaseUser(sbUser))
+            : buildUserFromSupabaseUser(sbUser);
           const p = backendProfile ?? (await resolveSupabaseProfile(sbUser));
           setUser(u);
           setProfile(p);

@@ -77,10 +77,23 @@ export async function signupVendor(
 
 /**
  * Fetch the current user's profile.
- * Uses the user's role-specific port so CORS and middleware align.
+ *
+ * Always targets the CUSTOMER_API (port 8080) regardless of role.
+ *
+ * Rationale: the customer API's /api/profile route is gated only by
+ * RequireAuth (valid JWT is enough). The admin-api and vendor-api both
+ * gate their /api/profile routes behind RequireRole as well. If a user's
+ * JWT is valid but their role assignments haven't been persisted to the DB
+ * yet (e.g., just after auto-sync via apiSignupManager), the role check
+ * would return 403, causing init() to clear the token and leaving the
+ * client un-authenticated for all subsequent API calls.
+ *
+ * The profile handler itself handles all userTypes (customer | user) and
+ * correctly maps backend role slugs → frontend roles ('admin', 'manager',
+ * 'vendor', 'resident') regardless of which binary serves the request.
  */
-export async function fetchProfile(role?: FrontendRole | null): Promise<BackendProfile> {
-  const baseUrl = getApiBaseUrl(role);
+export async function fetchProfile(_role?: FrontendRole | null): Promise<BackendProfile> {
+  const baseUrl = getAuthBaseUrl();
   return apiGet<BackendProfile>(baseUrl, '/api/profile');
 }
 
