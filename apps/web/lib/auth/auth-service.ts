@@ -20,6 +20,7 @@ import {
 import { setTokens, clearTokens } from '@/lib/api/client';
 import type { LoginCredentials, SignupData, BackendProfile } from '@/lib/api/types';
 import type { User, Session } from '@supabase/supabase-js';
+import { toast } from 'sonner';
 
 const BACKEND_RESET_TOKEN_KEY = 'liferise_backend_reset_token';
 const BACKEND_RESET_CODE_KEY = 'liferise_backend_reset_code';
@@ -248,6 +249,7 @@ export const authService = {
         // ── Path A: Supabase succeeded ──────────────────────────────────────
         // Try bridging to the Go backend via the Supabase access token
         // (preferred — no local password stored in the backend DB).
+        let bridgeFailedWith401 = false;
         try {
           const { tokenPair, profile } = await apiLogin({
             email: creds.email,
@@ -257,14 +259,58 @@ export const authService = {
           setTokens(tokenPair.access_token, tokenPair.refresh_token);
           return { user: sbData.user, session: sbData.session, profile };
         } catch (bridgeErr: unknown) {
-          console.warn(
-            '[auth-service] Backend token bridge failed:',
-            bridgeErr instanceof Error ? bridgeErr.message : String(bridgeErr)
-          );
+          const err = bridgeErr instanceof Error ? bridgeErr : new Error(String(bridgeErr));
+          bridgeFailedWith401 =
+            'status' in err && (err as unknown as { status: number }).status === 401;
+          console.warn('[auth-service] Backend token bridge failed:', err.message);
         }
 
-        // Retry backend with password in case the token bridge route is
-        // unavailable (e.g. backend running without Supabase env vars).
+        // If the bridge failed because the user does not exist in the backend
+        // DB (401), attempt to auto-sync by re-creating the account via the
+        // backend signup endpoint, then retry the bridge.
+        if (bridgeFailedWith401) {
+          const md = sbData.user.user_metadata || {};
+          const role = (md.role as string) || 'resident';
+          const signupPayload: SignupData & { role?: string } = {
+            email: creds.email,
+            password: creds.password,
+            first_name: (md.first_name as string) || '',
+            last_name: (md.last_name as string) || '',
+            phone: (md.phone as string) || '',
+            role,
+          };
+
+          try {
+            if (role === 'vendor') {
+              await apiSignupVendor({
+                ...signupPayload,
+                ein_tax_id: (md.ein_tax_id as string) || '',
+                description: (md.description as string) || '',
+              });
+            } else if (role === 'manager' || role === 'admin') {
+              await apiSignupManager(signupPayload);
+            } else {
+              await apiSignup(signupPayload);
+            }
+            console.log('[auth-service] Auto-synced user to backend, retrying bridge...');
+
+            // Retry bridge after successful signup
+            const { tokenPair, profile } = await apiLogin({
+              email: creds.email,
+              password: creds.password,
+              supabase_access_token: sbData.session.access_token,
+            });
+            setTokens(tokenPair.access_token, tokenPair.refresh_token);
+            return { user: sbData.user, session: sbData.session, profile };
+          } catch (syncErr: unknown) {
+            console.warn(
+              '[auth-service] Backend auto-sync failed:',
+              syncErr instanceof Error ? syncErr.message : String(syncErr)
+            );
+          }
+        }
+
+        // Fallback: legacy password-based backend login
         try {
           const { tokenPair, profile } = await apiLogin(creds);
           setTokens(tokenPair.access_token, tokenPair.refresh_token);
@@ -279,6 +325,10 @@ export const authService = {
         // Both backend paths failed but Supabase auth succeeded.
         // Return the Supabase user without a backend JWT — hooks.ts will
         // resolve the profile from public.profiles for the role-based redirect.
+        toast.warning('Signed in via Supabase, but backend sync failed.', {
+          description: 'Some features may be unavailable until the backend is synced.',
+          duration: 6000,
+        });
         console.warn(
           '[auth-service] Backend unreachable after Supabase login. ' +
             'Proceeding with Supabase-only session — API calls will require backend.'
