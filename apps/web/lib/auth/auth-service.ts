@@ -7,6 +7,7 @@
  */
 
 import { createClient } from '@/lib/supabase/client';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import {
   login as apiLogin,
   signup as apiSignup,
@@ -66,6 +67,27 @@ async function persistSupabaseProfile(payload: ProfilePayload): Promise<void> {
 
 function getSupabase() {
   return createClient();
+}
+
+/**
+ * Dedicated client for password-reset flows.
+ * Uses localStorage instead of cookies so the PKCE code verifier survives
+ * across page loads (the @supabase/ssr cookie storage can drop the verifier
+ * when the reset link is clicked from an email client).
+ */
+function createResetClient() {
+  if (!isSupabaseConfigured()) return null;
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      auth: {
+        flowType: 'pkce',
+        persistSession: true,
+        storageKey: 'liferise-reset-auth-token',
+      },
+    }
+  );
 }
 
 export interface AuthSession {
@@ -329,8 +351,11 @@ export const authService = {
   async resetPassword(email: string): Promise<void> {
     // Supabase is the source of truth for passwords — use its reset flow directly.
     if (isSupabaseConfigured()) {
-      const supabase = getSupabase();
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      // Use the localStorage-based reset client so the PKCE code verifier
+      // survives the email-link navigation (cookie-based storage can drop it).
+      const resetClient = createResetClient();
+      const client = resetClient ?? getSupabase();
+      const { error } = await client.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
       if (error) throw new Error(error.message);
@@ -369,12 +394,15 @@ export const authService = {
 
     if (!isSupabaseConfigured()) return null;
 
-    const supabase = getSupabase();
+    // Use the localStorage-based reset client so the PKCE code verifier
+    // (written by resetPassword) is available after the email-link navigation.
+    const resetClient = createResetClient();
+    const client = resetClient ?? getSupabase();
 
     // PKCE flow: exchange code query param for session
     const pkceCode = url.searchParams.get('code');
     if (pkceCode) {
-      const { error } = await supabase.auth.exchangeCodeForSession(pkceCode);
+      const { error } = await client.auth.exchangeCodeForSession(pkceCode);
       if (error) throw new Error(error.message);
       window.history.replaceState(null, '', window.location.pathname);
     }
@@ -387,7 +415,7 @@ export const authService = {
     const type = params.get('type');
 
     if (access_token && refresh_token && type === 'recovery') {
-      const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+      const { error } = await client.auth.setSession({ access_token, refresh_token });
       if (error) throw new Error(error.message);
       window.history.replaceState(null, '', window.location.pathname);
     }
@@ -396,7 +424,7 @@ export const authService = {
     const {
       data: { session },
       error: sessionError,
-    } = await supabase.auth.getSession();
+    } = await client.auth.getSession();
     if (sessionError) throw new Error(sessionError.message);
     return session;
   },
@@ -415,8 +443,11 @@ export const authService = {
     }
 
     // Supabase flow
-    const supabase = getSupabase();
-    const { error } = await supabase.auth.updateUser({ password });
+    // Use the same localStorage-based reset client so the session established
+    // by exchangeRecoverySession is available here.
+    const resetClient = createResetClient();
+    const client = resetClient ?? getSupabase();
+    const { error } = await client.auth.updateUser({ password });
     if (error) throw new Error(error.message);
   },
 
