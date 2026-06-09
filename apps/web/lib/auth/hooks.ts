@@ -141,57 +141,62 @@ export function useAuth() {
       if (globalInitStarted) return;
       globalInitStarted = true;
 
-      // 1. Prefer Go backend JWT if present
-      const token = getAccessToken();
-      if (token && !isTokenExpired(token)) {
-        const u = buildUserFromToken(token);
-        if (u) {
-          if (mounted) setUser(u);
-          await refreshProfile();
-          if (mounted) setIsLoading(false);
-          return;
-        }
-      }
-
-      // 2. Fall back to Supabase session (or mock session in demo mode)
-      const supabase = createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session?.user && mounted) {
-        setUser(buildUserFromSupabaseUser(session.user));
-        const resolvedProfile = await resolveSupabaseProfile(session.user);
-        if (mounted) {
-          setProfile(resolvedProfile);
-          if (resolvedProfile.role) {
-            setRole(resolvedProfile.role);
+      try {
+        // 1. Prefer Go backend JWT if present
+        const token = getAccessToken();
+        if (token && !isTokenExpired(token)) {
+          const u = buildUserFromToken(token);
+          if (u) {
+            if (mounted) setUser(u);
+            await refreshProfile();
+            if (mounted) setIsLoading(false);
+            return;
           }
+        }
+
+        // 2. Fall back to Supabase session (or mock session in demo mode)
+        const supabase = createClient();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (session?.user && mounted) {
+          setUser(buildUserFromSupabaseUser(session.user));
+          const resolvedProfile = await resolveSupabaseProfile(session.user);
+          if (mounted) {
+            setProfile(resolvedProfile);
+            if (resolvedProfile.role) {
+              setRole(resolvedProfile.role);
+            }
+            setIsLoading(false);
+          }
+        } else if (mounted) {
           setIsLoading(false);
         }
-      } else if (mounted) {
-        setIsLoading(false);
-      }
 
-      // Listen for auth changes (real Supabase or mock)
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
-        if (newSession?.user) {
-          setUser(buildUserFromSupabaseUser(newSession.user));
-          const resolvedProfile = await resolveSupabaseProfile(newSession.user);
-          if (!mounted) return;
-          setProfile(resolvedProfile);
-          if (resolvedProfile.role) {
-            setRole(resolvedProfile.role);
+        // Listen for auth changes (real Supabase or mock)
+        const {
+          data: { subscription },
+        } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
+          if (newSession?.user) {
+            setUser(buildUserFromSupabaseUser(newSession.user));
+            const resolvedProfile = await resolveSupabaseProfile(newSession.user);
+            if (!mounted) return;
+            setProfile(resolvedProfile);
+            if (resolvedProfile.role) {
+              setRole(resolvedProfile.role);
+            }
+          } else if (!getAccessToken()) {
+            setUser(null);
+            setProfile(null);
+            setRole(null);
           }
-        } else if (!getAccessToken()) {
-          setUser(null);
-          setProfile(null);
-          setRole(null);
-        }
-        setIsLoading(false);
-      });
-      supabaseSubscription = subscription;
+          setIsLoading(false);
+        });
+        supabaseSubscription = subscription;
+      } catch {
+        // Ensure loading state is cleared even if auth init throws
+        if (mounted) setIsLoading(false);
+      }
     };
 
     init();

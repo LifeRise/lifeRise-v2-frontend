@@ -17,6 +17,24 @@ const publicRoutes = [
 ];
 const authPrefixRoutes = ['/signup/', '/auth/'];
 
+function isPublicRoute(pathname: string): boolean {
+  return (
+    publicRoutes.includes(pathname) ||
+    authPrefixRoutes.some((prefix) => pathname.startsWith(prefix))
+  );
+}
+
+function LoadingScreen() {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-midnight">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-10 h-10 rounded-full border-2 border-teal border-t-transparent animate-spin" />
+        <p className="text-sm text-muted">Authenticating…</p>
+      </div>
+    </div>
+  );
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { user, profile, isLoading } = useAuth();
   const router = useRouter();
@@ -27,9 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isLoading) return;
 
-    const isPublic =
-      publicRoutes.includes(pathname) ||
-      authPrefixRoutes.some((prefix) => pathname.startsWith(prefix));
+    const isPublic = isPublicRoute(pathname);
 
     if (!user && !isPublic) {
       router.push('/login');
@@ -62,7 +78,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Role-based route guards
-      if (pathname.startsWith('/admin') && profile.role !== 'admin') {
+      // /admin/approvals is a manager page, not admin-only
+      if (
+        pathname.startsWith('/admin') &&
+        pathname !== '/admin/approvals' &&
+        profile.role !== 'admin'
+      ) {
         router.push('/resident');
         return;
       }
@@ -76,6 +97,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
   }, [user, profile, isLoading, pathname, router]);
+
+  // While auth state is initializing on a protected route, show a loading
+  // screen instead of flashing the protected page content.
+  if (isLoading && !isPublicRoute(pathname)) {
+    return <LoadingScreen />;
+  }
 
   return <>{children}</>;
 }
