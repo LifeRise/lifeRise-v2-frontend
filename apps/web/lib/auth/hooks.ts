@@ -333,6 +333,23 @@ export function useAuth() {
     globalInitStarted = false;
   }, [setUser, setProfile, setRole, profile]);
 
+  // Listen for forced-logout events dispatched by the API client when a token
+  // refresh also returns 401 (session unrecoverable). Reset all auth state so
+  // AuthProvider's render guards redirect the user to /login.
+  useEffect(() => {
+    function handleAuthExpired() {
+      setUser(null);
+      setProfile(null);
+      setRole(null);
+      globalInitStarted = false;
+    }
+
+    window.addEventListener('liferise:auth-expired', handleAuthExpired);
+    return () => {
+      window.removeEventListener('liferise:auth-expired', handleAuthExpired);
+    };
+  }, [setUser, setProfile, setRole]);
+
   return { user, profile, isLoading, signIn, signOut, refreshProfile };
 }
 

@@ -526,16 +526,28 @@ export const authService = {
 
   /** Sign out from all auth systems */
   async signOut(): Promise<void> {
-    if (isSupabaseConfigured()) {
-      const supabase = getSupabase();
-      await supabase.auth.signOut();
-    }
-    clearTokens();
+    // Call the backend logout FIRST while the Bearer token is still in
+    // localStorage. clearTokens() runs afterward (in apiLogout's finally block
+    // and again here as a safety net).
     try {
       await apiLogout();
     } catch {
-      // ignore
+      // A 401 here means the token was already invalid — safe to ignore.
+      // clearTokens() still runs in apiLogout's finally block.
     }
+
+    if (isSupabaseConfigured()) {
+      const supabase = getSupabase();
+      try {
+        await supabase.auth.signOut();
+      } catch {
+        // ignore
+      }
+    }
+
+    // Belt-and-suspenders: ensure tokens are cleared even if apiLogout threw
+    // before its own finally block ran.
+    clearTokens();
   },
 
   /** Get current Supabase session */

@@ -103,9 +103,6 @@ export async function apiRequest<T>(
     const token = getAccessToken();
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
-      console.log('[apiRequest] Sending with token:', token.substring(0, 20) + '...');
-    } else {
-      console.warn('[apiRequest] No access token found in localStorage');
     }
   }
 
@@ -117,6 +114,14 @@ export async function apiRequest<T>(
     if (newToken) {
       headers.set('Authorization', `Bearer ${newToken}`);
       res = await fetch(url, { ...fetchOptions, headers });
+    } else {
+      // Refresh also failed — session is unrecoverable. Clear tokens and
+      // notify the auth layer so the Zustand store resets and the user is
+      // redirected to /login without being stuck in an authenticated state.
+      clearTokens();
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('liferise:auth-expired'));
+      }
     }
   }
 

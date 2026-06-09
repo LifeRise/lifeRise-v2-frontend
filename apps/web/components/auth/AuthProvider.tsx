@@ -224,6 +224,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!isLoading && user && !profile && isRoleProtected) {
       return <LoadingScreen />;
     }
+
+    // 4. Profile is present but the user does not have access to this portal.
+    //    The useEffect has already queued router.push() but navigation is async —
+    //    block rendering immediately so no unauthorized content is ever visible.
+    if (!isLoading && user && profile && isRoleProtected) {
+      const currentPortal = portalForPath(pathname);
+      if (
+        currentPortal !== null &&
+        (VALID_ROLES.includes(profile.role)
+          ? !canAccessPortal(currentPortal, profile.role, pathname)
+          : true) // unknown role — also block until redirect completes
+      ) {
+        return <LoadingScreen />;
+      }
+    }
   }
 
   return <>{children}</>;
