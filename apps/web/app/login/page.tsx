@@ -183,6 +183,9 @@ export default function LoginPage() {
               Manager123!
             </p>
             <p>
+              <span className="text-rose-400">Admin:</span> admin@liferise.demo / Admin123!
+            </p>
+            <p>
               <span className="text-rose">Pending:</span> pending@liferise.demo / Pending123!
             </p>
           </div>

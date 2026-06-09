@@ -336,12 +336,26 @@ export function useAuth() {
   // Listen for forced-logout events dispatched by the API client when a token
   // refresh also returns 401 (session unrecoverable). Reset all auth state so
   // AuthProvider's render guards redirect the user to /login.
+  //
+  // Crucially:
+  //  1. We do NOT reset globalInitStarted here. Resetting it would allow init()
+  //     to re-run and find an active Supabase session, which would re-set the
+  //     user/profile and redirect back to the portal — creating an infinite loop
+  //     (/login → /admin → auth-expired → /login → …).
+  //  2. We sign out of Supabase so the session cannot be used to silently
+  //     re-establish auth without a valid backend JWT.
   useEffect(() => {
     function handleAuthExpired() {
       setUser(null);
       setProfile(null);
       setRole(null);
-      globalInitStarted = false;
+      // Sign out of Supabase (or mock auth) so init() cannot re-authenticate
+      // from a stale session on the next render cycle.
+      try {
+        createClient().auth.signOut();
+      } catch {
+        // ignore — sign-out failure is non-fatal
+      }
     }
 
     window.addEventListener('liferise:auth-expired', handleAuthExpired);

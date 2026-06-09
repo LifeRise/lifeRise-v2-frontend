@@ -7,6 +7,7 @@
  */
 
 import { ApiError, type ApiResponse } from './types';
+import { CUSTOMER_API } from './config';
 
 const TOKEN_KEY = 'liferise_access_token';
 const REFRESH_KEY = 'liferise_refresh_token';
@@ -36,12 +37,16 @@ export function clearTokens(): void {
 let isRefreshing = false;
 let refreshPromise: Promise<string | null> | null = null;
 
-async function doRefresh(baseUrl: string): Promise<string | null> {
+async function doRefresh(_baseUrl: string): Promise<string | null> {
   const refreshToken = getRefreshToken();
   if (!refreshToken) return null;
 
+  // Always refresh against the customer API — it is the only binary that
+  // hosts /api/refresh-token. The original request may have targeted
+  // VENDOR_API or ADMIN_API, but using their baseUrl would always fail
+  // because those binaries don't expose the refresh endpoint.
   try {
-    const res = await fetch(`${baseUrl}/api/refresh-token`, {
+    const res = await fetch(`${CUSTOMER_API}/api/refresh-token`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refresh_token: refreshToken }),

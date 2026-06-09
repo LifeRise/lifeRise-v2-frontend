@@ -485,19 +485,29 @@ function AuthButtons() {
 
   if (user && profile) {
     const dest =
-      profile.role === 'manager' ? '/manager' : profile.role === 'vendor' ? '/vendor' : '/resident';
+      profile.role === 'admin'
+        ? '/admin'
+        : profile.role === 'manager'
+          ? '/manager'
+          : profile.role === 'vendor'
+            ? '/vendor'
+            : '/resident';
     const label =
-      profile.role === 'manager'
-        ? 'Manager Portal'
-        : profile.role === 'vendor'
-          ? 'Vendor Portal'
-          : 'Resident Portal';
+      profile.role === 'admin'
+        ? 'Admin Portal'
+        : profile.role === 'manager'
+          ? 'Manager Portal'
+          : profile.role === 'vendor'
+            ? 'Vendor Portal'
+            : 'Resident Portal';
     const accent =
-      profile.role === 'manager'
-        ? 'bg-purple-accent'
-        : profile.role === 'vendor'
-          ? 'bg-gold'
-          : 'bg-teal';
+      profile.role === 'admin'
+        ? 'bg-rose-500'
+        : profile.role === 'manager'
+          ? 'bg-purple-accent'
+          : profile.role === 'vendor'
+            ? 'bg-gold'
+            : 'bg-teal';
     return (
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
         <Link
