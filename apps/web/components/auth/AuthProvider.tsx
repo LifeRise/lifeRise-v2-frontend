@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth/hooks';
 import { usePushTokenSync } from '@/lib/firebase/push-sync';
 
@@ -39,6 +40,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { user, profile, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  // Returns true on the client (after hydration) and false during SSR.
+  // This avoids hydration mismatches because the server and the first client
+  // render both see `false`, then subsequent client renders see `true`.
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
   usePushTokenSync();
 
@@ -48,6 +57,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const isPublic = isPublicRoute(pathname);
 
     if (!user && !isPublic) {
+      toast.info('Please sign in to access this page.', {
+        description: 'Redirecting to login…',
+        duration: 4000,
+      });
       router.push('/login');
       return;
     }
@@ -84,14 +97,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         pathname !== '/admin/approvals' &&
         profile.role !== 'admin'
       ) {
+        toast.error('You do not have permission to access this page.');
         router.push('/resident');
         return;
       }
       if (pathname.startsWith('/manager') && profile.role !== 'manager') {
+        toast.error('You do not have permission to access this page.');
         router.push('/resident');
         return;
       }
       if (pathname.startsWith('/vendor') && profile.role !== 'vendor') {
+        toast.error('You do not have permission to access this page.');
         router.push('/resident');
         return;
       }
@@ -100,30 +116,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const isPublic = isPublicRoute(pathname);
 
-  // 1. While auth state is initializing on a protected route, show a loading
-  //    screen instead of flashing the protected page content.
-  if (isLoading && !isPublic) {
-    return <LoadingScreen />;
-  }
+  // Only show loading overlays after hydration (mounted === true).
+  // During SSR and the initial hydration pass we always render children
+  // so the DOM matches between server and client.
+  if (mounted) {
+    // 1. While auth state is initializing on a protected route, show a loading
+    //    screen instead of flashing the protected page content.
+    if (isLoading && !isPublic) {
+      return <LoadingScreen />;
+    }
 
-  // 2. SECURITY: Auth resolved but user is not authenticated on a protected
-  //    route. The useEffect has already fired router.push('/login') but
-  //    Next.js navigation is async — block rendering until navigation
-  //    completes so protected content never flashes to unauthenticated users.
-  if (!isLoading && !user && !isPublic) {
-    return <LoadingScreen />;
-  }
+    // 2. Auth resolved but user is not authenticated on a protected route.
+    //    The useEffect has already fired router.push('/login') but Next.js
+    //    navigation is async — block rendering until navigation completes.
+    if (!isLoading && !user && !isPublic) {
+      return <LoadingScreen />;
+    }
 
-  // 3. User is authenticated but profile hasn't resolved yet on a
-  //    role-restricted route. Without a profile we cannot verify role-based
-  //    access — keep showing loading until the profile is available.
-  const isRoleProtected =
-    pathname.startsWith('/admin') ||
-    pathname.startsWith('/manager') ||
-    pathname.startsWith('/vendor');
+    // 3. User is authenticated but profile hasn't resolved yet on a
+    //    role-restricted route. Without a profile we cannot verify role-based
+    //    access — keep showing loading until the profile is available.
+    const isRoleProtected =
+      pathname.startsWith('/admin') ||
+      pathname.startsWith('/manager') ||
+      pathname.startsWith('/vendor');
 
-  if (!isLoading && user && !profile && isRoleProtected) {
-    return <LoadingScreen />;
+    if (!isLoading && user && !profile && isRoleProtected) {
+      return <LoadingScreen />;
+    }
   }
 
   return <>{children}</>;

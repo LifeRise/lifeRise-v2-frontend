@@ -5,6 +5,7 @@ import { PWAProvider } from '@/components/pwa/PWAProvider';
 import { InstallPrompt } from '@/components/pwa/InstallPrompt';
 import { UpdateToast } from '@/components/pwa/UpdateToast';
 import { AuthProvider } from '@/components/auth/AuthProvider';
+import { Toaster } from '@/components/ui/Toaster';
 
 const syne = Syne({
   variable: '--font-syne',
@@ -59,6 +60,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             {children}
             <InstallPrompt />
             <UpdateToast />
+            <Toaster />
           </PWAProvider>
         </AuthProvider>
       </body>
