@@ -11,7 +11,7 @@ BEGIN
     SELECT id INTO v_company_id FROM companies WHERE slug = 'demo-property';
     IF NOT FOUND THEN
         INSERT INTO companies (name, slug, email, status, type, created_at, updated_at)
-        VALUES ('Demo Property Management', 'demo-property', 'contact@demo-property.com', 'active', 'management', NOW(), NOW())
+        VALUES ('Demo Property Management', 'demo-property', 'contact@demo-property.com', 'active', 'complex', NOW(), NOW())
         RETURNING id INTO v_company_id;
     END IF;
 

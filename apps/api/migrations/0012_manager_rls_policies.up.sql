@@ -46,9 +46,9 @@ CREATE POLICY feedbacks_authenticated_select ON feedbacks
   TO authenticated
   USING (true);
 
--- ── waitlists ─────────────────────────────────────────────────────────────────
-DROP POLICY IF EXISTS waitlists_authenticated_select ON waitlists;
-CREATE POLICY waitlists_authenticated_select ON waitlists
+-- ── waitlist_entries ──────────────────────────────────────────────────────────
+DROP POLICY IF EXISTS waitlist_entries_authenticated_select ON waitlist_entries;
+CREATE POLICY waitlist_entries_authenticated_select ON waitlist_entries
   AS PERMISSIVE FOR SELECT
   TO authenticated
   USING (true);
