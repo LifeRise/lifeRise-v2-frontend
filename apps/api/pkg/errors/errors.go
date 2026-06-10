@@ -22,6 +22,10 @@ var (
 	ErrOTPInvalid           = errors.New("invalid or expired otp")
 	ErrRoleUnauthorized     = errors.New("role unauthorized")
 	ErrCompanyScopeMismatch = errors.New("company scope mismatch")
+	// ErrServiceUnavailable is returned when a required external integration
+	// (e.g. Supabase Auth) is not configured on the server. Callers should
+	// surface this as HTTP 503 to distinguish it from a 500 internal error.
+	ErrServiceUnavailable = errors.New("service unavailable")
 )
 
 // AppError is a structured application error that can be serialized to HTTP responses.

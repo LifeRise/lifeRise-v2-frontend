@@ -44,10 +44,3 @@ func parseID(c *gin.Context, param string) (uint64, bool) {
 	}
 	return id, true
 }
-
-// safeUserResponse strips sensitive fields from a user record.
-func safeUserResponse(u interface{}) interface{} {
-	// Use a map to ensure password fields are never serialized.
-	// Callers should use dedicated DTOs; this is a safety net.
-	return u
-}

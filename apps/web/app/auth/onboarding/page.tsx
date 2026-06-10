@@ -229,10 +229,22 @@ export default function OnboardingPage() {
       }
 
       // ── Step 3: Bridge Supabase session → Go backend JWT ───────────────────
+      // Always refresh the Supabase session immediately before bridging to
+      // ensure the token passed to the backend is fresh (not expired).
+      let bridgeToken = supabaseToken;
+      try {
+        const sb = createClient();
+        const { data: refreshed } = await sb.auth.refreshSession();
+        if (refreshed?.session?.access_token) {
+          bridgeToken = refreshed.session.access_token;
+        }
+      } catch {
+        /* If refresh fails, fall back to the token captured at mount */
+      }
       const { tokenPair, profile: bp } = await apiLogin({
         email: sbEmail,
         password: '',
-        supabase_access_token: supabaseToken,
+        supabase_access_token: bridgeToken,
       });
       setTokens(tokenPair.access_token, tokenPair.refresh_token);
       const payload = decodeJwtPayload(tokenPair.access_token);

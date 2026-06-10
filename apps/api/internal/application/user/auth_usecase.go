@@ -180,7 +180,7 @@ func (uc *AuthUseCase) RegisterVendor(ctx context.Context, req RegisterVendorReq
 		return nil, fmt.Errorf("fetch service_provider role: %w", err)
 	}
 
-	settingsMap := map[string]interface{}{
+	settingsMap := map[string]any{
 		"ein_tax_id":      req.EINTaxID,
 		"description":     req.Description,
 		"approval_status": "pending",
@@ -358,9 +358,15 @@ func (uc *AuthUseCase) LoginUser(ctx context.Context, req LoginUserRequest) (*au
 // LoginWithSupabaseToken authenticates a user by verifying their Supabase access token,
 // looking them up by email in the local DB, and issuing a LifeRise JWT pair.
 // This eliminates the need to keep passwords in sync between Supabase Auth and the Go backend.
-func (uc *AuthUseCase) LoginWithSupabaseToken(ctx context.Context, supabaseToken string) (*auth.TokenPair, interface{}, error) {
+func (uc *AuthUseCase) LoginWithSupabaseToken(ctx context.Context, supabaseToken string) (*auth.TokenPair, any, error) {
 	if uc.supabaseURL == "" || uc.supabaseAnonKey == "" {
-		return nil, nil, errors.New("supabase is not configured on the backend")
+		// This means LIFERISE_SUPABASE_PROJECT_URL or LIFERISE_SUPABASE_ANON_KEY is not
+		// set on the server. Return ErrServiceUnavailable so the handler can surface a
+		// 503 instead of a generic 500, making Railway logs much easier to diagnose.
+		return nil, nil, fmt.Errorf(
+			"supabase OAuth bridge is not configured: set LIFERISE_SUPABASE_PROJECT_URL and LIFERISE_SUPABASE_ANON_KEY: %w",
+			apperrors.ErrServiceUnavailable,
+		)
 	}
 
 	// Verify token with Supabase Auth API

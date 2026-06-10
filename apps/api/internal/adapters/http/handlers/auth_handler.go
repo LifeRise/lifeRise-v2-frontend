@@ -182,6 +182,13 @@ func (h *AuthHandler) Login(c *gin.Context) {
 				response.Error(c, http.StatusUnauthorized, "Invalid credentials.", nil)
 				return
 			}
+			if errors.Is(err, apperrors.ErrServiceUnavailable) {
+				// Supabase credentials are missing on the server — surfacing as 503
+				// makes Railway logs actionable: set LIFERISE_SUPABASE_PROJECT_URL
+				// and LIFERISE_SUPABASE_ANON_KEY on the service.
+				response.Error(c, http.StatusServiceUnavailable, "OAuth login is not available on this server. Please contact support.", nil)
+				return
+			}
 			response.Error(c, http.StatusInternalServerError, "Login failed.", nil)
 			return
 		}

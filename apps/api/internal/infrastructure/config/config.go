@@ -273,6 +273,23 @@ func Load(paths ...string) (*Config, error) {
 		cfg.Mail.ResendAPIKey = key
 	}
 
+	// Supabase credentials are required for the OAuth bridge (LoginWithSupabaseToken).
+	// Like DATABASE_URL and JWT_SECRET, Viper's AutomaticEnv does not pick these up on
+	// platforms without a config.yaml (Railway, Heroku, Docker) because no defaults are
+	// set for them. Read them directly from the environment as a reliable fallback.
+	if projectURL := os.Getenv("LIFERISE_SUPABASE_PROJECT_URL"); projectURL != "" {
+		cfg.Supabase.ProjectURL = projectURL
+	}
+	if anonKey := os.Getenv("LIFERISE_SUPABASE_ANON_KEY"); anonKey != "" {
+		cfg.Supabase.AnonKey = anonKey
+	}
+	if serviceRoleKey := os.Getenv("LIFERISE_SUPABASE_SERVICE_ROLE_KEY"); serviceRoleKey != "" {
+		cfg.Supabase.ServiceRoleKey = serviceRoleKey
+	}
+	if projectRef := os.Getenv("LIFERISE_SUPABASE_PROJECT_REF"); projectRef != "" {
+		cfg.Supabase.ProjectRef = projectRef
+	}
+
 	return &cfg, nil
 }
 
