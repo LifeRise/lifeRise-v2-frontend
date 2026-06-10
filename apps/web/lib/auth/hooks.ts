@@ -128,6 +128,14 @@ async function resolveSupabaseProfile(supabaseUser: SupabaseUser): Promise<Profi
 /** Global flag so init() only runs once across all component instances */
 let globalInitStarted = false;
 
+/**
+ * Prevents concurrent Supabase→backend bridge calls.
+ * Both init() and onAuthStateChange can fire at the same time; the second
+ * caller waits for the first to complete and then checks whether a valid
+ * JWT was stored before attempting its own bridge.
+ */
+let bridgePromise: Promise<boolean> | null = null;
+
 export function useAuth() {
   const user = useAppStore((s) => s.authUser);
   const profile = useAppStore((s) => s.profile);
@@ -203,13 +211,27 @@ export function useAuth() {
           // using the Supabase access token so that all API calls get the correct
           // JWT with the real RBAC roles (e.g. admin, manager) rather than the
           // default Supabase metadata.
-          let bridged = false;
-          if (session.access_token) {
+          //
+          // Force-refresh the Supabase session to guarantee the access token is
+          // fresh (not a stale cached value) before handing it to the backend.
+          // The backend verifies the token with Supabase's /auth/v1/user endpoint,
+          // so an expired Supabase token will always cause a 401.
+          const doBridge = async (): Promise<boolean> => {
+            let freshToken = session.access_token;
+            try {
+              const { data: refreshed } = await supabase.auth.refreshSession();
+              if (refreshed?.session?.access_token) {
+                freshToken = refreshed.session.access_token;
+              }
+            } catch {
+              // refreshSession failed — use the cached token and hope it is still valid
+            }
+
             try {
               const { tokenPair, profile: backendProfile } = await apiLogin({
                 email: session.user.email ?? '',
                 password: '',
-                supabase_access_token: session.access_token,
+                supabase_access_token: freshToken,
               });
               setTokens(tokenPair.access_token, tokenPair.refresh_token);
               const u =
@@ -221,13 +243,28 @@ export function useAuth() {
                 if (backendProfile.role) setRole(backendProfile.role as Profile['role']);
                 setIsLoading(false);
               }
-              bridged = true;
+              return true;
             } catch {
               console.warn(
                 '[auth] Supabase→backend bridge failed; falling back to Supabase profile'
               );
+              return false;
             }
+          };
+
+          // Serialize bridge calls: if another caller already started bridging,
+          // wait for it and skip our own bridge only if a valid JWT was stored.
+          if (bridgePromise) {
+            await bridgePromise;
           }
+          const existingToken = getAccessToken();
+          const bridged =
+            existingToken && !isTokenExpired(existingToken)
+              ? true
+              : await (bridgePromise = doBridge().finally(() => {
+                  bridgePromise = null;
+                }));
+
           if (!bridged) {
             const resolvedProfile = await resolveSupabaseProfile(session.user);
             if (mounted) {
@@ -260,28 +297,47 @@ export function useAuth() {
             }
 
             // No valid backend JWT: attempt bridge using the Supabase token.
+            // If init() is already running a bridge, wait for it first so we
+            // don't fire two concurrent requests with the same Supabase token.
+            if (bridgePromise) {
+              await bridgePromise;
+              // Re-check after the concurrent bridge resolved
+              const tokenAfterWait = getAccessToken();
+              if (tokenAfterWait && !isTokenExpired(tokenAfterWait)) {
+                setIsLoading(false);
+                return;
+              }
+            }
+
             let bridged = false;
             if (newSession.access_token) {
-              try {
-                const { tokenPair, profile: backendProfile } = await apiLogin({
-                  email: newSession.user.email ?? '',
-                  password: '',
-                  supabase_access_token: newSession.access_token,
-                });
-                setTokens(tokenPair.access_token, tokenPair.refresh_token);
-                const u =
-                  buildUserFromToken(tokenPair.access_token) ??
-                  buildUserFromSupabaseUser(newSession.user);
-                if (!mounted) return;
-                setUser(u);
-                setProfile(backendProfile);
-                if (backendProfile.role) setRole(backendProfile.role as Profile['role']);
-                bridged = true;
-              } catch {
-                console.warn(
-                  '[auth:onAuthStateChange] Backend bridge failed; falling back to Supabase profile'
-                );
-              }
+              const doOnAuthBridge = async (): Promise<boolean> => {
+                try {
+                  const { tokenPair, profile: backendProfile } = await apiLogin({
+                    email: newSession.user!.email ?? '',
+                    password: '',
+                    supabase_access_token: newSession.access_token,
+                  });
+                  setTokens(tokenPair.access_token, tokenPair.refresh_token);
+                  const u =
+                    buildUserFromToken(tokenPair.access_token) ??
+                    buildUserFromSupabaseUser(newSession.user!);
+                  if (!mounted) return true;
+                  setUser(u);
+                  setProfile(backendProfile);
+                  if (backendProfile.role) setRole(backendProfile.role as Profile['role']);
+                  return true;
+                } catch {
+                  console.warn(
+                    '[auth:onAuthStateChange] Backend bridge failed; falling back to Supabase profile'
+                  );
+                  return false;
+                }
+              };
+
+              bridged = await (bridgePromise = doOnAuthBridge().finally(() => {
+                bridgePromise = null;
+              }));
             }
 
             if (!bridged) {
@@ -419,6 +475,7 @@ export function useAuth() {
     setProfile(null);
     setRole(null);
     globalInitStarted = false;
+    bridgePromise = null;
   }, [setUser, setProfile, setRole, profile]);
 
   // Listen for forced-logout events dispatched by the API client when a token

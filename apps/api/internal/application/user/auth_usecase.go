@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"gorm.io/datatypes"
@@ -66,6 +67,9 @@ type RegisterCustomerRequest struct {
 
 // RegisterCustomer creates a new customer account.
 func (uc *AuthUseCase) RegisterCustomer(ctx context.Context, req RegisterCustomerRequest) (*customer.Customer, error) {
+	// Normalize email to lowercase to ensure consistent lookup across all auth paths.
+	req.Email = strings.ToLower(strings.TrimSpace(req.Email))
+
 	// Check email uniqueness
 	if _, err := uc.customerRepo.GetByEmail(ctx, uc.db, req.Email); err == nil {
 		return nil, apperrors.ErrConflict
@@ -158,6 +162,9 @@ type RegisterVendorRequest struct {
 
 // RegisterVendor creates a new vendor user with service_provider role.
 func (uc *AuthUseCase) RegisterVendor(ctx context.Context, req RegisterVendorRequest) (*user.User, error) {
+	// Normalize email to lowercase to ensure consistent lookup across all auth paths.
+	req.Email = strings.ToLower(strings.TrimSpace(req.Email))
+
 	// Check email uniqueness
 	if _, err := uc.userRepo.GetByEmail(ctx, uc.db, req.Email); err == nil {
 		return nil, apperrors.ErrConflict
@@ -233,6 +240,9 @@ type RegisterManagerRequest struct {
 
 // RegisterManager creates a new manager user with complex_manager role.
 func (uc *AuthUseCase) RegisterManager(ctx context.Context, req RegisterManagerRequest) (*user.User, error) {
+	// Normalize email to lowercase to ensure consistent lookup across all auth paths.
+	req.Email = strings.ToLower(strings.TrimSpace(req.Email))
+
 	// Check email uniqueness
 	if _, err := uc.userRepo.GetByEmail(ctx, uc.db, req.Email); err == nil {
 		return nil, apperrors.ErrConflict

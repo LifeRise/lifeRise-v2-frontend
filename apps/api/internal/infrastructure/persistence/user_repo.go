@@ -29,7 +29,7 @@ func (r *UserRepo) GetByID(ctx context.Context, db *gorm.DB, id uint64) (*user.U
 
 func (r *UserRepo) GetByEmail(ctx context.Context, db *gorm.DB, email string) (*user.User, error) {
 	var u user.User
-	if err := db.WithContext(ctx).Where("email = ?", email).First(&u).Error; err != nil {
+	if err := db.WithContext(ctx).Where("LOWER(email) = LOWER(?)", email).First(&u).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperrors.ErrNotFound
 		}
