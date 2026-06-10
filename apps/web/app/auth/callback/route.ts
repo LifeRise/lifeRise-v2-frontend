@@ -10,10 +10,16 @@ export async function GET(request: Request) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.session) {
-      // Best-effort redirect from user_metadata. The Go backend bridge in
+      const role = data.session.user.user_metadata?.role as string | undefined;
+
+      // New OAuth user (no role in metadata) — collect profile details first.
+      if (!role) {
+        return NextResponse.redirect(`${origin}/auth/onboarding`);
+      }
+
+      // Returning user: best-effort redirect. The Go backend bridge in
       // hooks.ts (onAuthStateChange / init) will correct the role once the
       // backend JWT is issued, so AuthProvider will re-route if needed.
-      const role = data.session.user.user_metadata?.role as string | undefined;
       const dest =
         role === 'admin'
           ? '/admin'
