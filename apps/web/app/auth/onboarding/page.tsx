@@ -22,9 +22,34 @@ import {
   signupManager as apiSignupManager,
 } from '@/lib/api/auth';
 import { setTokens } from '@/lib/api/client';
+import { ApiError } from '@/lib/api/types';
 import { decodeJwtPayload } from '@/lib/api/jwt';
 import { useAppStore } from '@/lib/store';
 import type { AuthUser } from '@/lib/store';
+
+/**
+ * Returns true if an API error indicates the user already exists in the
+ * backend (HTTP 409 Conflict, or a message containing "already"/"taken").
+ * Treating this as non-fatal allows the onboarding flow to proceed to the
+ * backend bridge even when the record was created by a prior partial sync.
+ */
+function isConflictError(err: unknown): boolean {
+  if (err instanceof ApiError) {
+    if (err.status === 409) return true;
+    const msg = err.message.toLowerCase();
+    return msg.includes('already') || msg.includes('taken') || msg.includes('exists');
+  }
+  if (err instanceof Error) {
+    const msg = err.message.toLowerCase();
+    return (
+      msg.includes('already') ||
+      msg.includes('taken') ||
+      msg.includes('exists') ||
+      msg.includes('conflict')
+    );
+  }
+  return false;
+}
 
 type OnboardingRole = 'resident' | 'vendor' | 'manager';
 
@@ -177,21 +202,33 @@ export default function OnboardingPage() {
       password: placeholderPassword,
     };
     try {
-      if (selectedRole === 'vendor')
-        await apiSignupVendor({ ...base, ein_tax_id: einTaxId, description });
-      else if (selectedRole === 'manager') await apiSignupManager(base);
-      else await apiSignup(base);
+      // ── Step 1: Create backend record ──────────────────────────────────────
+      // Treat 409 Conflict (email already exists) as non-fatal: the user may
+      // have been created by a prior partial sync or a previous signup attempt.
+      // In either case we still need to update Supabase metadata and bridge.
+      try {
+        if (selectedRole === 'vendor')
+          await apiSignupVendor({ ...base, ein_tax_id: einTaxId, description });
+        else if (selectedRole === 'manager') await apiSignupManager(base);
+        else await apiSignup(base);
+      } catch (signupErr: unknown) {
+        if (!isConflictError(signupErr)) throw signupErr; // non-conflict → fatal
+        console.info('[onboarding] Backend record already exists — proceeding to bridge');
+      }
 
-      // Update Supabase metadata with chosen role so future callbacks redirect correctly
+      // ── Step 2: Sync role into Supabase user_metadata (non-fatal) ──────────
+      // This ensures the /auth/callback route redirects them correctly on
+      // subsequent OAuth logins without hitting /auth/onboarding again.
       try {
         const sb = createClient();
         await sb.auth.updateUser({
           data: { role: selectedRole, first_name: firstName, last_name: lastName, phone },
         });
       } catch {
-        /* non-fatal */
+        /* non-fatal — metadata sync failure does not block the flow */
       }
 
+      // ── Step 3: Bridge Supabase session → Go backend JWT ───────────────────
       const { tokenPair, profile: bp } = await apiLogin({
         email: sbEmail,
         password: '',
@@ -267,6 +304,7 @@ export default function OnboardingPage() {
           <div className="glass rounded-2xl p-6 space-y-3">
             {ROLE_OPTIONS.map((opt) => (
               <button
+                type="button"
                 key={opt.value}
                 onClick={() => {
                   setSelectedRole(opt.value);
@@ -275,7 +313,7 @@ export default function OnboardingPage() {
                 className="w-full flex items-center gap-4 p-4 rounded-xl border border-white/10 hover:border-white/30 bg-midnight/40 hover:bg-midnight/60 transition-all text-left group"
               >
                 <div
-                  className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                  className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
                   style={{ background: `${opt.color}20`, color: opt.color }}
                 >
                   {opt.icon}
@@ -296,6 +334,7 @@ export default function OnboardingPage() {
         {step === 'details' && selectedRole && (
           <div className="glass rounded-2xl p-6 space-y-4">
             <button
+              type="button"
               onClick={() => setStep('role')}
               className="text-xs text-muted hover:text-lr-white transition-colors flex items-center gap-1"
             >
