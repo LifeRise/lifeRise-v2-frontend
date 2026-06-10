@@ -69,8 +69,8 @@ export default function AnnouncementsPage() {
       toast.success('Announcement deleted');
       setDeleteId(null);
       refresh();
-    } catch {
-      // handled by hook
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete announcement');
     }
   };
 

@@ -142,6 +142,15 @@ export async function apiRequest<T>(
     // normal ApiError (thrown below) without touching auth state.
   }
 
+  // 204 No Content (or empty body) — nothing to parse
+  const contentLength = res.headers.get('content-length');
+  if (res.status === 204 || contentLength === '0') {
+    if (!res.ok) {
+      throw new ApiError(`Request failed with status ${res.status}`, res.status);
+    }
+    return {} as T;
+  }
+
   const json: ApiResponse<T> = await res.json().catch(() => ({
     status: false,
     message: 'Invalid JSON response',
