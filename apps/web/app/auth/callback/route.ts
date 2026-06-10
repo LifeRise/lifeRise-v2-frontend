@@ -10,9 +10,18 @@ export async function GET(request: Request) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.session) {
-      // Determine redirect based on user role metadata if available
+      // Best-effort redirect from user_metadata. The Go backend bridge in
+      // hooks.ts (onAuthStateChange / init) will correct the role once the
+      // backend JWT is issued, so AuthProvider will re-route if needed.
       const role = data.session.user.user_metadata?.role as string | undefined;
-      const dest = role === 'manager' ? '/manager' : role === 'vendor' ? '/vendor' : '/resident';
+      const dest =
+        role === 'admin'
+          ? '/admin'
+          : role === 'manager'
+            ? '/manager'
+            : role === 'vendor'
+              ? '/vendor'
+              : '/resident';
 
       return NextResponse.redirect(`${origin}${dest}`);
     }

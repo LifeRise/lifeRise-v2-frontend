@@ -1,32 +1,23 @@
 'use client';
 
 import { useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { authService } from '@/lib/auth/auth-service';
 
 export function GoogleButton({ label = 'Continue with Google' }: { label?: string }) {
   const [loading, setLoading] = useState(false);
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
-    const supabase = createClient();
-
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-        scopes: 'email profile',
-      },
-    });
-
-    if (error) {
+    try {
+      // authService.signInWithGoogle triggers the OAuth redirect.
+      // After the user authenticates with Google, they are sent to
+      // /auth/callback which exchanges the code for a Supabase session.
+      // The hooks.ts onAuthStateChange listener then bridges that session
+      // to the Go backend to issue a JWT with the correct RBAC roles.
+      await authService.signInWithGoogle();
+      // Browser will redirect — keep loading spinner visible.
+    } catch (error) {
       console.error('Google sign in error:', error);
-      setLoading(false);
-      return;
-    }
-
-    if (data?.url) {
-      window.location.href = data.url;
-    } else {
       setLoading(false);
     }
   };

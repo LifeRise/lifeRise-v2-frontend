@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useCallback } from 'react';
-import { getAccessToken, clearTokens } from '@/lib/api/client';
+import { getAccessToken, setTokens, clearTokens } from '@/lib/api/client';
 import { decodeJwtPayload, isTokenExpired } from '@/lib/api/jwt';
 import { fetchProfile, login as apiLogin, logout as apiLogout } from '@/lib/api/auth';
 import { createClient } from '@/lib/supabase/client';
@@ -197,14 +197,47 @@ export function useAuth() {
           data: { session },
         } = await supabase.auth.getSession();
         if (session?.user && mounted) {
-          setUser(buildUserFromSupabaseUser(session.user));
-          const resolvedProfile = await resolveSupabaseProfile(session.user);
-          if (mounted) {
-            setProfile(resolvedProfile);
-            if (resolvedProfile.role) {
-              setRole(resolvedProfile.role);
+          // ── Backend bridge ──────────────────────────────────────────────────
+          // For OAuth users (Google, Facebook) who arrive after the /auth/callback
+          // redirect, there is no Go backend JWT in localStorage yet. Bridge now
+          // using the Supabase access token so that all API calls get the correct
+          // JWT with the real RBAC roles (e.g. admin, manager) rather than the
+          // default Supabase metadata.
+          let bridged = false;
+          if (session.access_token) {
+            try {
+              const { tokenPair, profile: backendProfile } = await apiLogin({
+                email: session.user.email ?? '',
+                password: '',
+                supabase_access_token: session.access_token,
+              });
+              setTokens(tokenPair.access_token, tokenPair.refresh_token);
+              const u =
+                buildUserFromToken(tokenPair.access_token) ??
+                buildUserFromSupabaseUser(session.user);
+              if (mounted) {
+                setUser(u);
+                setProfile(backendProfile);
+                if (backendProfile.role) setRole(backendProfile.role as Profile['role']);
+                setIsLoading(false);
+              }
+              bridged = true;
+            } catch {
+              console.warn(
+                '[auth] Supabase→backend bridge failed; falling back to Supabase profile'
+              );
             }
-            setIsLoading(false);
+          }
+          if (!bridged) {
+            const resolvedProfile = await resolveSupabaseProfile(session.user);
+            if (mounted) {
+              setUser(buildUserFromSupabaseUser(session.user));
+              setProfile(resolvedProfile);
+              if (resolvedProfile.role) {
+                setRole(resolvedProfile.role);
+              }
+              setIsLoading(false);
+            }
           }
         } else if (mounted) {
           setIsLoading(false);
@@ -215,12 +248,50 @@ export function useAuth() {
           data: { subscription },
         } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
           if (newSession?.user) {
-            setUser(buildUserFromSupabaseUser(newSession.user));
-            const resolvedProfile = await resolveSupabaseProfile(newSession.user);
-            if (!mounted) return;
-            setProfile(resolvedProfile);
-            if (resolvedProfile.role) {
-              setRole(resolvedProfile.role);
+            // If a valid backend JWT is already present (set by init or a prior
+            // login), trust it — it carries the correct roles. Only bridge when
+            // there is no JWT so that OAuth sessions without a prior login (e.g.
+            // token expired between tab switches) still get a backend token.
+            const existingToken = getAccessToken();
+            if (existingToken && !isTokenExpired(existingToken)) {
+              // JWT still valid — no need to bridge or overwrite user state.
+              setIsLoading(false);
+              return;
+            }
+
+            // No valid backend JWT: attempt bridge using the Supabase token.
+            let bridged = false;
+            if (newSession.access_token) {
+              try {
+                const { tokenPair, profile: backendProfile } = await apiLogin({
+                  email: newSession.user.email ?? '',
+                  password: '',
+                  supabase_access_token: newSession.access_token,
+                });
+                setTokens(tokenPair.access_token, tokenPair.refresh_token);
+                const u =
+                  buildUserFromToken(tokenPair.access_token) ??
+                  buildUserFromSupabaseUser(newSession.user);
+                if (!mounted) return;
+                setUser(u);
+                setProfile(backendProfile);
+                if (backendProfile.role) setRole(backendProfile.role as Profile['role']);
+                bridged = true;
+              } catch {
+                console.warn(
+                  '[auth:onAuthStateChange] Backend bridge failed; falling back to Supabase profile'
+                );
+              }
+            }
+
+            if (!bridged) {
+              setUser(buildUserFromSupabaseUser(newSession.user));
+              const resolvedProfile = await resolveSupabaseProfile(newSession.user);
+              if (!mounted) return;
+              setProfile(resolvedProfile);
+              if (resolvedProfile.role) {
+                setRole(resolvedProfile.role);
+              }
             }
           } else if (!getAccessToken()) {
             setUser(null);

@@ -372,6 +372,26 @@ export const authService = {
     throw new Error(mockError?.message || 'Login failed');
   },
 
+  /**
+   * Google OAuth sign-in.
+   * Initiates the PKCE flow by redirecting to Google's consent screen.
+   * After the user authenticates, Google sends them to /auth/callback where
+   * the code is exchanged for a Supabase session. The onAuthStateChange
+   * listener in hooks.ts then bridges the Supabase session to the Go backend
+   * to issue a canonical JWT with the correct roles.
+   */
+  async signInWithGoogle(): Promise<void> {
+    const supabase = getSupabase();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        scopes: 'email profile',
+      },
+    });
+    if (error) throw new Error(error.message);
+  },
+
   /** Magic link (OTP via email) */
   async signInWithMagicLink(email: string): Promise<void> {
     const supabase = getSupabase();
