@@ -268,6 +268,11 @@ func Load(paths ...string) (*Config, error) {
 		cfg.CORS.AllowOrigins = origins
 	}
 
+	// Allow LIFERISE_RESEND_API_KEY as a shorthand for LIFERISE_MAIL_RESEND_API_KEY
+	if key := os.Getenv("LIFERISE_RESEND_API_KEY"); key != "" {
+		cfg.Mail.ResendAPIKey = key
+	}
+
 	return &cfg, nil
 }
 

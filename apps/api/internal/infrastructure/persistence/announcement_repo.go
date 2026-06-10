@@ -30,7 +30,7 @@ func (r *AnnouncementRepo) List(ctx context.Context, db *gorm.DB, companyID *uin
 }
 
 // ListAdmin retrieves announcements with filters and pagination.
-func (r *AnnouncementRepo) ListAdmin(ctx context.Context, db *gorm.DB, companyID *uint64, audience string, search string, page, perPage int) ([]announcement.Announcement, int64, error) {
+func (r *AnnouncementRepo) ListAdmin(ctx context.Context, db *gorm.DB, companyID *uint64, audience string, priority string, search string, page, perPage int) ([]announcement.Announcement, int64, error) {
 	var items []announcement.Announcement
 	var total int64
 
@@ -40,6 +40,9 @@ func (r *AnnouncementRepo) ListAdmin(ctx context.Context, db *gorm.DB, companyID
 	}
 	if audience != "" {
 		query = query.Where("audience = ?", audience)
+	}
+	if priority != "" {
+		query = query.Where("priority = ?", priority)
 	}
 	if search != "" {
 		query = query.Where("title ILIKE ? OR body ILIKE ?", "%"+search+"%", "%"+search+"%")

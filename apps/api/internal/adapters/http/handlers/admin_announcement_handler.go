@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"context"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -66,9 +64,10 @@ func (h *AdminAnnouncementHandler) List(c *gin.Context) {
 		}
 	}
 	audience := c.Query("audience")
+	priority := c.Query("priority")
 	search := c.Query("search")
 
-	items, total, err := h.announcementRepo.ListAdmin(c.Request.Context(), h.db, companyID, audience, search, p.Page, p.PerPage)
+	items, total, err := h.announcementRepo.ListAdmin(c.Request.Context(), h.db, companyID, audience, priority, search, p.Page, p.PerPage)
 	if err != nil {
 		response.Error(c, http.StatusInternalServerError, "Failed to load announcements.", nil)
 		return
@@ -140,72 +139,12 @@ func (h *AdminAnnouncementHandler) Create(c *gin.Context) {
 	claims := extractClaims(c)
 	_ = h.auditLogger.RecordMutation(c.Request.Context(), c.Request, claims, audit.ActionCreate, "announcements", a.ID, nil, a)
 
-	// Fire-and-forget: enqueue emails to the target audience
+	// Enqueue asynchronous announcement email to the target audience
 	if h.notificationUC != nil {
-		go h.sendAnnouncementEmails(c.Request.Context(), a)
+		_ = h.notificationUC.SendAnnouncementEmail(c.Request.Context(), a.ID, a.Audience)
 	}
 
 	response.Success(c, http.StatusCreated, "Announcement created.", a)
-}
-
-// sendAnnouncementEmails enqueues emails to the target audience asynchronously.
-func (h *AdminAnnouncementHandler) sendAnnouncementEmails(ctx context.Context, a announcement.Announcement) {
-	emails, err := h.resolveRecipientEmails(ctx, a.Audience)
-	if err != nil {
-		return
-	}
-
-	for _, email := range emails {
-		_ = h.notificationUC.SendEmail(ctx, 0, email, a.Title, "announcement", map[string]string{
-			"title": a.Title,
-			"body":  a.Body,
-		}, "announcement")
-	}
-}
-
-// resolveRecipientEmails returns email addresses for the given audience.
-func (h *AdminAnnouncementHandler) resolveRecipientEmails(ctx context.Context, audience string) ([]string, error) {
-	switch audience {
-	case "residents":
-		return h.queryCustomerEmails(ctx)
-	case "vendors":
-		return h.queryVendorEmails(ctx)
-	case "all":
-		customers, err := h.queryCustomerEmails(ctx)
-		if err != nil {
-			return nil, err
-		}
-		vendors, err := h.queryVendorEmails(ctx)
-		if err != nil {
-			return nil, err
-		}
-		return append(customers, vendors...), nil
-	default:
-		return nil, fmt.Errorf("unknown audience: %s", audience)
-	}
-}
-
-func (h *AdminAnnouncementHandler) queryCustomerEmails(ctx context.Context) ([]string, error) {
-	var emails []string
-	err := h.db.WithContext(ctx).Model(&struct {
-		Email string
-	}{}).
-		Table("customers").
-		Where("deleted_at IS NULL AND status = ?", "active").
-		Pluck("email", &emails).Error
-	return emails, err
-}
-
-func (h *AdminAnnouncementHandler) queryVendorEmails(ctx context.Context) ([]string, error) {
-	var emails []string
-	err := h.db.WithContext(ctx).
-		Table("users").
-		Select("DISTINCT users.email").
-		Joins("JOIN user_role_assignments ON user_role_assignments.user_id = users.id").
-		Joins("JOIN roles ON roles.id = user_role_assignments.role_id").
-		Where("users.deleted_at IS NULL AND users.status = ? AND roles.slug = ?", "active", "service_provider").
-		Pluck("email", &emails).Error
-	return emails, err
 }
 
 // Update updates an announcement.

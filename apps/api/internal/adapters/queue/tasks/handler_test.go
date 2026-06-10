@@ -131,3 +131,35 @@ func TestHandleBookingReminder(t *testing.T) {
 		t.Errorf("expected reminderType=24h_before, got %s", captured.reminderType)
 	}
 }
+
+func TestHandleAnnouncementEmail(t *testing.T) {
+	var captured struct {
+		announcementID uint64
+		audience       string
+	}
+
+	processor := func(ctx context.Context, announcementID uint64, audience string) error {
+		captured.announcementID = announcementID
+		captured.audience = audience
+		return nil
+	}
+	handler := NewHandler(nil, nil, nil)
+	handler.AnnouncementEmailHandler = processor
+
+	payload, _ := json.Marshal(AnnouncementEmailPayload{
+		AnnouncementID: 99,
+		Audience:       "residents",
+	})
+	task := asynq.NewTask(TypeAnnouncementEmail, payload)
+
+	if err := handler.HandleAnnouncementEmail(context.Background(), task); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if captured.announcementID != 99 {
+		t.Errorf("expected announcementID=99, got %d", captured.announcementID)
+	}
+	if captured.audience != "residents" {
+		t.Errorf("expected audience=residents, got %s", captured.audience)
+	}
+}

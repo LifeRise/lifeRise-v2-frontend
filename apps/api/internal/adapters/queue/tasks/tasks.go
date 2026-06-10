@@ -10,9 +10,10 @@ import (
 
 // Task type constants.
 const (
-	TypeEmailDelivery   = "email:deliver"
-	TypeFCMNotification = "fcm:notify"
-	TypeBookingReminder = "booking:reminder"
+	TypeEmailDelivery     = "email:deliver"
+	TypeFCMNotification   = "fcm:notify"
+	TypeBookingReminder   = "booking:reminder"
+	TypeAnnouncementEmail = "announcement:email"
 )
 
 // EmailDeliveryPayload is the payload for email tasks.
@@ -36,6 +37,12 @@ type BookingReminderPayload struct {
 	BookingID    uint64 `json:"booking_id"`
 	CustomerID   uint64 `json:"customer_id"`
 	ReminderType string `json:"reminder_type"` // "upcoming", "follow_up"
+}
+
+// AnnouncementEmailPayload is the payload for announcement email tasks.
+type AnnouncementEmailPayload struct {
+	AnnouncementID uint64 `json:"announcement_id"`
+	Audience       string `json:"audience"`
 }
 
 // NewEmailDeliveryTask creates an Asynq task for email delivery.
@@ -65,6 +72,15 @@ func NewBookingReminderTask(payload BookingReminderPayload, opts ...asynq.Option
 	return asynq.NewTask(TypeBookingReminder, data, opts...), nil
 }
 
+// NewAnnouncementEmailTask creates an Asynq task for announcement emails.
+func NewAnnouncementEmailTask(payload AnnouncementEmailPayload, opts ...asynq.Option) (*asynq.Task, error) {
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return nil, fmt.Errorf("marshal announcement email payload: %w", err)
+	}
+	return asynq.NewTask(TypeAnnouncementEmail, data, opts...), nil
+}
+
 // ── Task Handlers ──────────────────────────────────────────────
 
 // TemplatedEmailSender sends emails with template rendering.
@@ -82,9 +98,10 @@ type Handler struct {
 	EmailSender     func(ctx context.Context, to, subject, body string) error
 	TemplatedSender TemplatedEmailSender
 	// FCMSender returns failed tokens so stale registrations can be pruned.
-	FCMSender       func(ctx context.Context, tokens []string, title, body string, data map[string]string) ([]string, error)
-	ReminderHandler func(ctx context.Context, bookingID uint64, reminderType string) error
-	TokenPruner     TokenPruner
+	FCMSender                func(ctx context.Context, tokens []string, title, body string, data map[string]string) ([]string, error)
+	ReminderHandler          func(ctx context.Context, bookingID uint64, reminderType string) error
+	AnnouncementEmailHandler func(ctx context.Context, announcementID uint64, audience string) error
+	TokenPruner              TokenPruner
 }
 
 // NewHandler creates a task handler with the given dependencies.
@@ -155,5 +172,18 @@ func (h *Handler) HandleBookingReminder(ctx context.Context, t *asynq.Task) erro
 		return h.ReminderHandler(ctx, p.BookingID, p.ReminderType)
 	}
 	fmt.Printf("[REMINDER] booking_id=%d type=%s\n", p.BookingID, p.ReminderType)
+	return nil
+}
+
+// HandleAnnouncementEmail processes announcement email tasks.
+func (h *Handler) HandleAnnouncementEmail(ctx context.Context, t *asynq.Task) error {
+	var p AnnouncementEmailPayload
+	if err := json.Unmarshal(t.Payload(), &p); err != nil {
+		return fmt.Errorf("unmarshal announcement email payload: %w", err)
+	}
+	if h.AnnouncementEmailHandler != nil {
+		return h.AnnouncementEmailHandler(ctx, p.AnnouncementID, p.Audience)
+	}
+	fmt.Printf("[ANNOUNCEMENT EMAIL] announcement_id=%d audience=%s\n", p.AnnouncementID, p.Audience)
 	return nil
 }

@@ -56,3 +56,43 @@ const passwordResetTemplate = `<!DOCTYPE html>
   </div>
 </body>
 </html>`
+
+// announcementTemplate is the HTML email template for new announcements.
+// Variables: .Title, .Body, .PortalURL
+const announcementTemplate = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{.Title}}</title>
+  <style>
+    body { margin: 0; padding: 0; background-color: #f4f4f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    .container { max-width: 480px; margin: 40px auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+    .header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 40px 32px; text-align: center; }
+    .header h1 { color: #00d4aa; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+    .content { padding: 32px; }
+    .content h2 { color: #0f172a; font-size: 20px; margin: 0 0 16px; }
+    .content p { color: #334155; font-size: 15px; line-height: 1.6; margin: 0 0 20px; }
+    .button { display: inline-block; background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%); color: #0f172a; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 15px; margin: 16px 0; }
+    .footer { padding: 24px 32px; background: #f8fafc; text-align: center; }
+    .footer p { color: #94a3b8; font-size: 12px; margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>LifeRise</h1>
+    </div>
+    <div class="content">
+      <h2>{{.Title}}</h2>
+      <p>{{.Body}}</p>
+      <p style="text-align: center;">
+        <a href="{{.PortalURL}}" class="button">Open Portal</a>
+      </p>
+    </div>
+    <div class="footer">
+      <p>LifeRise Inc. &middot; Secure Property Management</p>
+    </div>
+  </div>
+</body>
+</html>`

@@ -105,9 +105,13 @@ export function DataTable<T>({
                       </td>
                     ))}
                     {rowActions && (
-                      <td key="actions" className="px-4 py-3">
+                      <td key={`actions-${keyExtractor(row)}`} className="px-4 py-3">
                         <div className="flex items-center justify-end gap-2">
-                          {React.Children.toArray(rowActions(row))}
+                          {React.Children.toArray(rowActions(row)).map((child, i) => (
+                            <React.Fragment key={`${keyExtractor(row)}-action-${i}`}>
+                              {child}
+                            </React.Fragment>
+                          ))}
                         </div>
                       </td>
                     )}

@@ -44,6 +44,7 @@ func main() {
 	}
 
 	deviceTokenRepo := persistence.NewDeviceTokenRepo()
+	announcementRepo := persistence.NewAnnouncementRepo()
 
 	// Wrap the repository to satisfy the tasks.TokenPruner interface (curries db).
 	tokenPruner := &tokenPrunerWrapper{db: db, repo: deviceTokenRepo}
@@ -104,6 +105,71 @@ func main() {
 		}
 	}
 
+	// Announcement email processor: fetches announcement, resolves recipients, sends via Resend/SMTP.
+	announcementEmailProcessor := func(ctx context.Context, announcementID uint64, audience string) error {
+		a, err := announcementRepo.GetByID(ctx, db, announcementID)
+		if err != nil {
+			logger.Error("failed to fetch announcement for email", zap.Uint64("announcement_id", announcementID), zap.Error(err))
+			return fmt.Errorf("fetch announcement: %w", err)
+		}
+
+		portalURL := cfg.App.URL
+		if portalURL == "" {
+			portalURL = "https://liferise.io"
+		}
+		portalURL = fmt.Sprintf("%s/resident/announcements", portalURL)
+
+		var emails []string
+		switch audience {
+		case "residents":
+			err = db.WithContext(ctx).Model(&struct{ Email string }{}).Table("customers").Where("deleted_at IS NULL AND status = ?", "active").Pluck("email", &emails).Error
+		case "vendors":
+			err = db.WithContext(ctx).Table("users").Select("DISTINCT users.email").Joins("JOIN user_role_assignments ON user_role_assignments.user_id = users.id").Joins("JOIN roles ON roles.id = user_role_assignments.role_id").Where("users.deleted_at IS NULL AND users.status = ? AND roles.slug = ?", "active", "service_provider").Pluck("email", &emails).Error
+		case "all":
+			var customers, vendors []string
+			if e := db.WithContext(ctx).Model(&struct{ Email string }{}).Table("customers").Where("deleted_at IS NULL AND status = ?", "active").Pluck("email", &customers).Error; e != nil {
+				err = e
+				break
+			}
+			if e := db.WithContext(ctx).Table("users").Select("DISTINCT users.email").Joins("JOIN user_role_assignments ON user_role_assignments.user_id = users.id").Joins("JOIN roles ON roles.id = user_role_assignments.role_id").Where("users.deleted_at IS NULL AND users.status = ? AND roles.slug = ?", "active", "service_provider").Pluck("email", &vendors).Error; e != nil {
+				err = e
+				break
+			}
+			emails = append(customers, vendors...)
+		default:
+			logger.Warn("unknown audience for announcement email", zap.String("audience", audience))
+			return fmt.Errorf("unknown audience: %s", audience)
+		}
+		if err != nil {
+			logger.Error("failed to resolve recipient emails", zap.Uint64("announcement_id", announcementID), zap.String("audience", audience), zap.Error(err))
+			return fmt.Errorf("resolve recipients: %w", err)
+		}
+
+		if templatedSender == nil {
+			logger.Warn("no templated sender configured; skipping announcement emails", zap.Uint64("announcement_id", announcementID))
+			return nil
+		}
+
+		var sendErrs []error
+		for _, to := range emails {
+			if err := templatedSender.SendTemplated(ctx, to, a.Title, "announcement", map[string]string{
+				"Title":     a.Title,
+				"Body":      a.Body,
+				"PortalURL": portalURL,
+			}); err != nil {
+				logger.Error("failed to send announcement email", zap.String("to", to), zap.Uint64("announcement_id", announcementID), zap.Error(err))
+				sendErrs = append(sendErrs, err)
+				continue
+			}
+			logger.Info("announcement email sent", zap.String("to", to), zap.Uint64("announcement_id", announcementID))
+		}
+
+		if len(sendErrs) > 0 {
+			return fmt.Errorf("failed to send %d/%d announcement emails", len(sendErrs), len(emails))
+		}
+		return nil
+	}
+
 	// Task handlers with real dependencies injected
 	handler := tasks.NewHandler(
 		emailSender,
@@ -115,11 +181,13 @@ func main() {
 	)
 	handler.TemplatedSender = templatedSender
 	handler.TokenPruner = tokenPruner
+	handler.AnnouncementEmailHandler = announcementEmailProcessor
 
 	mux := asynq.NewServeMux()
 	mux.HandleFunc(tasks.TypeEmailDelivery, handler.HandleEmailDelivery)
 	mux.HandleFunc(tasks.TypeFCMNotification, handler.HandleFCMNotification)
 	mux.HandleFunc(tasks.TypeBookingReminder, handler.HandleBookingReminder)
+	mux.HandleFunc(tasks.TypeAnnouncementEmail, handler.HandleAnnouncementEmail)
 
 	logger.Info("starting worker server", zap.Int("concurrency", cfg.Asynq.Concurrency))
 

@@ -24,6 +24,7 @@ func NewSMTPClient(cfg config.MailConfig) *SMTPClient {
 	// Parse embedded templates
 	tmpl := template.New("emails")
 	tmpl, _ = tmpl.Parse(passwordResetTemplate)
+	tmpl, _ = tmpl.Parse(announcementTemplate)
 
 	return &SMTPClient{cfg: cfg, templates: tmpl}
 }

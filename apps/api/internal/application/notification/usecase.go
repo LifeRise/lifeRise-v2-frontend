@@ -3,6 +3,7 @@ package notification
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/hibiken/asynq"
 	"gorm.io/gorm"
@@ -137,6 +138,19 @@ func (uc *UseCase) SendBookingReminder(ctx context.Context, userID uint64, custo
 		return fmt.Errorf("create reminder task: %w", err)
 	}
 	_, err = uc.asynqClient.Enqueue(task, asynq.Queue("low"))
+	return err
+}
+
+// SendAnnouncementEmail enqueues an announcement email task to the target audience.
+func (uc *UseCase) SendAnnouncementEmail(ctx context.Context, announcementID uint64, audience string) error {
+	task, err := tasks.NewAnnouncementEmailTask(tasks.AnnouncementEmailPayload{
+		AnnouncementID: announcementID,
+		Audience:       audience,
+	})
+	if err != nil {
+		return fmt.Errorf("create announcement email task: %w", err)
+	}
+	_, err = uc.asynqClient.Enqueue(task, asynq.Queue("default"), asynq.MaxRetry(5), asynq.Timeout(30*time.Second))
 	return err
 }
 

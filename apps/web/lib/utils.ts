@@ -29,6 +29,33 @@ export function formatDate(date: Date = new Date()): string {
   });
 }
 
+/** Safely parse an ISO-ish date string and format it for display.
+ *  Returns fallback string (default '—') for null, undefined, empty, or invalid values. */
+export function safeFormatDate(value: string | null | undefined, fallback = '—'): string {
+  if (!value) return fallback;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return fallback;
+  return d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+/** Safely parse an ISO-ish datetime string and format it for display. */
+export function safeFormatDateTime(value: string | null | undefined, fallback = '—'): string {
+  if (!value) return fallback;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return fallback;
+  return d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 /** Map a color key to Tailwind text + background utility classes for KPI strips */
 export const kpiColorClasses: Record<string, { text: string; bg: string }> = {
   teal: { text: 'text-teal', bg: 'bg-teal/10' },

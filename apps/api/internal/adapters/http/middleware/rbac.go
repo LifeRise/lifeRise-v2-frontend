@@ -119,11 +119,15 @@ func RequireCompanyScopedRole(allowedRoles ...string) gin.HandlerFunc {
 				continue
 			}
 
-			// Global role (nil CompanyID) grants access to any company context
+			// Global role (nil CompanyID) grants access to any company context.
+			// Company-scoped roles with nil CompanyID are not valid and are skipped.
 			if assignment.CompanyID == nil {
-				c.Set(CompanyIDKey, requestedCompanyID)
-				c.Next()
-				return
+				if auth.RoleSlug(assignment.Role).IsGlobal() {
+					c.Set(CompanyIDKey, requestedCompanyID)
+					c.Next()
+					return
+				}
+				continue
 			}
 
 			// If no company is specified in the path, any scoped role is acceptable

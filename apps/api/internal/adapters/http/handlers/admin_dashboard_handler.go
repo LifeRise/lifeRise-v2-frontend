@@ -101,5 +101,13 @@ func resolveOverviewScope(c *gin.Context) (*dashboard.OverviewScope, error) {
 		}
 	}
 
+	// Fallback: if the complex_manager assignment has no explicit company,
+	// default to the first available company from any of the user's assignments.
+	for _, a := range claims.RoleAssignments {
+		if a.CompanyID != nil {
+			return &dashboard.OverviewScope{CompanyID: a.CompanyID, Now: now}, nil
+		}
+	}
+
 	return nil, errForbidden
 }

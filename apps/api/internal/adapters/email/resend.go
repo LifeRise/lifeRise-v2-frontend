@@ -28,6 +28,7 @@ func NewResendClient(apiKey, fromAddress, fromName string) *ResendClient {
 
 	tmpl := template.New("emails")
 	tmpl, _ = tmpl.Parse(passwordResetTemplate)
+	tmpl, _ = tmpl.Parse(announcementTemplate)
 
 	return &ResendClient{
 		client:    resend.NewClient(apiKey),

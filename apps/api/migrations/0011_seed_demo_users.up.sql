@@ -37,13 +37,28 @@ BEGIN
     END IF;
 END $$;
 
+-- ── Demo Company ───────────────────────────────────────────────────
+DO $$
+DECLARE
+    v_company_id BIGINT;
+BEGIN
+    SELECT id INTO v_company_id FROM companies WHERE slug = 'demo-property';
+    IF NOT FOUND THEN
+        INSERT INTO companies (name, slug, email, status, type, created_at, updated_at)
+        VALUES ('Demo Property Management', 'demo-property', 'contact@demo-property.com', 'active', 'management', NOW(), NOW())
+        RETURNING id INTO v_company_id;
+    END IF;
+END $$;
+
 -- ── Manager ────────────────────────────────────────────────────────
 DO $$
 DECLARE
     v_role_id BIGINT;
     v_user_id BIGINT;
+    v_company_id BIGINT;
 BEGIN
     SELECT id INTO v_role_id FROM roles WHERE slug = 'complex_manager';
+    SELECT id INTO v_company_id FROM companies WHERE slug = 'demo-property' LIMIT 1;
 
     SELECT id INTO v_user_id FROM users WHERE email = 'manager@liferise.demo';
     IF FOUND THEN
@@ -66,9 +81,14 @@ BEGIN
         RETURNING id INTO v_user_id;
     END IF;
 
-    IF NOT EXISTS (SELECT 1 FROM user_role_assignments WHERE user_id = v_user_id) THEN
+    -- Upsert role assignment with the demo company
+    IF NOT EXISTS (SELECT 1 FROM user_role_assignments WHERE user_id = v_user_id AND role_id = v_role_id) THEN
         INSERT INTO user_role_assignments (user_id, role_id, company_id, created_at, updated_at)
-        VALUES (v_user_id, v_role_id, NULL, NOW(), NOW());
+        VALUES (v_user_id, v_role_id, v_company_id, NOW(), NOW());
+    ELSE
+        UPDATE user_role_assignments
+        SET company_id = v_company_id, updated_at = NOW()
+        WHERE user_id = v_user_id AND role_id = v_role_id;
     END IF;
 END $$;
 
