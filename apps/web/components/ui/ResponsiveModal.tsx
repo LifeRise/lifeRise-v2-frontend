@@ -11,9 +11,16 @@ interface ResponsiveModalProps {
   onOpenChange: (open: boolean) => void;
   children: React.ReactNode;
   className?: string;
+  title?: string;
 }
 
-export function ResponsiveModal({ open, onOpenChange, children, className }: ResponsiveModalProps) {
+export function ResponsiveModal({
+  open,
+  onOpenChange,
+  children,
+  className,
+  title,
+}: ResponsiveModalProps) {
   const isMobile = useIsMobile();
   const dragControls = useDragControls();
 
@@ -74,6 +81,16 @@ export function ResponsiveModal({ open, onOpenChange, children, className }: Res
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >
+                  {/* Accessibility title (visible when provided, sr-only otherwise) */}
+                  <Dialog.Title
+                    className={cn(
+                      'px-6 pt-6 text-lg font-heading font-semibold text-lr-white',
+                      !title && 'sr-only'
+                    )}
+                  >
+                    {title || 'Modal'}
+                  </Dialog.Title>
+
                   {/* Drag handle on mobile */}
                   {isMobile && (
                     <div
